@@ -45,18 +45,20 @@ class AMP_Prepare_Data {
 
 	public static function get_data() {
 
-		$errors = static::get_errors();
-		$urls   = static::get_amp_urls();
+		$errors   = static::get_errors();
+		$amp_urls = static::get_amp_urls();
 
 		$request_data = [
-			'site_url'  => get_bloginfo( 'site_url' ),
-			'site_info' => static::get_site_info(),
-			'plugins'   => static::get_plugin_info(),
-			'themes'    => [
+			'site_url'                   => get_bloginfo( 'site_url' ),
+			'site_info'                  => static::get_site_info(),
+			'plugins'                    => static::get_plugin_info(),
+			'themes'                     => [
 				static::normalize_theme_info( wp_get_theme() ),
 			],
-			'errors'    => array_values( $errors ),
-			'urls'      => array_values( $urls ),
+			'errors'                     => array_values( $errors ),
+			'error_sources'              => array_values( $amp_urls['error_sources'] ),
+			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
+			'urls'                       => array_values( $amp_urls['urls'] ),
 		];
 
 		return $request_data;
@@ -193,7 +195,13 @@ class AMP_Prepare_Data {
 		$query           = "SELECT ID, post_title, post_content FROM $wpdb->posts WHERE post_type='amp_validated_url'";
 		$amp_error_posts = $wpdb->get_results( $query );
 
-		$all_sources      = [];
+		// To Store all error_sources data.
+		$all_sources = [];
+
+		// To store all environment data.
+		$all_amp_validated_environments = [];
+
+		// To store all AMP validated URls
 		$amp_invalid_urls = [];
 
 		$error_data  = static::get_errors();
@@ -205,19 +213,34 @@ class AMP_Prepare_Data {
 			$plugin_versions[ $item['slug'] ] = $item['version'];
 		}
 
+		/**
+		 * Process each post.
+		 *
+		 * Post ==> Errors => sources
+		 */
 		foreach ( $amp_error_posts as $amp_error_post ) {
 
 			if ( empty( $amp_error_post ) ) {
 				continue;
 			}
 
+
 			$post_errors_raw = json_decode( $amp_error_post->post_content, true );
 			$post_errors     = [];
 
+			/**
+			 * Process individual error in each post
+			 */
 			foreach ( $post_errors_raw as $error ) {
 
-				$sources = ( ! empty( $error['data']['sources'] ) ) ? $error['data']['sources'] : [];
+				$_error_slug = $error_data[ $error['term_slug'] ]['_slug'];
 
+				$sources            = ( ! empty( $error['data']['sources'] ) ) ? $error['data']['sources'] : [];
+				$post_error_sources = [];
+
+				/**
+				 * Process each error_source of errors
+				 */
 				foreach ( $sources as $index => $source ) {
 
 					if ( ! empty( $source['type'] ) ) {
@@ -228,30 +251,40 @@ class AMP_Prepare_Data {
 						}
 					}
 
-					$sources[ $index ]['_slug'] = self::generate_hash( $sources[ $index ] );
+					$source_slug                = self::generate_hash( $sources[ $index ] );
+					$sources[ $index ]['_slug'] = $source_slug;
+					$sources[ $index ]['_error_slug'] = $_error_slug;
+					$post_error_sources[]       = $source_slug;
+
+					// Store in all source.
+					$all_sources[ $source_slug ] = $sources[ $index ];
 				}
 
-				$all_sources = array_merge( $all_sources, $sources );
-
 				$post_errors[] = [
-					'_error_slug' => $error_data[ $error['term_slug'] ]['_slug'],
-					'sources'     => array_values( $sources ),
+					'_error_slug' => $_error_slug,
+					'sources'     => array_values( $post_error_sources ),
 				];
 			}
 
-			$amp_validated_environment = get_post_meta( $amp_error_post->ID, '_amp_validated_environment', true );
+			$amp_validated_environment          = get_post_meta( $amp_error_post->ID, '_amp_validated_environment', true );
+			$amp_validated_environment_slug     = static::generate_hash( $amp_validated_environment );
+			$amp_validated_environment['_slug'] = $amp_validated_environment_slug;
+
+			// Store in all amp validation environments.
+			$all_amp_validated_environments[ $amp_validated_environment_slug ] = $amp_validated_environment;
 
 			$amp_invalid_urls[] = [
 				'url'                             => $amp_error_post->post_title,
-				'_amp_validated_environment_slug' => static::generate_hash( $amp_validated_environment ),
-				'amp_validated_environment'       => $amp_validated_environment,
+				'_amp_validated_environment_slug' => $amp_validated_environment['_slug'],
 				'errors'                          => $post_errors,
 			];
 		}
 
-		$all_sources = array_map( 'unserialize', array_unique( array_map( 'serialize', $all_sources ) ) );
-
-		return $amp_invalid_urls;
+		return [
+			'error_sources'              => $all_sources,
+			'amp_validated_environments' => $all_amp_validated_environments,
+			'urls'                       => $amp_invalid_urls,
+		];
 	}
 
 
@@ -262,11 +295,11 @@ class AMP_Prepare_Data {
 		}
 
 		if ( is_string( $object ) ) {
-			$hash = md5( $object );
+			$hash = md5( trim( $object ) );
 		} elseif ( is_array( $object ) ) {
 			ksort( $object );
 			$object = wp_json_encode( $object );
-			$hash   = md5( $object );
+			$hash = md5( trim( $object ) );
 		}
 
 
