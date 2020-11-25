@@ -32,10 +32,4 @@ node generate-theme-json.js
 - [./data](./data/): Contains data generate with node services.
 - [./config](./config/): Contains config file for authentication for bigquery.
 - [./bigqueryclient.js](./bigqueryclient.js): Wrapper class for bigquery.
-
-
-## Examples
-
-- Example for express node server. [Here](server.js)
-- Example for insert record in Google's BigQuery. [Here](server.js#L29-L38)
-- Example for fetch plugin data from [wp.org](wp.org) and store in bigquery. [Here](./wporg-plugin.js) 
+ 
