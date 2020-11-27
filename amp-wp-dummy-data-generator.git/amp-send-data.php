@@ -177,7 +177,7 @@ class AMP_Prepare_Data {
 			$error_detail = json_decode( $description, true );
 			$term_slug    = static::generate_hash( $error_detail );
 
-			$error_detail['site_slug']       = $error_term->slug;
+			$error_detail['slug']            = $error_term->slug;
 			$error_detail['_slug']           = $term_slug;
 			$error_detail['text']            = ( ! empty( $error_detail['text'] ) ) ? esc_html( $error_detail['text'] ) : '';
 			$error_data[ $error_term->slug ] = $error_detail;
