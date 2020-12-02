@@ -49,7 +49,7 @@ class AMP_Prepare_Data {
 		$amp_urls = static::get_amp_urls();
 
 		$request_data = [
-			'site_url'                   => get_bloginfo( 'site_url' ),
+			'site_url'                   => home_url(),
 			'site_info'                  => static::get_site_info(),
 			'plugins'                    => static::get_plugin_info(),
 			'themes'                     => [
@@ -147,7 +147,7 @@ class AMP_Prepare_Data {
 			'author_url'   => $theme_object->get( 'AuthorURI' ),
 			'source'       => '', // wp_org, github, custom
 			'is_active'    => ( $theme_object->get_stylesheet() === $active_theme_slug ),
-			'parent_theme' => ( $theme_object->parent() ) ? temp_normalize_theme_info( $theme_object->parent() ) : [],
+			'parent_theme' => ( $theme_object->parent() ) ? self::normalize_theme_info( $theme_object->parent() ) : [],
 		];
 
 		return $theme_data;
