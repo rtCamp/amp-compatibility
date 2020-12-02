@@ -28,6 +28,31 @@ Generate JSON for wp.org themes.
 node generate-theme-json.js
 ```
 
+### Rest Endpoints
+
+1. **GET**
+  `https://test-amp-comp-db.uc.r.appspot.com/ `
+
+    **Response**
+    `  Hello World!`
+
+
+2. **POST**
+  `https://test-amp-comp-db.uc.r.appspot.com/amp-data/ `
+      content-type: application/json
+
+    ```
+    {
+       "sample-field" : "sample-data"
+    }
+    ```
+
+    **Response** 
+       `"status": "success"`
+
+
+
+
 ## File/Directory Info
 - [./data](./data/): Contains data generate with node services.
 - [./config](./config/): Contains config file for authentication for bigquery.
