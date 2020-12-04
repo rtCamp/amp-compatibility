@@ -48,10 +48,12 @@ import_data() {
   ## Run After setup functions.
   wp amp-wp-compatibility plugin_after_setup
 
+  wp amp-wp-compatibility generate
+
 }
 
 amp() {
-  wp amp-wp-compatibility generate
+
   ## Make host entry
   wp amp validation reset --yes
   wp amp validation run --force
