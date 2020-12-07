@@ -10,6 +10,7 @@ const { getCurrentDateTime } = require( './utils' );
  * and exposes the resulting object (containing the keys and values) on req.body
  */
 app.use( bodyParser.urlencoded( {
+	limit: '50mb',
 	extended: true
 } ) );
 
@@ -17,7 +18,7 @@ app.use( bodyParser.urlencoded( {
  * bodyParser.json(options)
  * Parses the text as JSON and exposes the resulting object on req.body.
  */
-app.use( bodyParser.json() );
+app.use( bodyParser.json( { limit: '50mb' } ) );
 
 app.post( '/amp-data/', async ( request, response ) => {
 	response.setHeader( 'Content-Type', 'application/json' );
