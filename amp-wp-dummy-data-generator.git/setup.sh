@@ -4,6 +4,8 @@
 set -x
 set -e
 
+plugin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 setup_site() {
   wp rewrite flush
   wp cache flush
@@ -15,19 +17,19 @@ setup_site() {
   wp plugin install --activate amp
   wp option update --json amp-options '{"theme_support":"standard"}'
 
-  # wp plugin install --activate amp-wp-compatibility-suite-prototype
-  wp plugin activate amp-wp-compatibility-suite-prototype
+  # wp plugin install --activate wp-cli-test-data
+  wp plugin activate wp-cli-test-data
 }
 
 import_data() {
 
   ## Import data
-  import_files=$(wp amp-wp-compatibility get_import_files)
+  import_files=$(wp wp-cli-test-data get_import_files)
 
   IFS='|' read -ra import_files_array <<< "$import_files"
 
   for import_file in "${import_files_array[@]}"; do
-    wp import --authors=create data/$import_file
+    wp import --authors=create $plugin_dir/data/$import_file
   done
 
   if [[ 0 == $(wp post list --post_type=attachment --post_name=accelerated-mobile-pages-is-now-just-amp --format=count) ]]; then
@@ -37,7 +39,7 @@ import_data() {
   fi
 
   ## Run Plugin CLI commands.
-  commands=$(wp amp-wp-compatibility get_plugin_commands)
+  commands=$(wp wp-cli-test-data get_plugin_commands)
 
   IFS='|' read -ra command_array <<< "$commands"
 
@@ -46,9 +48,9 @@ import_data() {
   done
 
   ## Run After setup functions.
-  wp amp-wp-compatibility plugin_after_setup
+  wp wp-cli-test-data plugin_after_setup
 
-  wp amp-wp-compatibility generate
+  wp wp-cli-test-data generate
 
 }
 

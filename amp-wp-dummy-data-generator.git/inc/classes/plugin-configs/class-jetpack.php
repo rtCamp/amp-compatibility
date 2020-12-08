@@ -1,6 +1,6 @@
 <?php
 /**
- * BBPress config file.
+ * Jetpack config file.
  *
  * @package wp-cli-test-data
  */
@@ -8,9 +8,9 @@
 namespace WP_CLI_Test_Data\Inc\Plugin_Configs;
 
 /**
- * Class Bbpress
+ * Class Jetpack
  */
-class Bbpress extends Base {
+class Jetpack extends Base {
 
 	/**
 	 * Get list of file name that need to import for plugin.
@@ -22,7 +22,7 @@ class Bbpress extends Base {
 	public function get_import_files() {
 
 		return [
-			'bbpress-unit-test-data.xml' => 'https://bbpress.trac.wordpress.org/raw-attachment/ticket/2516/bbpress-unit-test-data.xml',
+			'jetpack-shortcode-test-data.xml' => 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/jetpack-shortcode-test-data.xml',
 		];
 	}
 

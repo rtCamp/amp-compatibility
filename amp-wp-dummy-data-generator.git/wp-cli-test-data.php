@@ -6,7 +6,7 @@
  * Author:      rtCamp, Inc
  * License:     Apache License 2.0
  * License URI: https://www.apache.org/licenses/LICENSE-2.0
- * Text Domain: amp-wp-compatibility-suite-prototype
+ * Text Domain: wp-cli-test-data
  */
 
 define( 'WP_CLI_TEST_DATA_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );

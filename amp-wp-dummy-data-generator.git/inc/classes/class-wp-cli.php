@@ -25,7 +25,7 @@ class WP_CLI {
 			return;
 		}
 
-		\WP_CLI::add_command( 'amp-wp-compatibility', '\WP_CLI_Test_Data\Inc\WP_CLI\Commands' );
+		\WP_CLI::add_command( 'wp-cli-test-data', '\WP_CLI_Test_Data\Inc\WP_CLI\Commands' );
 
 	}
 
