@@ -3,9 +3,9 @@
  * Navigation class.
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc;
+namespace WP_CLI_Test_Data\Inc;
 
-use AMP_WP_Compatibility_Suite\Inc\Traits\Singleton;
+use WP_CLI_Test_Data\Inc\Traits\Singleton;
 
 class Navigations {
 

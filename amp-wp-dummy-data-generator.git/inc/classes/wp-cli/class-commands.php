@@ -3,14 +3,14 @@
  * Generate content.
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\WP_CLI;
+namespace WP_CLI_Test_Data\Inc\WP_CLI;
 
-use AMP_WP_Compatibility_Suite\Inc\Generator\Blocks;
-use AMP_WP_Compatibility_Suite\Inc\Generator\PostTypes;
-use AMP_WP_Compatibility_Suite\Inc\Generator\ShortCodes;
-use AMP_WP_Compatibility_Suite\Inc\Generator\Taxonomies;
-use AMP_WP_Compatibility_Suite\Inc\Generator\Templates;
-use AMP_WP_Compatibility_Suite\Inc\Generator\Widgets;
+use WP_CLI_Test_Data\Inc\Generator\Blocks;
+use WP_CLI_Test_Data\Inc\Generator\PostTypes;
+use WP_CLI_Test_Data\Inc\Generator\ShortCodes;
+use WP_CLI_Test_Data\Inc\Generator\Taxonomies;
+use WP_CLI_Test_Data\Inc\Generator\Templates;
+use WP_CLI_Test_Data\Inc\Generator\Widgets;
 
 /**
  * CLI commands for AMP WP Compatibility Suite.
@@ -42,7 +42,7 @@ class Commands extends Base {
 			$class_name = ucfirst( $class_name );
 			$class_name = str_replace( ' ', '_', $class_name );
 
-			$full_class_name = '\AMP_WP_Compatibility_Suite\Inc\Plugin_Configs\\' . $class_name;
+			$full_class_name = '\WP_CLI_Test_Data\Inc\Plugin_Configs\\' . $class_name;
 
 			if ( class_exists( $full_class_name ) ) {
 				$this->plugin_configs[] = new $full_class_name;

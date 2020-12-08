@@ -3,7 +3,7 @@
  * Woocommerce config file.
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Plugin_Configs;
+namespace WP_CLI_Test_Data\Inc\Plugin_Configs;
 
 class Bbpress extends Base {
 
