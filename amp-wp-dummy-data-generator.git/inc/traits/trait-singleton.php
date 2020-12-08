@@ -25,7 +25,7 @@
  * @package project-name-features
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Traits;
+namespace WP_CLI_Test_Data\Inc\Traits;
 
 trait Singleton {
 

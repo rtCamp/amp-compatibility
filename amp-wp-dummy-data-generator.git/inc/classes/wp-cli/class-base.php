@@ -3,7 +3,7 @@
  * Base class for wp-cli
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\WP_CLI;
+namespace WP_CLI_Test_Data\Inc\WP_CLI;
 
 use function WP_CLI\Utils\get_flag_value;
 

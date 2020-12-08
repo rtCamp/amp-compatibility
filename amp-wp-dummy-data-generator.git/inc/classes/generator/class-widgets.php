@@ -3,7 +3,7 @@
  *
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Generator;
+namespace WP_CLI_Test_Data\Inc\Generator;
 
 class Widgets extends Base {
 

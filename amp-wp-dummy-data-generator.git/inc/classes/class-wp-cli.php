@@ -5,9 +5,9 @@
  * @package wp-dam
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc;
+namespace WP_CLI_Test_Data\Inc;
 
-use AMP_WP_Compatibility_Suite\Inc\Traits\Singleton;
+use WP_CLI_Test_Data\Inc\Traits\Singleton;
 
 /**
  * Class WP_CLI
@@ -25,7 +25,7 @@ class WP_CLI {
 			return;
 		}
 
-		\WP_CLI::add_command( 'amp-wp-compatibility', '\AMP_WP_Compatibility_Suite\Inc\WP_CLI\Commands' );
+		\WP_CLI::add_command( 'amp-wp-compatibility', '\WP_CLI_Test_Data\Inc\WP_CLI\Commands' );
 
 	}
 

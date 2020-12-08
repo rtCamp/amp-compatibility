@@ -3,12 +3,12 @@
  * Woocommerce config file.
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Plugin_Configs;
+namespace WP_CLI_Test_Data\Inc\Plugin_Configs;
 
 /**
  * Class Woocommerce
  *
- * @package AMP_WP_Compatibility_Suite\Inc\Plugin_Configs
+ * @package WP_CLI_Test_Data\Inc\Plugin_Configs
  */
 class Woocommerce extends Base {
 

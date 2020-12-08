@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: AMP WP Compatibility Suite -- Prototype
- * Description: Plugin for testing AMP compatibility of WordPress plugins and themes.
+ * Plugin Name: WP CLI Test Data
+ * Description: Plugin for generating test data for WordPress.
  * Version:     1.0.0
  * Author:      rtCamp, Inc
  * License:     Apache License 2.0
@@ -9,12 +9,12 @@
  * Text Domain: amp-wp-compatibility-suite-prototype
  */
 
-define( 'AMP_WP_COMP_SUIT_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'AMP_WP_COMP_SUIT_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+define( 'WP_CLI_TEST_DATA_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'WP_CLI_TEST_DATA_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 
 // phpcs:disable WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once AMP_WP_COMP_SUIT_PATH . '/inc/helpers/autoloader.php';
-require_once AMP_WP_COMP_SUIT_PATH . '/amp-send-data.php';
+require_once WP_CLI_TEST_DATA_PATH . '/inc/helpers/autoloader.php';
+require_once WP_CLI_TEST_DATA_PATH . '/amp-send-data.php';
 // phpcs:enable WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 /**
@@ -24,7 +24,7 @@ require_once AMP_WP_COMP_SUIT_PATH . '/amp-send-data.php';
  */
 function amp_wp_comp_suit_plugin_loader() {
 
-	\AMP_WP_Compatibility_Suite\Inc\Plugin::get_instance();
+	\WP_CLI_Test_Data\Inc\Plugin::get_instance();
 }
 
 amp_wp_comp_suit_plugin_loader();

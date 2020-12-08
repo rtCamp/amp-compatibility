@@ -6,7 +6,7 @@
  * @package project-name-featuers
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Helpers;
+namespace WP_CLI_Test_Data\Inc\Helpers;
 
 /**
  * Auto loader function.
@@ -18,7 +18,7 @@ namespace AMP_WP_Compatibility_Suite\Inc\Helpers;
 function autoloader( $resource = '' ) {
 
 	$resource_path  = false;
-	$namespace_root = 'AMP_WP_Compatibility_Suite\\';
+	$namespace_root = 'WP_CLI_Test_Data\\';
 	$resource       = trim( $resource, '\\' );
 
 	if ( empty( $resource ) || strpos( $resource, '\\' ) === false || strpos( $resource, $namespace_root ) !== 0 ) {
@@ -76,7 +76,7 @@ function autoloader( $resource = '' ) {
 				break;
 		}
 
-		$resource_path = sprintf( '%s/inc/%s/%s.php', untrailingslashit( AMP_WP_COMP_SUIT_PATH ), $directory, $file_name );
+		$resource_path = sprintf( '%s/inc/%s/%s.php', untrailingslashit( WP_CLI_TEST_DATA_PATH ), $directory, $file_name );
 
 	}
 
@@ -89,4 +89,4 @@ function autoloader( $resource = '' ) {
 
 }
 
-spl_autoload_register( '\AMP_WP_Compatibility_Suite\Inc\Helpers\autoloader' );
+spl_autoload_register( '\WP_CLI_Test_Data\Inc\Helpers\autoloader' );

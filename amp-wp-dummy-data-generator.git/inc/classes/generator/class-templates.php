@@ -3,7 +3,7 @@
  * Generate templates for post types.
  */
 
-namespace AMP_WP_Compatibility_Suite\Inc\Generator;
+namespace WP_CLI_Test_Data\Inc\Generator;
 
 class Templates extends Base {
 
