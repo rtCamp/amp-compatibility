@@ -12,7 +12,7 @@ bash ./setup.sh
 
 #### To generate data.
 ```bash
-wp amp-wp-compatibility generate
+wp wp-cli-test-data generate
 ```
 
 #### To send AMP validation data.
@@ -23,17 +23,17 @@ wp amp-send-data
 
 #### To get list XML file name that need to import (Filename separated with pipeline "|")
 ```bash
-wp amp-wp-compatibility get_import_files
+wp wp-cli-test-data get_import_files
 ```
 
 #### To get list WP CLI command that need to run after content importing (Command separated with pipeline "|")
 ```bash
-wp amp-wp-compatibility get_plugin_commands
+wp wp-cli-test-data get_plugin_commands
 ```
 
 #### Run custom script of each active plugins after content importing.
 ```bash
-wp amp-wp-compatibility plugin_after_setup
+wp wp-cli-test-data plugin_after_setup
 ```
 
 ## Directory/File Info

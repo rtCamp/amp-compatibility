@@ -57,7 +57,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-compatibility generate
+	 *      wp wp-cli-test-data generate
 	 *
 	 * @subcommand generate
 	 *
@@ -83,7 +83,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-compatibility get_import_files
+	 *      wp wp-cli-test-data get_import_files
 	 *
 	 * @subcommand get_import_files
 	 *
@@ -98,23 +98,33 @@ class Commands extends Base {
 
 		$this->extract_args( $assoc_args );
 
-		$response = [
+		$import_files = [
 			/**
-			 * WP Sample data
-			 * https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml
+			 * WordPress default sample data.
 			 */
-			'themeunittestdata.wordpress.xml',
+			'themeunittestdata.wordpress.xml' => 'https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml',
 		];
+
+		if ( self::is_gutenberg_active() ) {
+			$import_files['gutenberg-test-data.xml'] = 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/gutenberg-test-data.xml';
+		}
 
 		foreach ( $this->plugin_configs as $plugin_config ) {
 
-			if ( ! empty( $plugin_config->get_import_filename() ) ) {
-				$response[] = $plugin_config->get_import_filename();
+			$plugin_files = $plugin_config->get_import_files();
+
+			if ( ! empty( $plugin_files ) && is_array( $plugin_files ) ) {
+				$import_files = array_merge( $import_files, $plugin_files );
 			}
 
 		}
 
-		$this->write_log( implode( '|', $response ) );
+		$import_files = array_keys( $import_files );
+		$import_files = array_unique( $import_files );
+
+		if ( ! empty( $import_files ) ) {
+			$this->write_log( implode( '|', $import_files ) );
+		}
 
 	}
 
@@ -123,7 +133,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-compatibility get_plugin_commands
+	 *      wp wp-cli-test-data get_plugin_commands
 	 *
 	 * @subcommand get_plugin_commands
 	 *
@@ -148,7 +158,12 @@ class Commands extends Base {
 			}
 		}
 
-		$this->write_log( implode( '|', $commands ) );
+		$commands = array_unique( $commands );
+
+		if ( ! empty( $commands ) ) {
+			$this->write_log( implode( '|', $commands ) );
+		}
+
 	}
 
 	/**
@@ -156,7 +171,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-compatibility plugin_after_setup
+	 *      wp wp-cli-test-data plugin_after_setup
 	 *
 	 * @subcommand plugin_after_setup
 	 *
@@ -197,6 +212,42 @@ class Commands extends Base {
 		}
 
 		return $active_plugins;
+	}
+
+	/**
+	 * Check if Gutenberg is active.
+	 * Must be used not earlier than plugins_loaded action fired.
+	 *
+	 * @return bool True if gutenberg is active, Otherwise False.
+	 */
+	private static function is_gutenberg_active() {
+
+		$gutenberg    = false;
+		$block_editor = false;
+
+		if ( has_filter( 'replace_editor', 'gutenberg_init' ) ) {
+			// Gutenberg is installed and activated.
+			$gutenberg = true;
+		}
+
+		if ( version_compare( $GLOBALS['wp_version'], '5.0-beta', '>' ) ) {
+			// Block editor.
+			$block_editor = true;
+		}
+
+		if ( ! $gutenberg && ! $block_editor ) {
+			return false;
+		}
+
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		if ( ! is_plugin_active( 'classic-editor/classic-editor.php' ) ) {
+			return true;
+		}
+
+		$use_block_editor = ( 'no-replace' === get_option( 'classic-editor-replace' ) );
+
+		return $use_block_editor;
 	}
 
 }

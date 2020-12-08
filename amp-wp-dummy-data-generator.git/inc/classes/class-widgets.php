@@ -37,7 +37,7 @@ class Widgets {
 	public function register_page() {
 
 		// @TODO: Create separate page for each widgets.
-		Page::register_page( 'amp-wp-compatibility-widgets', [ $this, 'render_widget_page' ], 'widget' );
+		Page::register_page( 'wp-cli-test-data-widgets', [ $this, 'render_widget_page' ], 'widget' );
 	}
 
 	public function render_widget_page( $type ) {
