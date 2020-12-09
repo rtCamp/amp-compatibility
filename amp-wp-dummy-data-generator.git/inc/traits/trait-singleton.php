@@ -25,7 +25,7 @@
  * @package project-name-features
  */
 
-namespace WP_CLI_Test_Data\Inc\Traits;
+namespace AMP_WP_Dummy_Data_Generator\Inc\Traits;
 
 trait Singleton {
 

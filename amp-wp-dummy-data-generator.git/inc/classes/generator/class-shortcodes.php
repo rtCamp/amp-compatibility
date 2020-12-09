@@ -2,10 +2,10 @@
 /**
  * Generate pages for each short codes.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc\Generator;
+namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
 /**
  * Class ShortCodes
