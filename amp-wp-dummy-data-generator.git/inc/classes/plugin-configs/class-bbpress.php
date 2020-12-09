@@ -2,10 +2,10 @@
 /**
  * BBPress config file.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc\Plugin_Configs;
+namespace AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs;
 
 /**
  * Class Bbpress

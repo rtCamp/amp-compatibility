@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name: WP CLI Test Data
+ * Plugin Name: AMP WP Test data generator
  * Description: Plugin for generating test data for WordPress.
  * Version:     1.0.0
  * Author:      rtCamp, Inc
  * License:     Apache License 2.0
  * License URI: https://www.apache.org/licenses/LICENSE-2.0
- * Text Domain: wp-cli-test-data
+ * Text Domain: amp-wp-dummy-data-generator
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-define( 'WP_CLI_TEST_DATA_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'WP_CLI_TEST_DATA_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+define( 'AMP_WP_DUMMY_DATA_GENERATOR_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'AMP_WP_DUMMY_DATA_GENERATOR_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 
 // phpcs:disable WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once WP_CLI_TEST_DATA_PATH . '/inc/helpers/autoloader.php';
-require_once WP_CLI_TEST_DATA_PATH . '/amp-send-data.php';
+require_once AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/inc/helpers/autoloader.php';
+require_once AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/amp-send-data.php';
 // phpcs:enable WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 /**
@@ -24,9 +24,9 @@ require_once WP_CLI_TEST_DATA_PATH . '/amp-send-data.php';
  *
  * @return void
  */
-function amp_wp_cli_test_data_plugin_loader() {
+function amp_amp_wp_dummy_data_generator_plugin_loader() {
 
-	\WP_CLI_Test_Data\Inc\Plugin::get_instance();
+	\AMP_WP_Dummy_Data_Generator\Inc\Plugin::get_instance();
 }
 
-amp_wp_cli_test_data_plugin_loader();
+amp_amp_wp_dummy_data_generator_plugin_loader();

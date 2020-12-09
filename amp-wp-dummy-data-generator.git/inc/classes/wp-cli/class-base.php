@@ -2,10 +2,10 @@
 /**
  * Base class for wp-cli
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc\WP_CLI;
+namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
 
 use function WP_CLI\Utils\get_flag_value;
 

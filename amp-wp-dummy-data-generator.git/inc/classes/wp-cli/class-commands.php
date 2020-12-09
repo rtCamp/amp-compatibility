@@ -2,17 +2,17 @@
 /**
  * Generate content.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc\WP_CLI;
+namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
 
-use WP_CLI_Test_Data\Inc\Generator\Blocks;
-use WP_CLI_Test_Data\Inc\Generator\PostTypes;
-use WP_CLI_Test_Data\Inc\Generator\ShortCodes;
-use WP_CLI_Test_Data\Inc\Generator\Taxonomies;
-use WP_CLI_Test_Data\Inc\Generator\Templates;
-use WP_CLI_Test_Data\Inc\Generator\Widgets;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\Blocks;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\PostTypes;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\ShortCodes;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\Taxonomies;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\Templates;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\Widgets;
 
 /**
  * CLI commands for AMP WP Compatibility Suite.
@@ -57,7 +57,7 @@ class Commands extends Base {
 			$class_name = ucfirst( $class_name );
 			$class_name = str_replace( ' ', '_', $class_name );
 
-			$full_class_name = '\WP_CLI_Test_Data\Inc\Plugin_Configs\\' . $class_name;
+			$full_class_name = '\AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs\\' . $class_name;
 
 			if ( class_exists( $full_class_name ) ) {
 				$this->plugin_configs[] = new $full_class_name();
@@ -72,7 +72,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp wp-cli-test-data generate
+	 *      wp amp-wp-dummy-data-generator generate
 	 *
 	 * @subcommand generate
 	 *
@@ -98,7 +98,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp wp-cli-test-data get_import_files
+	 *      wp amp-wp-dummy-data-generator get_import_files
 	 *
 	 * @subcommand get_import_files
 	 *
@@ -148,7 +148,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp wp-cli-test-data get_plugin_commands
+	 *      wp amp-wp-dummy-data-generator get_plugin_commands
 	 *
 	 * @subcommand get_plugin_commands
 	 *
@@ -186,7 +186,7 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp wp-cli-test-data plugin_after_setup
+	 *      wp amp-wp-dummy-data-generator plugin_after_setup
 	 *
 	 * @subcommand plugin_after_setup
 	 *

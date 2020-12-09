@@ -2,10 +2,10 @@
 /**
  * Autoloader file for plugin.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc\Helpers;
+namespace AMP_WP_Dummy_Data_Generator\Inc\Helpers;
 
 /**
  * Auto loader function.
@@ -17,7 +17,7 @@ namespace WP_CLI_Test_Data\Inc\Helpers;
 function autoloader( $resource = '' ) {
 
 	$resource_path  = false;
-	$namespace_root = 'WP_CLI_Test_Data\\';
+	$namespace_root = 'AMP_WP_Dummy_Data_Generator\\';
 	$resource       = trim( $resource, '\\' );
 
 	if ( empty( $resource ) || strpos( $resource, '\\' ) === false || strpos( $resource, $namespace_root ) !== 0 ) {
@@ -75,7 +75,7 @@ function autoloader( $resource = '' ) {
 				break;
 		}
 
-		$resource_path = sprintf( '%s/inc/%s/%s.php', untrailingslashit( WP_CLI_TEST_DATA_PATH ), $directory, $file_name );
+		$resource_path = sprintf( '%s/inc/%s/%s.php', untrailingslashit( AMP_WP_DUMMY_DATA_GENERATOR_PATH ), $directory, $file_name );
 
 	}
 
@@ -88,4 +88,4 @@ function autoloader( $resource = '' ) {
 
 }
 
-spl_autoload_register( '\WP_CLI_Test_Data\Inc\Helpers\autoloader' );
+spl_autoload_register( '\AMP_WP_Dummy_Data_Generator\Inc\Helpers\autoloader' );

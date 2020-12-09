@@ -17,14 +17,14 @@ setup_site() {
   wp plugin install --activate amp
   wp option update --json amp-options '{"theme_support":"standard"}'
 
-  # wp plugin install --activate wp-cli-test-data
-  wp plugin activate wp-cli-test-data
+  # wp plugin install --activate amp-wp-dummy-data-generator
+  wp plugin activate amp-wp-dummy-data-generator
 }
 
 import_data() {
 
   ## Import data
-  import_files=$(wp wp-cli-test-data get_import_files)
+  import_files=$(wp amp-wp-dummy-data-generator get_import_files)
 
   IFS='|' read -ra import_files_array <<< "$import_files"
 
@@ -39,7 +39,7 @@ import_data() {
   fi
 
   ## Run Plugin CLI commands.
-  commands=$(wp wp-cli-test-data get_plugin_commands)
+  commands=$(wp amp-wp-dummy-data-generator get_plugin_commands)
 
   IFS='|' read -ra command_array <<< "$commands"
 
@@ -48,9 +48,9 @@ import_data() {
   done
 
   ## Run After setup functions.
-  wp wp-cli-test-data plugin_after_setup
+  wp amp-wp-dummy-data-generator plugin_after_setup
 
-  wp wp-cli-test-data generate
+  wp amp-wp-dummy-data-generator generate
 
 }
 

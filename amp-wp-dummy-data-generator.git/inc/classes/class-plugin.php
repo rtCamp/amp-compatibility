@@ -2,12 +2,12 @@
 /**
  * Plugin manifest class.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc;
+namespace AMP_WP_Dummy_Data_Generator\Inc;
 
-use \WP_CLI_Test_Data\Inc\Traits\Singleton;
+use \AMP_WP_Dummy_Data_Generator\Inc\Traits\Singleton;
 
 /**
  * Class Plugin

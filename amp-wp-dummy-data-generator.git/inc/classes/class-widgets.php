@@ -2,12 +2,12 @@
 /**
  * Widget class.
  *
- * @package wp-cli-test-data
+ * @package amp-wp-dummy-data-generator
  */
 
-namespace WP_CLI_Test_Data\Inc;
+namespace AMP_WP_Dummy_Data_Generator\Inc;
 
-use \WP_CLI_Test_Data\Inc\Traits\Singleton;
+use \AMP_WP_Dummy_Data_Generator\Inc\Traits\Singleton;
 
 /**
  * Class Widgets
@@ -52,7 +52,7 @@ class Widgets {
 	public function register_page() {
 
 		// @TODO: Create separate page for each widgets.
-		Page::register_page( 'wp-cli-test-data-widgets', [ $this, 'render_widget_page' ], 'widget' );
+		Page::register_page( 'amp-wp-dummy-data-generator-widgets', [ $this, 'render_widget_page' ], 'widget' );
 	}
 
 	/**
