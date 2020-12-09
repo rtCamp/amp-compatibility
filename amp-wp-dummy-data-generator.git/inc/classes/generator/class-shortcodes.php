@@ -1,6 +1,8 @@
 <?php
 /**
  * Generate pages for each short codes.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc\Generator;
@@ -10,10 +12,13 @@ namespace WP_CLI_Test_Data\Inc\Generator;
  */
 class ShortCodes extends Base {
 
+	/**
+	 * Generator function.
+	 *
+	 * @return void
+	 */
 	public function generate() {
 
-		global $shortcode_tags;
-		// print_r( $shortcode_tags );
 	}
 
 }

@@ -1,6 +1,8 @@
 <?php
 /**
  * Helper functions to register pages.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc;
@@ -49,13 +51,23 @@ class Page {
 
 	}
 
+	/**
+	 * To register custom page. to render it dynamically.
+	 *
+	 * @param string $slug Slug of the page.
+	 * @param string $function callback function to render pages.
+	 * @param string $type Type of the page.
+	 * @param string $subtype Sub type of page.
+	 *
+	 * @return bool True on success otherwise False.
+	 */
 	public static function register_page( $slug, $function, $type, $subtype = '' ) {
 
 		if ( empty( $slug ) || empty( $type ) || ! is_callable( $function ) ) {
 			return false;
 		}
 
-		add_action( "amp_wp_comp_render_page", $function );
+		add_action( 'amp_wp_comp_render_page', $function );
 
 		$rewrite = "index.php?amp_wp_comp_page=$slug&amp_wp_comp_page_type=$type";
 
@@ -69,7 +81,11 @@ class Page {
 
 	}
 
-
+	/**
+	 * To execute callback function for registered page.
+	 *
+	 * @return void
+	 */
 	public function maybe_render_page() {
 
 		$slug    = get_query_var( 'amp_wp_comp_page' );

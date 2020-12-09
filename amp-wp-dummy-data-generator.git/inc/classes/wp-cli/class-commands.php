@@ -1,6 +1,8 @@
 <?php
 /**
  * Generate content.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc\WP_CLI;
@@ -17,9 +19,23 @@ use WP_CLI_Test_Data\Inc\Generator\Widgets;
  */
 class Commands extends Base {
 
+	/**
+	 * List of generator classes.
+	 *
+	 * @var array
+	 */
 	protected $generators = [];
+
+	/**
+	 * List of config class for active plugins.
+	 *
+	 * @var array
+	 */
 	protected $plugin_configs = [];
 
+	/**
+	 * Construct method.
+	 */
 	public function __construct() {
 
 		$this->generators = [
@@ -29,10 +45,9 @@ class Commands extends Base {
 			new Taxonomies(),
 			new PostTypes(),
 			new Templates(),
-			// Metaboxes,
+			// Metaboxes.
 			new Blocks(),
 		];
-
 
 		$active_plugins = self::get_active_plugins();
 		$active_plugins = array_keys( $active_plugins );
@@ -45,7 +60,7 @@ class Commands extends Base {
 			$full_class_name = '\WP_CLI_Test_Data\Inc\Plugin_Configs\\' . $class_name;
 
 			if ( class_exists( $full_class_name ) ) {
-				$this->plugin_configs[] = new $full_class_name;
+				$this->plugin_configs[] = new $full_class_name();
 			}
 
 		}
@@ -192,6 +207,12 @@ class Commands extends Base {
 
 	}
 
+	/**
+	 * To get list of active plugins in current WordPress installation.
+	 * Key of array contains plugin slug and value contain manifest file plugin.
+	 *
+	 * @return array List of active plugins.
+	 */
 	public static function get_active_plugins() {
 
 		$plugins = get_plugins();

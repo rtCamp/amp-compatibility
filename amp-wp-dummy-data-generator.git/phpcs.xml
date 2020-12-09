@@ -5,6 +5,7 @@
     <rule ref="WordPress">
         <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
         <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+        <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.BlankLineAfterEnd"/>
     </rule>
 
     <rule ref="PHPCompatibility">
@@ -19,5 +20,6 @@
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>.github/</exclude-pattern>
+    <exclude-pattern>amp-send-data.php</exclude-pattern>
 
 </ruleset>
