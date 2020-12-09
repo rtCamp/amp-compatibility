@@ -1,9 +1,8 @@
 <?php
-
 /**
  * Autoloader file for plugin.
  *
- * @package project-name-featuers
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc\Helpers;

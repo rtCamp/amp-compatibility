@@ -1,26 +1,46 @@
 <?php
 /**
  * Navigation class.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc;
 
 use WP_CLI_Test_Data\Inc\Traits\Singleton;
 
+/**
+ * Class Navigations
+ */
 class Navigations {
 
 	use Singleton;
 
+	/**
+	 * Construct method.
+	 */
 	protected function __construct() {
 
 		$this->setup_hooks();
 	}
 
+	/**
+	 * To setup action/filters.
+	 *
+	 * @return void
+	 */
 	protected function setup_hooks() {
 
 		add_filter( 'theme_mod_nav_menu_locations', [ $this, 'add_navigation_menus' ] );
 	}
 
+	/**
+	 * To assign navigation mei in registered nav menus.
+	 *
+	 * @param array $locations List of registered nav menus.
+	 *
+	 * @return array List of registered nav menus.
+	 */
 	public function add_navigation_menus( $locations ) {
 
 		if ( is_admin() ) {

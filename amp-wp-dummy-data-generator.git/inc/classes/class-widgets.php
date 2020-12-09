@@ -1,6 +1,8 @@
 <?php
 /**
  * Widget class.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc;
@@ -14,11 +16,19 @@ class Widgets {
 
 	use Singleton;
 
+	/**
+	 * Construct method.
+	 */
 	protected function __construct() {
 
 		$this->setup_hooks();
 	}
 
+	/**
+	 * To setup action and filters.
+	 *
+	 * @return void
+	 */
 	protected function setup_hooks() {
 
 		/**
@@ -34,12 +44,24 @@ class Widgets {
 
 	}
 
+	/**
+	 * To register pages.
+	 *
+	 * @return void
+	 */
 	public function register_page() {
 
 		// @TODO: Create separate page for each widgets.
 		Page::register_page( 'wp-cli-test-data-widgets', [ $this, 'render_widget_page' ], 'widget' );
 	}
 
+	/**
+	 * To render widget pages.
+	 *
+	 * @param string $type Type of page.
+	 *
+	 * @return void
+	 */
 	public function render_widget_page( $type ) {
 
 		if ( ! empty( $type ) && 'widget' !== $type ) {
@@ -53,18 +75,32 @@ class Widgets {
 		get_footer();
 	}
 
+	/**
+	 * To register sidebar.
+	 *
+	 * @return void
+	 */
 	public function register_sidebar() {
 
-		register_sidebar( [
-			'name'          => 'AMP WP Comp Sidebar',
-			'id'            => 'amp-wp-comp-sidebar',
-			'before_widget' => '<div id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</div>',
-			'before_title'  => '<h2 class="widgettitle">',
-			'after_title'   => '</h2>',
-		] );
+		register_sidebar(
+			[
+				'name'          => 'AMP WP Comp Sidebar',
+				'id'            => 'amp-wp-comp-sidebar',
+				'before_widget' => '<div id="%1$s" class="widget %2$s">',
+				'after_widget'  => '</div>',
+				'before_title'  => '<h2 class="widgettitle">',
+				'after_title'   => '</h2>',
+			]
+		);
 	}
 
+	/**
+	 * To add widget dynamically in 'amp-wp-comp-sidebar'.
+	 *
+	 * @param array $sidebars_widgets List of widget for sidebar.
+	 *
+	 * @return array List of widget for sidebar.
+	 */
 	public function add_widgets( $sidebars_widgets ) {
 
 		if ( ! did_action( 'template_redirect' ) ) {
@@ -72,29 +108,32 @@ class Widgets {
 		}
 
 		/**
+		 * Global variable wp_widget_factory.
+		 *
 		 * @var \WP_Widget_Factory $wp_widget_factory
-		 * @var array              $wp_registered_sidebars
 		 */
-		global $wp_widget_factory, $wp_registered_sidebars;
+		global $wp_widget_factory;
 
 		$sidebar_id = 'amp-wp-comp-sidebar';
 
 		$widget_ids = [];
 		foreach ( $wp_widget_factory->widgets as $widget ) {
-			/**
-			 * @var \WP_Widget $widget
-			 */
 			$this->ensure_first_widget_setting_populated( $widget );
 			$widget_ids[] = $widget->id_base . '-2';
 		}
 
 		$sidebars_widgets[ $sidebar_id ] = $widget_ids;
 
-
 		return $sidebars_widgets;
 	}
 
-
+	/**
+	 * Update settings of provided widget.
+	 *
+	 * @param \WP_Widget $widget Widget object.
+	 *
+	 * @return void
+	 */
 	public function ensure_first_widget_setting_populated( \WP_Widget $widget ) {
 
 		$settings = $widget->get_settings();

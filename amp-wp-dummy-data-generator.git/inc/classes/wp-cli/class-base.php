@@ -1,6 +1,8 @@
 <?php
 /**
  * Base class for wp-cli
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc\WP_CLI;
@@ -107,7 +109,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 
 		// Log message to log file if a log file.
 		if ( ! empty( $this->log_file ) ) {
-			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
+			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
 		}
 
 		if ( ! empty( $this->logs ) ) {

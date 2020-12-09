@@ -1,12 +1,22 @@
 <?php
 /**
  * Generate templates for post types.
+ *
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc\Generator;
 
+/**
+ * Class Templates
+ */
 class Templates extends Base {
 
+	/**
+	 * Generator function.
+	 *
+	 * @return void
+	 */
 	public function generate() {
 
 		$post_types   = get_post_types( [ 'public' => true ] );

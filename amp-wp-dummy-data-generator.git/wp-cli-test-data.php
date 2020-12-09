@@ -7,6 +7,8 @@
  * License:     Apache License 2.0
  * License URI: https://www.apache.org/licenses/LICENSE-2.0
  * Text Domain: wp-cli-test-data
+ *
+ * @package wp-cli-test-data
  */
 
 define( 'WP_CLI_TEST_DATA_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
@@ -22,9 +24,9 @@ require_once WP_CLI_TEST_DATA_PATH . '/amp-send-data.php';
  *
  * @return void
  */
-function amp_wp_comp_suit_plugin_loader() {
+function amp_wp_cli_test_data_plugin_loader() {
 
 	\WP_CLI_Test_Data\Inc\Plugin::get_instance();
 }
 
-amp_wp_comp_suit_plugin_loader();
+amp_wp_cli_test_data_plugin_loader();

@@ -2,7 +2,7 @@
 /**
  * Plugin manifest class.
  *
- * @package project-name-features
+ * @package wp-cli-test-data
  */
 
 namespace WP_CLI_Test_Data\Inc;
@@ -32,13 +32,20 @@ class Plugin {
 	}
 
 	/**
-	 * Setup hooks.
+	 * Setup action/filters.
+	 *
+	 * @return void
 	 */
 	protected function setup_hooks() {
 
 		add_filter( 'pre_option_permalink_structure', [ $this, 'update_posts_permastructs' ] );
 	}
 
+	/**
+	 * Update posts perma structure.
+	 *
+	 * @return string New post permastructs.
+	 */
 	public function update_posts_permastructs() {
 
 		return '/%postname%/';

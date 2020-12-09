@@ -34,6 +34,11 @@ abstract class Base {
 		return [];
 	}
 
+	/**
+	 * Callback function of plugin. to execute after test data setup.
+	 *
+	 * @return void
+	 */
 	public function after_setup() {
 	}
 

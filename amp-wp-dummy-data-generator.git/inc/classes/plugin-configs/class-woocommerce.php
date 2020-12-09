@@ -26,16 +26,4 @@ class Woocommerce extends Base {
 		];
 	}
 
-	public function get_cli_commands() {
-
-		return [
-			'wp wc tax list --user=dhavalparekh',
-		];
-	}
-
-	public function after_setup() {
-
-		print_r( 'After Woo Commerce Setup' );
-	}
-
 }
