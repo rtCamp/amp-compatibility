@@ -1,4 +1,4 @@
-# WP CLI Test Data
+# AMP WP Dummy data generator
 Plugin that generate ideal content for website considering active plugins and theme to validate AMP compatibility of the site and send data to node server.
 
 ## How to use?
