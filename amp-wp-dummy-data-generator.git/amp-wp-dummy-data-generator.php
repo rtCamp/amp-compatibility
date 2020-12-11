@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: AMP WP Test data generator
+ * Plugin Name: AMP WP Dummy data generator
  * Description: Plugin for generating test data for WordPress.
  * Version:     1.0.0
  * Author:      rtCamp, Inc
