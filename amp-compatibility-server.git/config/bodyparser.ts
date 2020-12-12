@@ -30,7 +30,7 @@ const bodyParserConfig: BodyParserConfig = {
   */
   json: {
     encoding: 'utf-8',
-    limit: '1mb',
+    limit: '50mb',
     strict: true,
     types: [
       'application/json',
@@ -51,8 +51,10 @@ const bodyParserConfig: BodyParserConfig = {
   */
   form: {
     encoding: 'utf-8',
-    limit: '1mb',
-    queryString: {},
+    limit: '50mb',
+    queryString: {
+      parameterLimit: 1000000,
+    },
     types: ['application/x-www-form-urlencoded'],
   },
 
@@ -68,7 +70,7 @@ const bodyParserConfig: BodyParserConfig = {
   */
   raw: {
     encoding: 'utf-8',
-    limit: '1mb',
+    limit: '50mb',
     queryString: {},
     types: ['text/*'],
   },
