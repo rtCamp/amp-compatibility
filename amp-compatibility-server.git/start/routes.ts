@@ -21,3 +21,11 @@
 import Route from '@ioc:Adonis/Core/Route';
 
 Route.on('/').render('welcome');
+
+/**
+ * Rest API V1 routes.
+ */
+Route.group(() => {
+	Route.get('amp-wp', 'RestApiV1SController.index');
+	Route.post('amp-wp', 'RestApiV1SController.store');
+}).prefix('api/v1');
