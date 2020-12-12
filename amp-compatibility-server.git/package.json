@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@adonisjs/core": "^5.0.4-preview-rc-2.1",
-		"@adonisjs/redis": "^2.0.7",
+		"@adonisjs/redis": "^5.0.9",
 		"@adonisjs/repl": "^1.1.6",
 		"@adonisjs/session": "^4.0.6",
 		"@adonisjs/view": "^3.1.0",
