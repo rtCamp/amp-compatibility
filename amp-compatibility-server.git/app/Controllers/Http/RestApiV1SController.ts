@@ -20,7 +20,9 @@ export default class RestApiV1SController {
 	 *
 	 * @return object Response data.
 	 */
-	public async store() {
+	public async store({ request }) {
+
+		console.log(request.all());
 
 		return {status: 'ok'};
 	}
