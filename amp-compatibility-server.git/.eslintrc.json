@@ -1,6 +1,16 @@
 {
-	"plugins": ["prettier"],
+	"plugins": [
+		"prettier"
+	],
 	"rules": {
-		"prettier/prettier": ["error"]
+		"prettier/prettier": [
+			"error"
+		]
+	},
+	"parserOptions": {
+		"ecmaVersion": 2017
+	},
+	"env": {
+		"es6": true
 	}
 }
