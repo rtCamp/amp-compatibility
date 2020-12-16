@@ -20,7 +20,7 @@ module.exports = {
 		| is over 1mb it will not be processed.
 		|
 		*/
-		limit: '1mb',
+		limit: '50mb',
 
 		/*
 		|--------------------------------------------------------------------------
@@ -74,6 +74,11 @@ module.exports = {
 	|
 	*/
 	form: {
+		limit: '50mb',
+		queryString: {
+			parameterLimit: 1000000,
+			extended: true,
+		},
 		types: [
 			'application/x-www-form-urlencoded',
 		],
@@ -107,7 +112,7 @@ module.exports = {
 		| Also this value is considered when `autoProcess` is set to true.
 		|
 		*/
-		maxSize: '20mb',
+		maxSize: '50mb',
 
 		/*
 		|--------------------------------------------------------------------------
