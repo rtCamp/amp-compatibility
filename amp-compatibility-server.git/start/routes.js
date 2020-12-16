@@ -19,3 +19,8 @@ const Route = use( 'Route' );
 Route.get( '/', () => {
 	return { greeting: 'Hello world in JSON' };
 } );
+
+Route.group( () => {
+	Route.get( 'amp-wp', 'RestApiV1Controller.index' );
+	Route.post( 'amp-wp', 'RestApiV1Controller.store' );
+} ).prefix( 'api/v1' );
