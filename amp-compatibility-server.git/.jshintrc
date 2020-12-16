@@ -1,10 +1,9 @@
 {
-	"esversion": 6,
+	"esversion": 8,
 	"boss": true,
 	"curly": true,
 	"eqeqeq": true,
 	"eqnull": true,
-	"es5": true,
 	"expr": true,
 	"immed": true,
 	"noarg": true,
@@ -15,5 +14,9 @@
 	"undef": true,
 	"unused": true,
 	"browser": true,
-	"strict": true
+	"strict": true,
+	"node": true,
+	"globals": {
+		"use": true
+	}
 }

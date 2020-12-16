@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /*
 |--------------------------------------------------------------------------
@@ -10,55 +10,57 @@
 |
 */
 
-const Env = use('Env')
+const Env = use( 'Env' );
 
 module.exports = {
-  /*
-  |--------------------------------------------------------------------------
-  | connection
-  |--------------------------------------------------------------------------
-  |
-  | Redis connection to be used by default.
-  |
-  */
-  connection: Env.get('REDIS_CONNECTION', 'local'),
+	/*
+	|--------------------------------------------------------------------------
+	| connection
+	|--------------------------------------------------------------------------
+	|
+	| Redis connection to be used by default.
+	|
+	*/
+	connection: Env.get( 'REDIS_CONNECTION', 'local' ),
 
-  /*
-  |--------------------------------------------------------------------------
-  | local connection config
-  |--------------------------------------------------------------------------
-  |
-  | Configuration for a named connection.
-  |
-  */
-  local: {
-    host: '127.0.0.1',
-    port: 6379,
-    password: null,
-    db: 0,
-    keyPrefix: ''
-  },
+	/*
+	|--------------------------------------------------------------------------
+	| local connection config
+	|--------------------------------------------------------------------------
+	|
+	| Configuration for a named connection.
+	|
+	*/
+	local: {
+		host: '127.0.0.1',
+		port: 6379,
+		password: null,
+		db: 0,
+		keyPrefix: '',
+	},
 
-  /*
-  |--------------------------------------------------------------------------
-  | cluster config
-  |--------------------------------------------------------------------------
-  |
-  | Below is the configuration for the redis cluster.
-  |
-  */
-  cluster: {
-    clusters: [{
-      host: '127.0.0.1',
-      port: 6379,
-      password: null,
-      db: 0
-    },
-    {
-      host: '127.0.0.1',
-      port: 6380,
-      password: null,
-      db: 0
-    }]
-  }
-}
+	/*
+	|--------------------------------------------------------------------------
+	| cluster config
+	|--------------------------------------------------------------------------
+	|
+	| Below is the configuration for the redis cluster.
+	|
+	*/
+	cluster: {
+		clusters: [
+			{
+				host: '127.0.0.1',
+				port: 6379,
+				password: null,
+				db: 0,
+			},
+			{
+				host: '127.0.0.1',
+				port: 6380,
+				password: null,
+				db: 0,
+			},
+		],
+	},
+};
