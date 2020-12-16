@@ -1,16 +1,21 @@
+'use strict'
+
 /*
 |--------------------------------------------------------------------------
 | Ace Commands
 |--------------------------------------------------------------------------
 |
-| This file is the entry point for running ace commands.
+| The ace file is just a regular Javascript file but with no extension. You
+| can call `node ace` followed by the command name and it just works.
+|
+| Also you can use `adonis` followed by the command name, since the adonis
+| global proxies all the ace commands.
 |
 */
 
-require('reflect-metadata')
-require('source-map-support').install({ handleUncaughtExceptions: false })
+const { Ignitor } = require('@adonisjs/ignitor')
 
-const { Ignitor } = require('@adonisjs/core/build/standalone')
-new Ignitor(__dirname)
-  .ace()
-  .handle(process.argv.slice(2))
+new Ignitor(require('@adonisjs/fold'))
+  .appRoot(__dirname)
+  .fireAce()
+  .catch(console.error)
