@@ -9,3 +9,5 @@ coverage
 
 .env
 tmp
+
+private
