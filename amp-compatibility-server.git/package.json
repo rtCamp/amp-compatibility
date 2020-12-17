@@ -1,6 +1,6 @@
 {
 	"name": "amp-compatibility-server",
-	"version": "1.0",
+	"version": "1.0.0",
 	"adonis-version": "4.1.0",
 	"description": "AMP compatibility server",
 	"main": "index.js",
