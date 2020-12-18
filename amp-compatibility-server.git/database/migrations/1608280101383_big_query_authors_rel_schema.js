@@ -1,17 +1,17 @@
 'use strict';
+
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use( 'Schema' );
 const BigQuery = use( 'App/BigQuery' );
 
-class BigQueryAuthorSchema extends Schema {
-
+class BigQueryAuthorRelSchema extends Schema {
 	/**
 	 * Table name
 	 *
 	 * @returns {string} Table name.
 	 */
 	get table() {
-		return 'authors';
+		return 'author_rel';
 	}
 
 	/**
@@ -23,29 +23,12 @@ class BigQueryAuthorSchema extends Schema {
 		return {
 			fields: [
 				{
-					name: 'profile',
+					name: 'plugin_slug_version',
 					type: 'STRING',
-					mode: 'REQUIRED',
-					description: 'Author\'s profile URL.',
-				}, {
-					name: 'user_nicename',
+				},
+				{
+					name: 'author_profile',
 					type: 'STRING',
-					mode: 'REQUIRED',
-					description: 'Author nicename',
-				}, {
-					name: 'avatar',
-					type: 'STRING',
-					mode: 'NULLABLE',
-					description: 'Author\'s avatar URL',
-				}, {
-					name: 'display_name',
-					type: 'STRING',
-					mode: 'NULLABLE',
-					description: 'Display name of author.',
-				}, {
-					name: 'status',
-					type: 'STRING',
-					mode: 'NULLABLE',
 				},
 			],
 		};
@@ -70,4 +53,4 @@ class BigQueryAuthorSchema extends Schema {
 	}
 }
 
-module.exports = BigQueryAuthorSchema;
+module.exports = BigQueryAuthorRelSchema;
