@@ -11,7 +11,7 @@ class BigQueryAuthorSchema extends Schema {
 	 * @returns {string} Table name.
 	 */
 	get table() {
-		return 'author';
+		return 'authors';
 	}
 
 	/**
