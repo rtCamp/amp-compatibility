@@ -12,10 +12,10 @@ class Author extends Base {
 	 */
 	static get rules() {
 		return {
-			profile: 'required|string',
-			user_nicename: 'required|string',
+			profile: 'string|required',
+			user_nicename: 'string|required',
 			avatar: 'string',
-			display_name: 'required|string',
+			display_name: 'string',
 			status: 'string',
 		};
 	}

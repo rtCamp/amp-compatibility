@@ -11,17 +11,19 @@ class BigQuery {
 	 */
 	constructor( config ) {
 
-		if ( !_.isObject( config ) || _.isEmpty( config.projectId ) || _.isEmpty( config.dataset ) || _.isEmpty( config.keyFilename ) ) {
+		if ( ! _.isObject( config ) || _.isEmpty( config.projectId ) || _.isEmpty( config.dataset ) || _.isEmpty( config.keyFilename ) ) {
 			return;
 		}
 
 		config.keyFilename = Helpers.appRoot( `private/${ config.keyFilename }` );
 
-		this.projectId = config.projectId;
-		this.dataset = config.dataset;
 		this.config = config;
 
 		this.client = new BigQueryClient( this.config );
+	}
+
+	get dataset() {
+		return this.client.dataset( this.config.dataset );
 	}
 
 	/**
@@ -59,7 +61,7 @@ class BigQuery {
 	 */
 	async createTable( tableName, schema ) {
 
-		if ( _.isEmpty( tableName ) || _.isEmpty( tableName ) || !_.isObject( schema ) ) {
+		if ( _.isEmpty( tableName ) || _.isEmpty( tableName ) || ! _.isObject( schema ) ) {
 			return false;
 		}
 
@@ -67,9 +69,17 @@ class BigQuery {
 			schema: schema,
 		};
 
-		const [ table ] = await this.client.dataset( this.dataset ).createTable( tableName, options );
+		let response = false;
+		let hadError = false;
 
-		return table;
+		try {
+			const [ table ] = await this.dataset.createTable( tableName, options );
+		} catch ( e ) {
+			hadError = true;
+			response = e.errors;
+		}
+
+		return hadError ? response : true;
 	}
 
 	/**
@@ -85,7 +95,17 @@ class BigQuery {
 			return false;
 		}
 
-		return ( await this.client.dataset( this.dataset ).table( tableName ).delete() );
+		let response = false;
+		let hadError = false;
+
+		try {
+			await this.dataset.table( tableName ).delete()
+		} catch ( e ) {
+			hadError = true;
+			response = e.errors;
+		}
+
+		return hadError ? response : true;
 	}
 
 }
