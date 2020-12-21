@@ -10,6 +10,16 @@ bash ./setup.sh
 
 ## WP CLI Commands
 
+#### Test themes
+```bash
+wp amp-test-themes | bash
+```
+
+#### Test one theme
+```bash
+wp amp-test-themes --theme=99fy | bash
+```
+
 #### To generate data.
 ```bash
 wp amp-wp-dummy-data-generator generate
