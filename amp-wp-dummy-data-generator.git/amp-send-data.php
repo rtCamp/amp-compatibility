@@ -7,7 +7,7 @@
 
 use function WP_CLI\Utils\get_flag_value;
 
-define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://test-amp-comp-db.uc.r.appspot.com/amp-data/' );
+define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://test-amp-comp-db.uc.r.appspot.com/api/v1/amp-wp' );
 
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
