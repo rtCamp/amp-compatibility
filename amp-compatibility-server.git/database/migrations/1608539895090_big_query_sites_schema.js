@@ -149,7 +149,7 @@ class BigQuerySitesSchema extends Schema {
 				},
 				{
 					name: 'amp_reader_theme',
-					type: 'STRING',
+					type: 'BOOL',
 					mode: 'REQUIRED',
 					description: 'true|false',
 				},
