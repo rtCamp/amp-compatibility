@@ -148,13 +148,13 @@ class BigQueryExtensionsSchema extends Schema {
 					description: 'Url for theme/plugin.',
 				},
 				{
-					name: 'theme_preview_url',
+					name: 'preview_url',
 					type: 'STRING',
 					mode: 'REQUIRED',
 					description: 'Preview URL of theme/plugin e.g. https://wp-wporg.com/prime-spa',
 				},
 				{
-					name: 'theme_screenshot_url',
+					name: 'screenshot_url',
 					type: 'STRING',
 					mode: 'REQUIRED',
 					description: 'Screenshot of plugin/theme e.g. //ts.w.org/wp-content/themes/prime-spa/screenshot.png?ver=1.0.0',
