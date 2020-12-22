@@ -22,6 +22,8 @@ const providers = [
 	'@adonisjs/redis/providers/RedisProvider',
 	'@adonisjs/validator/providers/ValidatorProvider',
 	path.join( __dirname, '..', 'providers', 'BigQueryProvider' ),
+	path.join( __dirname, '..', 'providers', 'Sanitizer/Provider' ),
+	path.join( __dirname, '..', 'providers', 'Validator/Provider' ),
 ];
 
 /*

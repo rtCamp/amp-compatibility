@@ -12,9 +12,9 @@ class Author extends Base {
 	 */
 	static get rules() {
 		return {
-			profile: 'string|required',
+			author_profile: 'url|required',
 			user_nicename: 'string|required',
-			avatar: 'string',
+			avatar: 'url',
 			display_name: 'string',
 			status: 'string',
 		};
@@ -27,8 +27,11 @@ class Author extends Base {
 	 */
 	static get sanitizationRules() {
 		return {
+			author_profile: 'to_url',
 			user_nicename: 'slug',
-			display_name: 'slug',
+			avatar: 'to_url',
+			display_name: 'escape',
+			status: 'slug',
 		};
 	}
 
