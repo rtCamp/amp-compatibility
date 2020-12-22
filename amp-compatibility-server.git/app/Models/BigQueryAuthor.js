@@ -25,7 +25,7 @@ class BigQueryAuthor extends BigQueryBase {
 	/**
 	 * Table schema for BigQuery.
 	 *
-	 * @returns {{fields: *[]}} Fields.
+	 * @returns {Object} Table fields.
 	 */
 	static get fields() {
 		return {
