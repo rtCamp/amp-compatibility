@@ -49,6 +49,32 @@ class BigQuery {
 	}
 
 	/**
+	 * To create dataset in BigQuery.
+	 *
+	 * @param {String} datasetName Dataset name.
+	 *
+	 * @returns {Promise<[Response]|boolean>}
+	 */
+	async createDataset( datasetName ) {
+
+		if ( _.isEmpty( datasetName ) ) {
+			return false;
+		}
+
+		let response = false;
+		let hadError = false;
+
+		try {
+			const [ dataset ] = await this.client.createDataset( datasetName );
+		} catch ( e ) {
+			hadError = true;
+			response = e.errors;
+		}
+
+		return hadError ? response : true;
+	}
+
+	/**
 	 * To create table in BigQuery.
 	 *
 	 * References:
@@ -74,6 +100,32 @@ class BigQuery {
 
 		try {
 			const [ table ] = await this.dataset.createTable( tableName, options );
+		} catch ( e ) {
+			hadError = true;
+			response = e.errors;
+		}
+
+		return hadError ? response : true;
+	}
+
+	/**
+	 * To drop dataset in BigQuery
+	 *
+	 * @param {String} datasetName Dataset name.
+	 *
+	 * @returns {Promise<[Response]|boolean>}
+	 */
+	async dropDataset( datasetName ) {
+
+		if ( _.isEmpty( datasetName ) ) {
+			return false;
+		}
+
+		let response = false;
+		let hadError = false;
+
+		try {
+			await this.dataset.dataset( datasetName ).delete( { force: true } );
 		} catch ( e ) {
 			hadError = true;
 			response = e.errors;

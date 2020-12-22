@@ -1,0 +1,37 @@
+'use strict';
+
+/** @type {import('@adonisjs/lucid/src/Schema')} */
+const Schema = use( 'Schema' );
+const BigQuery = use( 'App/BigQuery' );
+const Config = use( 'Config' );
+
+class BigQueryCreateDataset extends Schema {
+	/**
+	 * Dataset name.
+	 *
+	 * @returns {string} Name of BigQuery dataset.
+	 */
+	get dataset() {
+		return Config.get( 'bigquery.dataset' );
+	}
+
+	/**
+	 * To create BigQuery Dataset.
+	 *
+	 * @return void
+	 */
+	async up() {
+		await BigQuery.createDataset( this.dataset );
+	}
+
+	/**
+	 * To delete BigQuery Dataset.
+	 *
+	 * @return void.
+	 */
+	async down() {
+		// await BigQuery.dropDataset( this.dataset );
+	}
+}
+
+module.exports = BigQueryCreateDataset;
