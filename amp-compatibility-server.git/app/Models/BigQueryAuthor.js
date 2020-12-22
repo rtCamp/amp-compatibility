@@ -19,7 +19,7 @@ class BigQueryAuthor extends BigQueryBase {
 	 * @returns {string} primary key name.
 	 */
 	static get primaryKey() {
-		return 'user_nicename';
+		return 'author_profile';
 	}
 
 	/**
@@ -29,7 +29,7 @@ class BigQueryAuthor extends BigQueryBase {
 	 */
 	static get fields() {
 		return {
-			profile: {
+			author_profile: {
 				type: 'string',
 				required: true,
 			},

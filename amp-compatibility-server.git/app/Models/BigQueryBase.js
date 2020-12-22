@@ -26,6 +26,10 @@ class BigQueryBase {
 		return '';
 	}
 
+	static getPrimaryValue( data ) {
+
+	}
+
 	/**
 	 * Maximum number of row that can save in single BigQuery job.
 	 * In other words, Maximum number of query ( insert/update ) can execute in single job.
@@ -107,7 +111,9 @@ class BigQueryBase {
 			 *
 			 * @Todo: Check the response from callback and handle it.
 			 */
-			await this.getBigQueryTable.insert( insertItems, { raw: true } );
+			const response = await this.getBigQueryTable.insert( insertItems, { raw: true } );
+
+			return response;
 
 		};
 
@@ -120,12 +126,16 @@ class BigQueryBase {
 		// Chunk it in small sizes.
 		let itemsChunks = _.chunk( items, this.maxRowToSave );
 
+		const results = [];
+
 		// save each chunk.
 		for ( let index in itemsChunks ) {
 			const items = itemsChunks[ index ];
-			await _saveChunk( items );
+			const result = await _saveChunk( items );
+			results.push( result );
 		}
 
+		return results;
 	}
 
 	/**
