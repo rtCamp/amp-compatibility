@@ -24,6 +24,7 @@ const providers = [
 	path.join( __dirname, '..', 'providers', 'BigQueryProvider' ),
 	path.join( __dirname, '..', 'providers', 'Sanitizer/Provider' ),
 	path.join( __dirname, '..', 'providers', 'Validator/Provider' ),
+	path.join( __dirname, '..', 'providers', 'Queue/Provider' ),
 ];
 
 /*
@@ -63,6 +64,7 @@ const aliases = {};
 */
 const commands = [
 	'App/Commands/WporgScrapper',
+	'App/Commands/Worker',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };

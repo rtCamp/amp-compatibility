@@ -22,4 +22,6 @@ Route.on( '/' ).render( 'welcome' );
 Route.group( () => {
 	Route.get( 'amp-wp', 'RestApiV1Controller.index' );
 	Route.post( 'amp-wp', 'RestApiV1Controller.store' );
+	Route.get( 'queue', 'BeeQueueController.index' );
+	Route.post( 'queue', 'BeeQueueController.store' );
 } ).prefix( 'api/v1' );
