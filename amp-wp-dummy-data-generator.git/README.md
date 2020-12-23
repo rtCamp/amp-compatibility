@@ -20,6 +20,16 @@ wp amp-test-themes | bash
 wp amp-test-themes --theme=99fy | bash
 ```
 
+#### Test plugins
+```bash
+wp amp-test-plugins | bash
+```
+
+#### Test one plugin
+```bash
+wp amp-test-plugins --plugin=woocommerce | bash
+```
+
 #### To generate data.
 ```bash
 wp amp-wp-dummy-data-generator generate
