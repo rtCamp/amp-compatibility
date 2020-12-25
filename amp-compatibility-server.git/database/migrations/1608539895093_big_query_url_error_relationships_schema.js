@@ -11,7 +11,7 @@ class BigQueryUrlErrorRelationshipSchema extends Schema {
 	 * @returns {string} Table name.
 	 */
 	get table() {
-		return 'url_error_relationship';
+		return 'url_error_relationships';
 	}
 
 	/**
