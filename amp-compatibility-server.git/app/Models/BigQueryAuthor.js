@@ -1,6 +1,7 @@
 'use strict';
 
 const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const AuthorValidator = use( 'App/Validators/Author' );
 
 class BigQueryAuthor extends BigQueryBase {
 
@@ -16,43 +17,19 @@ class BigQueryAuthor extends BigQueryBase {
 	/**
 	 * Primary key of the table.
 	 *
-	 * @returns {string} primary key name.
+	 * @returns {string} Primary field name.
 	 */
 	static get primaryKey() {
 		return 'author_profile';
 	}
 
 	/**
-	 * Table schema for BigQuery.
+	 * Validator class name, To verify the data.
 	 *
-	 * @returns {Object} Table fields.
+	 * @returns {boolean|Object} Validator class.
 	 */
-	static get fields() {
-		return {
-			author_profile: {
-				type: 'string',
-				required: true,
-			},
-			user_nicename: {
-				type: 'string',
-				required: true,
-			},
-			avatar: {
-				type: 'string',
-				required: false,
-				default: '',
-			},
-			display_name: {
-				type: 'string',
-				required: false,
-				default: '',
-			},
-			status: {
-				type: 'string',
-				required: false,
-				default: '',
-			},
-		};
+	static get validator() {
+		return AuthorValidator;
 	}
 
 }

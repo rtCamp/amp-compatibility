@@ -43,9 +43,9 @@ class BigQuery {
 		const [ job ] = await this.client.createQueryJob( options );
 
 		// Wait for the query to finish
-		const [ rows ] = await job.getQueryResults();
+		const [ response ] = await job.getQueryResults();
 
-		return rows;
+		return response;
 	}
 
 	/**

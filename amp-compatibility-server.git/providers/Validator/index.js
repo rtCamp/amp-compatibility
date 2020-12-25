@@ -74,16 +74,18 @@ class ValidatorExtended {
 		}
 
 		/**
-		 * Regex to validate version string.
-		 * Reference: https://regex101.com/r/aqBIwS/1/
-		 *
-		 * @type {RegExp} Regular expression.
+		 * If version is numeric value.
+		 * Then is valid version.
 		 */
-		const versionRegex = /^[0-9]{1,5}\.[0-9]{1,5}(\..+)?$/gim;
-
-		if ( false === versionRegex.test( value.trim() ) ) {
-			throw message;
+		if ( ! isNaN( value ) ) {
+			return;
 		}
+
+		if ( 'string' === typeof value && 64 > value.length ) {
+			return;
+		}
+
+		throw message;
 
 	}
 
@@ -156,17 +158,23 @@ class ValidatorExtended {
 			return;
 		}
 
+		if ( '#' === value ) {
+			return;
+		}
+
 		/**
 		 * Regex to validate URL.
-		 * Reference: https://regex101.com/r/fZnSxB/2
+		 * Reference: https://regex101.com/r/fZnSxB/5
 		 *
 		 * @type {RegExp} Regular expression
 		 */
-		const urlRegex = /^(http(s)?:\/\/|\/[\/]?)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)$/mig;
+		const urlRegex = /^(http(s)?:\/\/|\/[\/]?)?(?:((www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10})|(?:[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}))\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=;!$^*()×]*)$/mig;
 
-		if ( false === urlRegex.test( value ) ) {
-			throw message;
+		if ( false !== urlRegex.test( value ) ) {
+			return;
 		}
+
+		throw message;
 
 	}
 

@@ -19,7 +19,7 @@ class Extension extends Base {
 			type: 'in:plugin,theme|required',
 			name: 'string|required',
 			slug: 'string|required',
-			latest_version: 'version',
+			latest_version: 'version|required',
 			requires_wp: 'version',
 			tested_wp: 'version',
 			requires_php: 'version',
@@ -30,10 +30,10 @@ class Extension extends Base {
 			downloaded: 'integer',
 			last_updated: 'date',
 			date_added: 'date',
-			homepage_url: 'url',
+			homepage_url: 'string', // Not all plugin/theme provides valid url but we still want to store that.
 			short_description: 'string',
 			download_url: 'url',
-			author_url: 'url',
+			author_url: 'string', // Not all plugin/theme provides valid url but we still want to store that.
 			extension_url: 'url',
 			preview_url: 'url',
 			screenshot_url: 'url',
