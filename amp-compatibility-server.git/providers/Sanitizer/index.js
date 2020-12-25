@@ -30,7 +30,11 @@ class Sanitizer {
 			value = '';
 		}
 
-		return value.toLowerCase().trim();
+		return value
+			.toString()
+			.trim()
+			.toLowerCase()
+			.replace( ' ', '-' );
 	}
 
 	/**

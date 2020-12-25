@@ -56,6 +56,7 @@ class Base {
 	 * @returns {Promise<*>}
 	 */
 	static async validate( data ) {
+		// @Todo Exception handling.
 		return await validate( data, this.rules, this.messages, this.formatter );
 	}
 
@@ -67,6 +68,7 @@ class Base {
 	 * @returns {Promise<*>}
 	 */
 	static async validateAll( data ) {
+		// @Todo Exception handling.
 		return await validateAll( data, this.rules, this.messages, this.formatter );
 	}
 
@@ -78,6 +80,7 @@ class Base {
 	 * @return {Object} Sanitized data.
 	 */
 	static sanitize( data ) {
+		// @Todo Exception handling.
 		return sanitize( data, this.sanitizationRules );
 	}
 }

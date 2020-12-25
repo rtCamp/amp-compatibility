@@ -103,18 +103,38 @@ class Cache {
 	 */
 	static getKey( key, group = 'default' ) {
 
-		if ( _.isEmpty( key ) || !_.isString( key ) ) {
+		if ( _.isEmpty( key ) || ! _.isString( key ) ) {
 			return '';
 		}
 
-		if ( _.isEmpty( group ) || !_.isString( group ) ) {
+		if ( _.isEmpty( group ) || ! _.isString( group ) ) {
 			group = 'default';
 		}
 
+		group = this.slugify( group );
+		key = this.slugify( key );
 		let redisKey = `${ group }:${ key }`;
-		redisKey = redisKey.replace( /\s+/g, '' );
 
 		return redisKey;
+	}
+
+	/**
+	 * To slugify the string.
+	 *
+	 * @param {String} text String to make slugify.
+	 *
+	 * @returns {string} Slugify string.
+	 */
+	static slugify( text ) {
+		return text
+			.toString()
+			.trim()
+			.toLowerCase()
+			.replace( /\s+/g, '-' )
+			.replace( /[^\w\-]+/g, '-' )
+			.replace( /\-\-+/g, '-' )
+			.replace( /^-+/, '-' )
+			.replace( /-+$/, '-' );
 	}
 }
 
