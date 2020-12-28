@@ -63,7 +63,7 @@ const aliases = {};
 |
 */
 const commands = [
-	'App/Commands/WporgScrapper',
+	'App/Commands/WporgScraper',
 	'App/Commands/Worker',
 	'App/Commands/Cache',
 ];

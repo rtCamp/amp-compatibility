@@ -15,7 +15,7 @@ const Utility = use( 'App/Helpers/Utility' );
 const Stopwatch = use( 'App/Helpers/Stopwatch' );
 const _ = require( 'underscore' );
 
-class WporgScrapper extends Command {
+class WporgScraper extends Command {
 
 	/**
 	 * Command Name is used to run the command
@@ -23,7 +23,7 @@ class WporgScrapper extends Command {
 	static get signature() {
 
 		// Note: Keep the space as it is.
-		return `wporg:scrapper
+		return `wporg:scraper
 			 { --only-themes : Fetch all the themes. }
 			 { --only-plugins : Fetch all the plugins. }
 			 { --use-stream : Use stream method to if possible. Fast but with certain limitation. Reference - //cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations }
@@ -620,4 +620,4 @@ class WporgScrapper extends Command {
 
 }
 
-module.exports = WporgScrapper;
+module.exports = WporgScraper;
