@@ -4,6 +4,8 @@
 const Schema = use( 'Schema' );
 const BigQuery = use( 'App/BigQuery' );
 const Config = use( 'Config' );
+const Redis = use( 'Redis' );
+const Env = use( 'Env' );
 
 class BigQueryCreateDataset extends Schema {
 	/**
@@ -25,12 +27,15 @@ class BigQueryCreateDataset extends Schema {
 	}
 
 	/**
-	 * To delete BigQuery Dataset.
+	 * To delete BigQuery Dataset and remove local object cache.
 	 *
 	 * @return void.
 	 */
 	async down() {
-		// await BigQuery.dropDataset( this.dataset );
+		await BigQuery.dropDataset( this.dataset );
+		// Clear Redis cache.
+		await Redis.flushdb();
+		await Redis.quit( Env.get( 'REDIS_CONNECTION', 'local' ) );
 	}
 }
 
