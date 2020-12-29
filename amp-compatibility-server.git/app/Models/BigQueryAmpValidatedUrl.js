@@ -1,9 +1,9 @@
 'use strict';
 
 const BigQueryBase = use( 'App/Models/BigQueryBase' );
-const SiteValidator = use( 'App/Validators/Site' );
+const AmpValidatedUrlValidator = use( 'App/Validators/AmpValidatedUrl' );
 
-class BigQuerySite extends BigQueryBase {
+class BigQueryAmpValidatedUrl extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -11,7 +11,7 @@ class BigQuerySite extends BigQueryBase {
 	 * @returns {string} Table name.
 	 */
 	static get table() {
-		return 'sites';
+		return 'amp_validated_urls';
 	}
 
 	/**
@@ -20,7 +20,7 @@ class BigQuerySite extends BigQueryBase {
 	 * @returns {string} primary key name.
 	 */
 	static get primaryKey() {
-		return 'site_url';
+		return 'page_url';
 	}
 
 	/**
@@ -29,8 +29,9 @@ class BigQuerySite extends BigQueryBase {
 	 * @returns {boolean|Object} Validator class.
 	 */
 	static get validator() {
-		return SiteValidator;
+		return AmpValidatedUrlValidator;
 	}
+
 }
 
-module.exports = BigQuerySite;
+module.exports = BigQueryAmpValidatedUrl;

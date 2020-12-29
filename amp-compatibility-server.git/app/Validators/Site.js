@@ -3,7 +3,7 @@
 /** @type {typeof import('./Base')} */
 const Base = use( 'App/Validators/Base' );
 
-class Sites extends Base {
+class Site extends Base {
 
 	/**
 	 * Validation rules.
@@ -74,4 +74,4 @@ class Sites extends Base {
 	}
 }
 
-module.exports = Sites;
+module.exports = Site;
