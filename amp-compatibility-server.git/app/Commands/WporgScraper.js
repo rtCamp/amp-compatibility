@@ -310,10 +310,10 @@ class WporgScraper extends Command {
 		}
 
 		const response = {
-			extensions: await ExtensionModel.saveMany( extensions ),
-			authors: await AuthorModel.saveMany( authors ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions ),
+			extensions: await ExtensionModel.saveMany( extensions, this.saveOptions ),
+			authors: await AuthorModel.saveMany( authors, this.saveOptions ),
+			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, this.saveOptions ),
+			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, this.saveOptions ),
 		};
 
 		return response;
@@ -379,10 +379,10 @@ class WporgScraper extends Command {
 		}
 
 		const response = {
-			extensions: await ExtensionModel.saveMany( extensions ),
-			authors: await AuthorModel.saveMany( authors ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions ),
+			extensions: await ExtensionModel.saveMany( extensions, this.saveOptions ),
+			authors: await AuthorModel.saveMany( authors, this.saveOptions ),
+			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, this.saveOptions ),
+			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, this.saveOptions ),
 		};
 
 		return response;
