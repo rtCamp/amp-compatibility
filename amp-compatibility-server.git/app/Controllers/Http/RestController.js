@@ -1,10 +1,9 @@
 'use strict';
 
 const _ = require( 'underscore' );
-const Queue = use( 'Bee/Queue' );
-const Config = use( 'Config' );
+const RequestQueueController = use( 'App/Controllers/RequestQueueController' );
 
-class BeeQueueController {
+class RestController {
 
 	/**
 	 * API endpoint callback.
@@ -14,7 +13,6 @@ class BeeQueueController {
 	 * @return object Response data.
 	 */
 	index() {
-
 		return { status: 'ok' };
 	}
 
@@ -25,20 +23,18 @@ class BeeQueueController {
 	 *
 	 * @return object Response data.
 	 */
-	store( { request } ) {
+	async store( { request } ) {
 
-		const requestData = request.all();
+		const requestData = request.post();
+
 		if ( _.isEmpty( requestData ) ) {
 			return { status: 'fail' };
 		}
 
-		Queue
-			.get( Config.get( 'queue.name' ) )
-			.createJob( requestData )
-			.save();
+		await RequestQueueController.createJob( requestData );
 
 		return { status: 'ok' };
 	}
 }
 
-module.exports = BeeQueueController;
+module.exports = RestController;

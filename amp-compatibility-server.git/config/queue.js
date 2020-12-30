@@ -4,10 +4,25 @@
 const Env = use( 'Env' );
 
 module.exports = {
-	amp_comp: {
+
+	name: Env.get( 'QUEUE_NAME', 'local' ),
+
+	/*
+	|--------------------------------------------------------------------------
+	| connection
+	|--------------------------------------------------------------------------
+	|
+	| Redis connection to be used by default.
+	|
+	*/
+	connection: Env.get( 'QUEUE_CONNECTION', 'local' ),
+
+	local: {
+		prefix: Env.get( 'REDIS_KEYPREFIX', 'local' ),
 		redis: {
 			host: Env.get( 'QUEUE_REDIS_HOST', '127.0.0.1' ),
 		},
+		removeOnSuccess: true,
 	},
-	name: Env.get( 'QUEUE_NAME', 'amp_comp' ),
+
 };

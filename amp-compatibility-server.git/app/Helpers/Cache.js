@@ -3,6 +3,7 @@
 const _ = require( 'underscore' );
 const Redis = use( 'Redis' );
 const Utility = use( 'App/Helpers/Utility' );
+const Env = use( 'Env' );
 
 class Cache {
 
@@ -116,6 +117,24 @@ class Cache {
 		let redisKey = `${ group }:${ key }`;
 
 		return redisKey;
+	}
+
+	/**
+	 * To flush all cache.
+	 *
+	 * @returns {Promise<*>}
+	 */
+	static async flushdb(){
+		return await Redis.flushdb();
+	}
+
+	/**
+	 * To quit cache connection.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	static async close() {
+		return await Redis.quit( Env.get( 'REDIS_CONNECTION', 'local' ) );
 	}
 
 	/**

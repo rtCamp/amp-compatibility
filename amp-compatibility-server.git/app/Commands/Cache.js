@@ -3,14 +3,20 @@
 const { Command } = require( '@adonisjs/ace' );
 
 // Models
+const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
 const AuthorModel = use( 'App/Models/BigQueryAuthor' );
 const AuthorRelationshipModel = use( 'App/Models/BigQueryAuthorRelationship' );
+const ErrorModel = use( 'App/Models/BigQueryError' );
+const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
 const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 const SiteModel = use( 'App/Models/BigQuerySite' );
+const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
+const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
 // Utilities
 const { exit } = require( 'process' );
+const CacheHelper = use( 'App/Helpers/Cache' );
 
 class Cache extends Command {
 
@@ -36,11 +42,16 @@ class Cache extends Command {
 	async handle( args, options ) {
 
 		const models = [
-			SiteModel,
+			AmpValidatedUrlModel,
 			AuthorModel,
 			AuthorRelationshipModel,
+			ErrorModel,
+			ErrorSourceModel,
 			ExtensionModel,
 			ExtensionVersionModel,
+			SiteModel,
+			SiteToExtensionModel,
+			UrlErrorRelationshipModel,
 		];
 
 		for ( let index in models ) {

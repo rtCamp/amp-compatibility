@@ -11,9 +11,7 @@ class QueueProvider extends ServiceProvider {
 	register() {
 		this.app.singleton( 'Bee/Queue', () => {
 			const Config = this.app.use( 'Adonis/Src/Config' );
-			return new (
-				require( '.' )
-			)( Config );
+			return new ( require( '.' ) )( Config.get( 'queue' ) );
 		} );
 	}
 }
