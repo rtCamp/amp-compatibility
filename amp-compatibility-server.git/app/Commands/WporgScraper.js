@@ -26,6 +26,7 @@ class WporgScraper extends Command {
 		return `wporg:scraper
 			 { --only-themes : Fetch all the themes. }
 			 { --only-plugins : Fetch all the plugins. }
+			 { --browse=@value : Predefined query ordering. Possible values are popular,featured,updated and new }
 			 { --use-stream : Use stream method to if possible. Fast but with certain limitation. Reference - //cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations }
 			 { --per-page=@value : Number of theme/plugin need to fetch per API call ( Min= 2, Max= 100 ). }
 			 { --theme-start-from=@value : From which page we need to start importing themes. Default 1 }
@@ -94,7 +95,7 @@ class WporgScraper extends Command {
 	get filters() {
 		return {
 			per_page: this.perPage,
-			browse: 'popular',
+			browse: this.options.browse || 'popular',
 			fields: {
 				description: true,
 				rating: true,
@@ -121,18 +122,20 @@ class WporgScraper extends Command {
 	async handle( args, flags ) {
 
 		const perPage = parseInt( flags.perPage ) || 100;
+		const allowedBrowse = [ 'popular', 'featured', 'updated', 'new' ];
 
 		this.options = {
 			perPage: ( perPage >= 2 && perPage <= 100 ) ? perPage : 100,
 			themeStartFrom: parseInt( flags.themeStartFrom ) || 1,
 			pluginStartFrom: parseInt( flags.pluginStartFrom ) || 1,
 			useStream: ( true === flags.useStream ),
+			browse: ( ! _.isEmpty( flags.browse ) && allowedBrowse.includes( flags.browse ) ) ? flags.browse : 'popular',
 		};
 
 		try {
 
 			this.warn( 'Before start importing data make sure redis cache is up to date.' );
-			this.warn( 'Use command to update redis cache. "node ace cache"' + "\n");
+			this.warn( 'Use command to update redis cache. "node ace cache"' + "\n" );
 
 			if ( this.options.useStream ) {
 				this.warn( 'We are using "Stream" method to insert records.' );
