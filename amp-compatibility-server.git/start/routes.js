@@ -16,12 +16,9 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use( 'Route' );
 
-
 Route.on( '/' ).render( 'welcome' );
 
 Route.group( () => {
-	Route.get( 'amp-wp', 'RestApiV1Controller.index' );
-	Route.post( 'amp-wp', 'RestApiV1Controller.store' );
-	Route.get( 'queue', 'BeeQueueController.index' );
-	Route.post( 'queue', 'BeeQueueController.store' );
+	Route.get( 'amp-wp', 'RestController.index' );
+	Route.post( 'amp-wp', 'RestController.store' );
 } ).prefix( 'api/v1' );

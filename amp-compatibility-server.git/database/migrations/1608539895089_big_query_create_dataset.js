@@ -4,8 +4,7 @@
 const Schema = use( 'Schema' );
 const BigQuery = use( 'App/BigQuery' );
 const Config = use( 'Config' );
-const Redis = use( 'Redis' );
-const Env = use( 'Env' );
+const Cache = use( 'App/Helpers/Cache' );
 
 class BigQueryCreateDataset extends Schema {
 	/**
@@ -34,8 +33,8 @@ class BigQueryCreateDataset extends Schema {
 	async down() {
 		await BigQuery.dropDataset( this.dataset );
 		// Clear Redis cache.
-		await Redis.flushdb();
-		await Redis.quit( Env.get( 'REDIS_CONNECTION', 'local' ) );
+		await Cache.flushdb();
+		await Cache.close();
 	}
 }
 
