@@ -19,6 +19,17 @@ const Route = use( 'Route' );
 Route.on( '/' ).render( 'welcome' );
 
 Route.group( () => {
+
+	/**
+	 * Rest APIs for AMP WP Plugins.
+	 */
 	Route.get( 'amp-wp', 'RestController.index' );
 	Route.post( 'amp-wp', 'RestController.store' );
+
+	/**
+	 * Rest APIs for synthetic data generator server.
+	 */
+	Route.get( 'synthetic-data', 'SyntheticDataController.index' ).middleware( 'auth:basic' );
+	Route.post( 'synthetic-data', 'SyntheticDataController.store' ).middleware( 'auth:basic' );
+
 } ).prefix( 'api/v1' );

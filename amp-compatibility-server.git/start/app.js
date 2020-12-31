@@ -66,6 +66,7 @@ const commands = [
 	'App/Commands/WporgScraper',
 	'App/Commands/Worker',
 	'App/Commands/Cache',
+	'App/Commands/UserCreate',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };

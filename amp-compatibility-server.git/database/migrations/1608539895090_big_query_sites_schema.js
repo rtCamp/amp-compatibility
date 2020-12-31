@@ -149,9 +149,9 @@ class BigQuerySitesSchema extends Schema {
 				},
 				{
 					name: 'amp_reader_theme',
-					type: 'BOOL',
+					type: 'STRING',
 					mode: 'REQUIRED',
-					description: 'true|false',
+					description: 'e.g. legacy',
 				},
 				{
 					name: 'is_synthetic_data',

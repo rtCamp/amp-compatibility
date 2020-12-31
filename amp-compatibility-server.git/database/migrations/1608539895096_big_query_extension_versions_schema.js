@@ -64,6 +64,12 @@ class BigQueryExtensionVersionsSchema extends Schema {
 					mode: 'NULLABLE',
 					description: 'Auto calculated field.',
 				},
+				{
+					name: 'has_synthetic_data',
+					type: 'BOOL',
+					mode: 'NULLABLE',
+					description: 'Determine if we have synthetic data or not. Default false',
+				},
 
 			],
 		};
