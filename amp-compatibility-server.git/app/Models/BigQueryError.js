@@ -33,6 +33,7 @@ class BigQueryError extends BigQueryBase {
 	static getPrimaryValue( data ) {
 
 		const hashData = _.clone( data );
+		delete hashData.slug;
 		delete hashData.error_slug;
 
 		return Utility.makeHash( hashData );

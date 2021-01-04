@@ -32,6 +32,33 @@ class BigQueryAmpValidatedUrl extends BigQueryBase {
 		return AmpValidatedUrlValidator;
 	}
 
+	/**
+	 * Default values for each field.
+	 *
+	 * @returns {{}} default values.
+	 */
+	static get defaults() {
+		return {
+			css_size_before: 0,
+			css_size_after: 0,
+			css_size_excluded: 0,
+			css_budget_percentage: 0,
+		};
+	}
+
+	/**
+	 * The attribute name for updated at timestamp.
+	 *
+	 * @attribute updatedAtColumn
+	 *
+	 * @return {String}
+	 *
+	 * @static
+	 */
+	static get updatedAtColumn() {
+		return 'updated_at'
+	}
+
 }
 
 module.exports = BigQueryAmpValidatedUrl;

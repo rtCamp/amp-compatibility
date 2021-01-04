@@ -1,6 +1,7 @@
 'use strict';
 
 const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 const ExtensionVersionValidator = use( 'App/Validators/ExtensionVersion' );
 const _ = require( 'underscore' );
 
@@ -56,6 +57,31 @@ class BigQueryExtensionVersion extends BigQueryBase {
 	 */
 	static get validator() {
 		return ExtensionVersionValidator;
+	}
+
+	/**
+	 * To get extension version detail from extension detail.
+	 *
+	 * @param {Object} extensionDetail Extension details.
+	 *
+	 * @returns {boolean|Object} Extension version detail.
+	 */
+	static getItemFromExtension( extensionDetail ) {
+
+		if ( _.isEmpty( extensionDetail ) || ! _.has( extensionDetail, 'extension_slug' ) ) {
+			return false;
+		}
+
+		const data = {
+			type: extensionDetail.type,
+			slug: extensionDetail.slug,
+			version: extensionDetail.latest_version.toString(),
+		};
+
+		data.extension_slug = ExtensionModel.getPrimaryValue( data );
+		data.extension_version_slug = this.getPrimaryValue( data );
+
+		return data;
 	}
 
 }

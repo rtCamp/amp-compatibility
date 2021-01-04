@@ -29,6 +29,12 @@ class BigQueryUrlErrorRelationshipSchema extends Schema {
 					description: 'Encrypted hash of `${page_url}-${error_slug}-${error_source_slug}`',
 				},
 				{
+					name: 'site_url',
+					type: 'STRING',
+					mode: 'REQUIRED',
+					description: 'Site url without protocol without trailing slash in lowercase with query string. e.g. www.example.com',
+				},
+				{
 					name: 'page_url',
 					type: 'STRING',
 					mode: 'REQUIRED',

@@ -76,6 +76,19 @@ class BigQueryBase {
 	}
 
 	/**
+	 * The attribute name for updated at timestamp.
+	 *
+	 * @attribute updatedAtColumn
+	 *
+	 * @return {String}
+	 *
+	 * @static
+	 */
+	static get updatedAtColumn() {
+		return '';
+	}
+
+	/**
 	 * Function to update cache from
 	 *
 	 * @returns {Promise<number>}
@@ -121,14 +134,20 @@ class BigQueryBase {
 	static async setCache( items ) {
 
 		const saveCache = async ( item ) => {
-			const primaryValue = _.isString( item[ this.primaryKey ] ) ? item[ this.primaryKey ] : false;
+			const clonedItem = _.clone( item );
+			const primaryValue = _.isString( clonedItem[ this.primaryKey ] ) ? clonedItem[ this.primaryKey ] : false;
 
 			// Bail out if row don't have primary value.
 			if ( false === primaryValue ) {
 				return;
 			}
 
-			const hash = Utility.makeHash( item );
+			// Remove updated at field.
+			if ( ! _.isEmpty( this.updatedAtColumn ) ) {
+				delete ( clonedItem[ this.updatedAtColumn ] );
+			}
+
+			const hash = Utility.makeHash( clonedItem );
 
 			await Cache.set( primaryValue, hash, this.table );
 		};
@@ -163,7 +182,14 @@ class BigQueryBase {
 			return -1;
 		}
 
-		const hash = Utility.makeHash( item );
+		const clonedItem = _.clone( item );
+
+		// Remove updated at field.
+		if ( ! _.isEmpty( this.updatedAtColumn ) ) {
+			delete ( clonedItem[ this.updatedAtColumn ] );
+		}
+
+		const hash = Utility.makeHash( clonedItem );
 		const storedHash = await Cache.get( primaryValue, this.table );
 
 		/**
@@ -211,6 +237,7 @@ class BigQueryBase {
 
 		options = _.defaults( options, {
 			useStream: false,
+			allowUpdate: true,
 		} );
 
 		for ( let index in items ) {
@@ -262,6 +289,7 @@ class BigQueryBase {
 			},
 			updated: {
 				count: itemsToUpdate.length || 0,
+				allowUpdate: options.allowUpdate,
 				itemIds: _.pluck( itemsToUpdate, this.primaryKey ),
 				response: {},
 			},
@@ -310,7 +338,7 @@ class BigQueryBase {
 		/**
 		 * Update operations.
 		 */
-		if ( ! _.isEmpty( itemsToUpdate ) ) {
+		if ( ! _.isEmpty( itemsToUpdate ) && true === options.allowUpdate ) {
 
 			// Generate update queries.
 			const updateQueries = [];
@@ -383,7 +411,12 @@ class BigQueryBase {
 				}
 
 			} catch ( exception ) {
-				response[ index ] = exception.response;
+				console.error( exception );
+				response[ index ] = {
+					code: exception.code,
+					errors: exception.errors,
+					response: exception.response,
+				};
 			}
 
 		}
@@ -468,6 +501,48 @@ class BigQueryBase {
 	}
 
 	/**
+	 * To Delete records from table base on where clause.
+	 * Note: Multiple field will join with "AND".
+	 *
+	 * @param {Object} whereClaus Where claus values.
+	 *
+	 * @returns {Promise<boolean|*>}
+	 */
+	static async deleteRows( whereClaus ) {
+
+		if ( _.isEmpty( whereClaus ) || ! _.isObject( whereClaus ) ) {
+			return false;
+		}
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
+		const whereFields = [];
+		const preparedField = this._prepareItemForDB( whereClaus );
+
+		for ( let key in preparedField ) {
+			whereFields.push( `${ key }=${ preparedField[ key ] }` );
+		}
+
+		const selectQuery = `SELECT ${ '`' + this.primaryKey + '`' } FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
+
+		const selectResponse = await BigQuery.query( selectQuery );
+
+		const query = `DELETE FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
+
+		const deleteResponse = await BigQuery.query( query );
+
+		if ( ! _.isEmpty( selectResponse ) && _.isArray( selectResponse ) ) {
+
+			const cacheKeys = _.pluck( selectResponse, this.primaryKey );
+
+			for ( const index in cacheKeys ) {
+				await Cache.delete( cacheKeys[ index ], this.table );
+			}
+		}
+
+		return deleteResponse;
+	}
+
+	/**
 	 * To generate insert query for provided item.
 	 * Note: Data must have primary values.
 	 *
@@ -543,7 +618,7 @@ class BigQueryBase {
 		for ( let key in item ) {
 			let preparedValue = this._prepareValueForDB( item[ key ] );
 			let preparedKey = '`' + key + '`';
-			prepareItem[ preparedKey ] = preparedValue;
+			prepareItem[ preparedKey ] = preparedValue; //.replace( /\n/g, ' ' ).replace( /\t/g, ' ' );
 		}
 
 		return prepareItem;
@@ -616,6 +691,24 @@ class BigQueryBase {
 		}
 
 		/**
+		 * Set updated at field
+		 */
+		if ( ! _.isEmpty( this.updatedAtColumn ) &&
+		     ( ! _.has( item, this.updatedAtColumn ) || _.isEmpty( item[ this.updatedAtColumn ] ) )
+		) {
+			item[ this.updatedAtColumn ] = Utility.getCurrentDateTime();
+		}
+
+		/**
+		 * Set default field if record is not exists already.
+		 */
+		const isNew = ( 1 === ( await this.verify( item ) ) );
+
+		if ( isNew ) {
+			item = _.defaults( item, this.defaults );
+		}
+
+		/**
 		 * Validate the data.
 		 */
 		if ( false !== this.validator ) {
@@ -623,7 +716,7 @@ class BigQueryBase {
 			const validation = await this.validator.validateAll( item );
 
 			if ( validation.fails() ) {
-				console.table( item );
+				console.log( item );
 				console.table( validation.messages() );
 				return false;
 			}

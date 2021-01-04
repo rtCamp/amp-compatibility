@@ -12,6 +12,8 @@ class ValidatorExtended {
 		Validator.extend( 'version', this.version );
 		Validator.extend( 'float', this.float );
 		Validator.extend( 'url', this.url );
+		Validator.extend( 'object', this.object );
+		Validator.extend( 'array', this.array );
 	}
 
 	/**
@@ -176,6 +178,70 @@ class ValidatorExtended {
 
 		throw message;
 
+	}
+
+	/**
+	 * To validate field for "array" type.
+	 *
+	 * @param {Object} data Object of data that need to validate.
+	 * @param {String} field Field from data what need to validate.
+	 * @param {String} message Message when validation fails.
+	 * @param {Array} args Additional argument.
+	 * @param {Function} get Function to get value of field from data.
+	 *
+	 * @throws Throws error message on validation fail.
+	 *
+	 * @returns {Promise<void>} Void
+	 */
+	async array( data, field, message, args, get ) {
+
+		const value = get( data, field );
+
+		if ( ! value ) {
+			/**
+			 * skip validation if value is not defined. `required` rule
+			 * should take care of it.
+			 */
+			return;
+		}
+
+		if ( _.isArray( value ) ) {
+			return;
+		}
+
+		throw message;
+	}
+
+	/**
+	 * To validate field for "object" type.
+	 *
+	 * @param {Object} data Object of data that need to validate.
+	 * @param {String} field Field from data what need to validate.
+	 * @param {String} message Message when validation fails.
+	 * @param {Array} args Additional argument.
+	 * @param {Function} get Function to get value of field from data.
+	 *
+	 * @throws Throws error message on validation fail.
+	 *
+	 * @returns {Promise<void>} Void
+	 */
+	async object( data, field, message, args, get ) {
+
+		const value = get( data, field );
+
+		if ( ! value ) {
+			/**
+			 * skip validation if value is not defined. `required` rule
+			 * should take care of it.
+			 */
+			return;
+		}
+
+		if ( _.isObject( value ) ) {
+			return;
+		}
+
+		throw message;
 	}
 
 }

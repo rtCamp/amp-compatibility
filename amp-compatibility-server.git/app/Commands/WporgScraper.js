@@ -296,7 +296,7 @@ class WporgScraper extends Command {
 				extensions.push( extension );
 
 				// Extension versions data.
-				extensionVersions.push( this.getExtensionVersion( extension ) );
+				extensionVersions.push( ExtensionVersionModel.getItemFromExtension( extension ) );
 			}
 
 			if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
@@ -365,7 +365,7 @@ class WporgScraper extends Command {
 				extensions.push( extension );
 
 				// Extension versions data.
-				extensionVersions.push( this.getExtensionVersion( extension ) );
+				extensionVersions.push( ExtensionVersionModel.getItemFromExtension( extension ) );
 			}
 
 			if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
@@ -418,31 +418,6 @@ class WporgScraper extends Command {
 
 		return authorRelationships;
 
-	}
-
-	/**
-	 * To get extension version detail from extension detail.
-	 *
-	 * @param {Object} extensionDetail Extension details.
-	 *
-	 * @returns {boolean|Object} Extension version detail.
-	 */
-	getExtensionVersion( extensionDetail ) {
-
-		if ( _.isEmpty( extensionDetail ) || ! _.has( extensionDetail, 'extension_slug' ) ) {
-			return false;
-		}
-
-		const data = {
-			type: extensionDetail.type,
-			slug: extensionDetail.slug,
-			version: extensionDetail.latest_version.toString(),
-		};
-
-		data.extension_slug = ExtensionModel.getPrimaryValue( data );
-		data.extension_version_slug = ExtensionVersionModel.getPrimaryValue( data );
-
-		return data;
 	}
 
 	/**
