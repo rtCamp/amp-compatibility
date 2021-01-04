@@ -1,5 +1,7 @@
 'use strict';
 
+const Base = use( 'App/Controllers/Queue/Base' );
+
 // Models
 const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
 const AuthorModel = use( 'App/Models/BigQueryAuthor' );
@@ -12,15 +14,13 @@ const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
-const Queue = use( 'Bee/Queue' );
-const Cache = use( 'App/Helpers/Cache' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
 /**
  * Helper to manage request queue.
  */
-class RequestQueueController {
+class RequestController extends Base {
 
 	/**
 	 * Queue name.
@@ -28,56 +28,7 @@ class RequestQueueController {
 	 * @returns {string} Queue name
 	 */
 	static get queueName() {
-		return 'request_queue_1';
-	}
-
-	/**
-	 * Number of concurrent job can run at a time.
-	 *
-	 * @returns {number}
-	 */
-	static get concurrency() {
-		return 10;
-	}
-
-	/**
-	 * To get request queue object.
-	 *
-	 * @returns {*} Object of queue.
-	 */
-	static get queue() {
-		return Queue.get( this.queueName );
-	}
-
-	/**
-	 * To create job
-	 *
-	 * @param {Object} data
-	 *
-	 * @returns {boolean}
-	 */
-	static async createJob( data ) {
-
-		if ( _.isEmpty( data ) || ! _.isObject( data ) ) {
-			return false;
-		}
-
-		return await this.queue.createJob( data ).save();
-	}
-
-	/**
-	 * To start worker process.
-	 *
-	 * @returns {Queue}
-	 */
-	static startWorker() {
-		this.processJob = this.processJob.bind( this );
-
-		this.queue.on( 'job progress', ( jobId, progress ) => {
-			console.log( `Job ${ jobId } reported progress: ${ progress }%` );
-		} );
-
-		return this.queue.process( this.concurrency, this.processJob );
+		return 'request_queue';
 	}
 
 	/**
@@ -509,4 +460,4 @@ class RequestQueueController {
 
 }
 
-module.exports = RequestQueueController;
+module.exports = RequestController;
