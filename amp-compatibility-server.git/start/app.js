@@ -64,9 +64,10 @@ const aliases = {};
 */
 const commands = [
 	'App/Commands/WporgScraper',
-	'App/Commands/Worker',
+	'App/Commands/WorkerStart',
 	'App/Commands/Cache',
 	'App/Commands/UserCreate',
+	'App/Commands/SyntheticDataRefill',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };
