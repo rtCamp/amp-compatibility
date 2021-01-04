@@ -48,7 +48,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	} else {
 
 		$body = wp_remote_retrieve_body( $response );
-		WP_CLI::success( $body );
+		WP_CLI::success( print_r( json_decode( $body, 1 ), 1 ) );
 	}
 } );
 
@@ -115,7 +115,7 @@ class AMP_Prepare_Data {
 			'mysql_version'                => '',
 			'wp_version'                   => get_bloginfo( 'version' ),
 			'wp_language'                  => get_bloginfo( 'language' ),
-			'wp_https_status'              => is_ssl(),
+			'wp_https_status'              => is_ssl() ? true : false,
 			'wp_multisite'                 => $wp_type,
 			'wp_active_theme'              => $active_theme,
 			'object_cache_status'          => ( ! empty( $_wp_using_ext_object_cache ) ) ? true : false,
@@ -224,12 +224,15 @@ class AMP_Prepare_Data {
 			$parent_theme = $theme_object->get_stylesheet();
 		}
 
+		$tags = $theme_object->get( 'Tags' );
+		$tags = ( ! empty( $tags ) && is_array( $tags ) ) ? $tags : [];
+
 		$theme_data = [
 			'name'         => $theme_object->get( 'Name' ),
 			'slug'         => $theme_object->get_stylesheet(),
 			'version'      => $theme_object->get( 'Version' ),
 			'status'       => $theme_object->get( 'Status' ),
-			'tags'         => $theme_object->get( 'Tags' ),
+			'tags'         => $tags,
 			'text_domain'  => $theme_object->get( 'TextDomain' ),
 			'requires_wp'  => $theme_object->get( 'RequiresWP' ),
 			'requires_php' => $theme_object->get( 'RequiresPHP' ),
@@ -259,7 +262,13 @@ class AMP_Prepare_Data {
 			]
 		);
 
-		foreach ( $amp_error_terms as $error_term ) {
+		if ( empty( $amp_error_terms ) || ! is_array( $amp_error_terms ) || is_wp_error( $amp_error_terms ) ) {
+			return [];
+		}
+
+		$amp_error_terms = array_values( $amp_error_terms );
+
+		foreach ( $amp_error_terms as $index => $error_term ) {
 
 			if ( empty( $error_term ) || ! is_a( $error_term, 'WP_Term' ) ) {
 				continue;
@@ -273,14 +282,13 @@ class AMP_Prepare_Data {
 			$error_detail = json_decode( $description, true );
 
 			$error_detail['text'] = ( ! empty( $error_detail['text'] ) ) ? trim( $error_detail['text'] ) : '';
-			$error_detail['text'] = ( ! empty( $error_detail['text'] ) ) ? esc_html( $error_detail['text'] ) : '';
+
+			ksort( $error_detail );
 
 			/**
 			 * Generate new slug after removing site specific data.
 			 */
 			$error_detail['error_slug'] = static::generate_hash( $error_detail );
-
-			ksort( $error_detail );
 
 			/**
 			 * Keep the slug as key to quickly get error detail.
@@ -359,7 +367,7 @@ class AMP_Prepare_Data {
 			/**
 			 * Process individual error in each post
 			 */
-			foreach ( $post_errors_raw as $error ) {
+			foreach ( $post_errors_raw as $error ) { // Errors of each posts.
 
 				$error_slug = $error_data[ $error['term_slug'] ]['error_slug'];
 
@@ -369,7 +377,7 @@ class AMP_Prepare_Data {
 				/**
 				 * Process each error_source of errors
 				 */
-				foreach ( $sources as $index => $source ) {
+				foreach ( $sources as $index => $source ) { // Source of each errors of the post
 
 					if ( ! empty( $source['type'] ) ) {
 
@@ -381,7 +389,7 @@ class AMP_Prepare_Data {
 					}
 
 					if ( ! empty( $sources[ $index ]['text'] ) ) {
-						$sources[ $index ]['text'] = strtolower( trim( $sources[ $index ]['text'] ) );
+						$sources[ $index ]['text'] = trim( $sources[ $index ]['text'] );
 						$sources[ $index ]['text'] = static::remove_domain( $sources[ $index ]['text'] );
 					}
 
@@ -416,10 +424,42 @@ class AMP_Prepare_Data {
 			// Store in all amp validation environments.
 			$all_amp_validated_environments[ $amp_validated_environment_slug ] = $amp_validated_environment;
 
+			// Object information.
+			$amp_queried_object = get_post_meta( $amp_error_post->ID, '_amp_queried_object', true );
+			$object_type        = ( ! empty( $amp_queried_object['type'] ) ) ? $amp_queried_object['type'] : '';
+			$object_subtype     = '';
+
+			if ( empty( $object_type ) ) {
+
+				if ( false !== strpos( $amp_error_post->post_title, '?s=' ) ) {
+					$object_type = 'search';
+				}
+
+			}
+
+			switch ( $object_type ) {
+				case 'post':
+					$object_subtype = get_post( $amp_queried_object['id'] )->post_type;
+					break;
+				case 'term':
+					$object_subtype = get_term( $amp_queried_object['id'] )->taxonomy;
+					break;
+				case 'user':
+					break;
+			}
+
+			// Stylesheet info.
+			$stylesheet_info = static::get_stylesheet_info( $amp_error_post->ID );
+
 			$amp_invalid_urls[] = [
-				'url'                             => $amp_error_post->post_title,
-				'_amp_validated_environment_slug' => $amp_validated_environment['_slug'],
-				'errors'                          => $post_errors,
+				'url'                   => $amp_error_post->post_title,
+				'object_type'           => $object_type,
+				'object_subtype'        => $object_subtype,
+				'css_size_before'       => ( ! empty( $stylesheet_info['css_size_before'] ) ) ? $stylesheet_info['css_size_before'] : '',
+				'css_size_after'        => ( ! empty( $stylesheet_info['css_size_after'] ) ) ? $stylesheet_info['css_size_after'] : '',
+				'css_size_excluded'     => ( ! empty( $stylesheet_info['css_size_excluded'] ) ) ? $stylesheet_info['css_size_excluded'] : '',
+				'css_budget_percentage' => ( ! empty( $stylesheet_info['css_budget_percentage'] ) ) ? $stylesheet_info['css_budget_percentage'] : '',
+				'errors'                => $post_errors,
 			];
 		}
 
@@ -428,6 +468,86 @@ class AMP_Prepare_Data {
 			'amp_validated_environments' => $all_amp_validated_environments,
 			'urls'                       => $amp_invalid_urls,
 		];
+	}
+
+	/**
+	 * Get style sheet info of the post.
+	 *
+	 * Reference: AMP_Validated_URL_Post_Type::print_stylesheets_meta_box()
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return array AMP stylesheet used info.
+	 */
+	protected static function get_stylesheet_info( $post_id ) {
+
+		$stylesheets = get_post_meta( $post_id, AMP_Validated_URL_Post_Type::STYLESHEETS_POST_META_KEY, true );
+
+		if ( empty( $stylesheets ) ) {
+			return [];
+		}
+
+		$stylesheets             = json_decode( $stylesheets, true );
+		$style_custom_cdata_spec = null;
+
+		foreach ( AMP_Allowed_Tags_Generated::get_allowed_tag( 'style' ) as $spec_rule ) {
+			if ( isset( $spec_rule[ AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) && AMP_Style_Sanitizer::STYLE_AMP_CUSTOM_SPEC_NAME === $spec_rule[ AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) {
+				$style_custom_cdata_spec = $spec_rule[ AMP_Rule_Spec::CDATA ];
+			}
+		}
+
+		$included_final_size    = 0;
+		$included_original_size = 0;
+		$excluded_final_size    = 0;
+		$excluded_original_size = 0;
+		$excluded_stylesheets   = 0;
+		$max_final_size         = 0;
+
+		$included_status  = 1;
+		$excessive_status = 2;
+		$excluded_status  = 3;
+
+		// Determine which stylesheets are included based on their priorities.
+		$pending_stylesheet_indices = array_keys( $stylesheets );
+		usort(
+			$pending_stylesheet_indices,
+			static function ( $a, $b ) use ( $stylesheets ) {
+
+				return $stylesheets[ $a ]['priority'] - $stylesheets[ $b ]['priority'];
+			}
+		);
+		foreach ( $pending_stylesheet_indices as $i ) {
+			// @todo Add information about amp-key frames as well.
+			if ( ! isset( $stylesheets[ $i ]['group'] ) || 'amp-custom' !== $stylesheets[ $i ]['group'] || ! empty( $stylesheets[ $i ]['duplicate'] ) ) {
+				continue;
+			}
+			$max_final_size = max( $max_final_size, $stylesheets[ $i ]['final_size'] );
+			if ( $stylesheets[ $i ]['included'] ) {
+				$included_final_size    += $stylesheets[ $i ]['final_size'];
+				$included_original_size += $stylesheets[ $i ]['original_size'];
+
+				if ( $included_final_size >= $style_custom_cdata_spec['max_bytes'] ) {
+					$stylesheets[ $i ]['status'] = $excessive_status;
+				} else {
+					$stylesheets[ $i ]['status'] = $included_status;
+				}
+			} else {
+				$excluded_final_size    += $stylesheets[ $i ]['final_size'];
+				$excluded_original_size += $stylesheets[ $i ]['original_size'];
+				$excluded_stylesheets ++;
+				$stylesheets[ $i ]['status'] = $excluded_status;
+			}
+		}
+
+		$response = [
+			'css_size_before'       => ( $included_original_size + $excluded_original_size ),
+			'css_size_after'        => ( $included_final_size + $excluded_final_size ),
+			'css_size_excluded'     => $excluded_stylesheets,
+			'css_budget_percentage' => ( ( $included_final_size + $excluded_final_size ) / $style_custom_cdata_spec['max_bytes'] ) * 100,
+		];
+
+		return $response;
+
 	}
 
 	/**
