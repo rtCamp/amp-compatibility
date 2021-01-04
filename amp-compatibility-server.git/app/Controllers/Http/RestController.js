@@ -1,7 +1,7 @@
 'use strict';
 
 const _ = require( 'underscore' );
-const RequestQueueController = use( 'App/Controllers/RequestQueueController' );
+const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
 class RestController {
