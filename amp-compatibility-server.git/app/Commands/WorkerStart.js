@@ -3,6 +3,7 @@
 const { Command } = require( '@adonisjs/ace' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
+const Logger = use( 'Logger' );
 
 // Utilities
 const _ = require( 'underscore' );
@@ -14,7 +15,8 @@ class WorkerStart extends Command {
 	 */
 	static get signature() {
 		return `worker:start
-		 { --name=@value : Workers name. e.g. request, synthetic-data }`;
+		 { --name=@value : Workers name. e.g. request, synthetic-data }
+		 { --concurrency=@value : Worker's concurrency. }`;
 	}
 
 	/**
@@ -46,12 +48,18 @@ class WorkerStart extends Command {
 			return;
 		}
 
+		Logger.level = 'debug';
+
+		const workerOptions = {
+			concurrency: options.concurrency,
+		};
+
 		switch ( workerName ) {
 			case 'request':
-				await RequestQueueController.startWorker();
+				await RequestQueueController.startWorker( workerOptions );
 				break;
 			case 'synthetic-data':
-				await SyntheticDataQueueController.startWorker();
+				await SyntheticDataQueueController.startWorker( workerOptions );
 				break;
 		}
 

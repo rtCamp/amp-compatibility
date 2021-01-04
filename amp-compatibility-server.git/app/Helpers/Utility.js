@@ -1,7 +1,10 @@
 'use strict';
 
+const Logger = use( 'Logger' );
+
 const _ = require( 'underscore' );
 const crypto = require( 'crypto' );
+const { exec } = require( 'child_process' );
 
 class Utility {
 
@@ -193,6 +196,27 @@ class Utility {
 
 		return `${ year }-${ month }-${ date } ${ hours }:${ minutes }:${ seconds }`;
 
+	}
+
+	static async executeCommand( command ) {
+
+		await exec( command, ( error, stdout, stderr ) => {
+
+			Logger.debug( `Command: ${ command }` );
+
+			if ( error ) {
+				Logger.debug( `Error: ${ error.message }` );
+				return;
+			}
+
+			if ( stderr ) {
+				Logger.debug( `Output: ${ stderr }` );
+				return;
+			}
+
+			Logger.debug( `Result: ${ stdout }` );
+			return stdout;
+		} );
 	}
 }
 

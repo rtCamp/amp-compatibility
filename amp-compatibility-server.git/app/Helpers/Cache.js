@@ -29,6 +29,16 @@ class Cache {
 		return response;
 	}
 
+	static async exists( key, group = 'default' ) {
+
+		const id = this.getKey( key, group );
+
+		if ( _.isEmpty( id ) ) {
+			return '';
+		}
+
+	}
+
 	/**
 	 * To set value in cache.
 	 *
