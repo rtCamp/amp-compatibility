@@ -1,7 +1,10 @@
 'use strict';
 
 const Base = use( 'App/Controllers/Queue/Base' );
+const SiteManager = use( 'App/Controllers/SiteManager' );
 const Logger = use( 'Logger' );
+
+const { exit } = require( 'process' );
 
 /**
  * Helper to manage request queue.
@@ -18,6 +21,52 @@ class SyntheticDataController extends Base {
 	}
 
 	/**
+	 * Action before starting worker.
+	 *
+	 * @param {Object} options Options pass in startWorker.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	static async beforeStartWorker( options ) {
+
+		this.onJobSucceeded = this.onJobSucceeded.bind( this );
+
+		// Terminate the worker if all jobs are completed
+		this.queue.on( 'job succeeded', this.onJobSucceeded );
+
+		// Setup site manager.
+		const siteManagerConfig = {
+			type: 'wp',
+			paths: [
+				'/Users/dhavalparekh/Sites/sample',
+			],
+		};
+
+		this.siteManager = new SiteManager( siteManagerConfig );
+
+	}
+
+	/**
+	 * Callback function on each job success.
+	 *
+	 * Terminate the worker if all jobs are completed
+	 *
+	 * @param {String} jobId Job ID
+	 * @param {Object} result Result of process.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	static async onJobSucceeded( jobId, result ) {
+
+		const queueHealth = await this.queue.checkHealth();
+		const totalJobs = parseInt( queueHealth.waiting + queueHealth.active + queueHealth.delayed + queueHealth.newestJob );
+
+		if ( 0 >= totalJobs ) {
+			exit( 1 );
+		}
+	}
+
+	/**
 	 * Handler to process the job.
 	 *
 	 * @param {Object} job Job to process.
@@ -28,7 +77,22 @@ class SyntheticDataController extends Base {
 	static async processJob( job, done ) {
 		Logger.info( `Queue: %s | Job: %s started.`, this.queueName, job.id );
 
-		return { status: 'ok' };
+		const siteInstance = this.siteManager.getAvailableSite();
+
+		if ( false === siteInstance ) {
+			Logger.debug( `We don't have any available site. Please try after some site.` );
+			done( 'fail' );
+			return;
+		}
+
+		let result = {};
+		try {
+			result = await siteInstance.runTest( job.data ) || {};
+		} catch ( exception ) {
+			console.error( exception );
+		}
+
+		return { status: 'ok', data: result };
 	}
 }
 
