@@ -21,3 +21,5 @@ Thumbs.db
 # Other
 .cache
 .env
+
+temp.sh
