@@ -26,7 +26,7 @@ class SyntheticDataController extends Base {
 	 * @returns {*}
 	 */
 	static async processJob( job, done ) {
-		Logger.info( `Queue: %s | Job: %s started.`, this.queue, job.id );
+		Logger.info( `Queue: %s | Job: %s started.`, this.queueName, job.id );
 
 		return { status: 'ok' };
 	}

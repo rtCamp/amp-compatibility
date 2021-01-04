@@ -33,7 +33,7 @@ class Site extends Base {
 			amp_supported_post_types: 'string|required',
 			amp_supported_templates: 'string|required',
 			amp_mobile_redirect: 'boolean|required',
-			amp_reader_theme: 'boolean|required',
+			amp_reader_theme: 'string|required',
 			is_synthetic_data: 'boolean|required',
 			updated_at: 'date|required',
 		};
@@ -65,7 +65,7 @@ class Site extends Base {
 			amp_plugin_configured: 'to_boolean',
 			amp_all_templates_supported: 'to_boolean',
 			amp_mobile_redirect: 'to_boolean',
-			amp_reader_theme: 'to_boolean',
+			amp_reader_theme: 'escape',
 			is_synthetic_data: 'to_boolean',
 			updated_at: 'to_date',
 		};

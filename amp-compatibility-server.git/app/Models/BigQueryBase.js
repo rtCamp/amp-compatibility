@@ -411,7 +411,7 @@ class BigQueryBase {
 				}
 
 			} catch ( exception ) {
-				console.error( exception );
+
 				response[ index ] = {
 					code: exception.code,
 					errors: exception.errors,

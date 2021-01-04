@@ -168,7 +168,7 @@ class RequestController extends Base {
 				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, saveOptions ) ),
 			};
 		} catch ( exception ) {
-			console.error( exception );
+			response = exception;
 		}
 
 		return response;
@@ -226,7 +226,7 @@ class RequestController extends Base {
 				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, saveOptions ) ),
 			};
 		} catch ( exception ) {
-			console.error( exception );
+			response = exception;
 		}
 
 		return response;
@@ -282,7 +282,7 @@ class RequestController extends Base {
 			response.insert = ( await SiteToExtensionModel.saveMany( itemsToInsert, saveOptions ) );
 
 		} catch ( exception ) {
-			console.error( exception );
+			response = exception;
 		}
 
 		return response;
@@ -308,7 +308,6 @@ class RequestController extends Base {
 			response = await ErrorModel.saveMany( errors, saveOptions );
 		} catch ( exception ) {
 			response = exception;
-			console.error( exception );
 		}
 
 		return response;
@@ -356,7 +355,6 @@ class RequestController extends Base {
 			} );
 		} catch ( exception ) {
 			response = exception;
-			console.error( exception );
 		}
 
 		return response;
@@ -411,7 +409,6 @@ class RequestController extends Base {
 		} catch ( exception ) {
 
 			response.ampValidatedUrl = exception;
-			console.error( exception );
 
 		}
 
@@ -451,7 +448,6 @@ class RequestController extends Base {
 
 		} catch ( exception ) {
 			response.urlErrorRelationship = exception;
-			console.error( exception );
 		}
 
 		return response;
