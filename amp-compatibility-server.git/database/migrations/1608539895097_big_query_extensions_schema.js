@@ -150,13 +150,13 @@ class BigQueryExtensionsSchema extends Schema {
 				{
 					name: 'preview_url',
 					type: 'STRING',
-					mode: 'REQUIRED',
+					mode: 'NULLABLE',
 					description: 'Preview URL of theme/plugin e.g. https://wp-wporg.com/prime-spa',
 				},
 				{
 					name: 'screenshot_url',
 					type: 'STRING',
-					mode: 'REQUIRED',
+					mode: 'NULLABLE',
 					description: 'Screenshot of plugin/theme e.g. //ts.w.org/wp-content/themes/prime-spa/screenshot.png?ver=1.0.0',
 				},
 				{

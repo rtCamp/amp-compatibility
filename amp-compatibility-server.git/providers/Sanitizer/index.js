@@ -10,11 +10,32 @@ class Sanitizer {
 	 * Register all sanitization rules.
 	 */
 	constructor() {
+		sanitizor.slug = this.slug;
 		sanitizor.version = this.version;
 		sanitizor.toInt = this.toInt;
 		sanitizor.toFloat = this.toFloat;
 		sanitizor.toUrl = this.toUrl;
 		sanitizor.toDate = this.toDate;
+		sanitizor.toJson = this.toJson;
+	}
+
+	slug( value ) {
+
+		value = this.toJson( value );
+
+		if ( _.isEmpty( value ) ) {
+			return value;
+		}
+
+		return value
+			.toString()
+			.trim()
+			.toLowerCase()
+			.replace( /\s+/g, '-' )
+			.replace( /[^\w\-]+/g, '-' )
+			.replace( /\-\-+/g, '-' )
+			.replace( /^-+/, '-' )
+			.replace( /-+$/, '-' );
 	}
 
 	/**
@@ -101,6 +122,15 @@ class Sanitizer {
 		}
 
 		value = value.toLowerCase().trim();
+
+		return value;
+	}
+
+	toJson( value ) {
+
+		if ( _.isObject( value ) || _.isArray( value ) ) {
+			value = JSON.stringify( value );
+		}
 
 		return value;
 	}

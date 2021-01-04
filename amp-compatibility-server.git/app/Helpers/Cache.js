@@ -50,7 +50,11 @@ class Cache {
 			data = JSON.stringify( data );
 		}
 
-		await Redis.set( id, data );
+		try {
+			await Redis.set( id, data );
+		} catch ( exception ) {
+			console.error( exception );
+		}
 
 		return true;
 	}
@@ -71,7 +75,11 @@ class Cache {
 			return false;
 		}
 
-		await Redis.delete( id );
+		try {
+			await Redis.del( id );
+		} catch ( exception ) {
+			console.error( exception );
+		}
 
 		return true;
 	}
@@ -89,7 +97,11 @@ class Cache {
 			return false;
 		}
 
-		await Redis.delete( group );
+		try {
+			await Redis.del( group );
+		} catch ( exception ) {
+			console.error( exception );
+		}
 
 		return true;
 	}
@@ -124,7 +136,7 @@ class Cache {
 	 *
 	 * @returns {Promise<*>}
 	 */
-	static async flushdb(){
+	static async flushdb() {
 		return await Redis.flushdb();
 	}
 

@@ -59,10 +59,10 @@ class ErrorSource extends Base {
 			extra_key: 'escape',
 			text: 'escape',
 			filter: 'escape',
-			sources: 'escape',
+			sources: 'to_json',
 			block_name: 'escape',
 			block_content_index: 'escape',
-			block_attrs: 'escape',
+			block_attrs: 'to_json',
 			shortcode: 'escape',
 		};
 	}

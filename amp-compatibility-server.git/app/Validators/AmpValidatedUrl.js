@@ -16,12 +16,12 @@ class AmpValidatedUrl extends Base {
 		return {
 			site_url: 'url|required',
 			page_url: 'url|required',
-			object_type: 'string|in:post_type,taxonomy,search,404|required',
-			object_subtype: 'string|required',
-			css_size_before: 'string|required',
-			css_size_after: 'string|required',
-			css_size_excluded: 'string|required',
-			css_budget_percentage: 'string|required',
+			object_type: 'string|in:post,term,user,search,404',
+			object_subtype: 'string',
+			css_size_before: 'float|required',
+			css_size_after: 'float|required',
+			css_size_excluded: 'float|required',
+			css_budget_percentage: 'float|required',
 			updated_at: 'date|required',
 		};
 	}
@@ -35,10 +35,10 @@ class AmpValidatedUrl extends Base {
 		return {
 			site_url: 'to_url',
 			page_url: 'to_url',
-			object_type: 'escape',
-			object_subtype: 'escape',
-			css_size_before: 'escape',
-			css_size_after: 'escape',
+			object_type: 'slug',
+			object_subtype: 'slug',
+			css_size_before: 'to_float',
+			css_size_after: 'to_float',
 			css_size_excluded: 'to_float',
 			css_budget_percentage: 'to_float',
 			updated_at: 'date',

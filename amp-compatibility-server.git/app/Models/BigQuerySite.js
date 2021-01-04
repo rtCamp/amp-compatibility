@@ -31,6 +31,20 @@ class BigQuerySite extends BigQueryBase {
 	static get validator() {
 		return SiteValidator;
 	}
+
+	/**
+	 * The attribute name for updated at timestamp.
+	 *
+	 * @attribute updatedAtColumn
+	 *
+	 * @return {String}
+	 *
+	 * @static
+	 */
+	static get updatedAtColumn() {
+		return 'updated_at'
+	}
+
 }
 
 module.exports = BigQuerySite;
