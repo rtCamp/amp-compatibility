@@ -7,7 +7,7 @@
 
 use function WP_CLI\Utils\get_flag_value;
 
-define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://test-amp-comp-db.uc.r.appspot.com/api/v1/amp-wp' );
+define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://test-amp-comp-db.uc.r.appspot.com' );
 
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
@@ -32,8 +32,15 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 		return;
 	}
 
+	$endpoint = AMP_SEND_DATA_SERVER_ENDPOINT;
+
+	if ( ! empty( $assoc_args['endpoint'] ) ) {
+		$endpoint = $assoc_args['endpoint'];
+	}
+
+
 	$response = wp_remote_post(
-		AMP_SEND_DATA_SERVER_ENDPOINT,
+		sprintf( '%s/api/v1/amp-wp/', $endpoint ),
 		[
 			'method'   => 'POST',
 			'timeout'  => 600,
@@ -48,7 +55,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	} else {
 
 		$body = wp_remote_retrieve_body( $response );
-		WP_CLI::success( print_r( json_decode( $body, 1 ), 1 ) );
+		WP_CLI::success( $body );
 	}
 } );
 
