@@ -25,7 +25,8 @@ class SyntheticDataStart extends Command {
 		return `synthetic-data:start
 		 { --only-themes : Fetch all the themes. }
 		 { --only-plugins : Fetch all the plugins. }
-		 { --limit=@value : Number of theme/plugin need add in queue. }`;
+		 { --limit=@value : Number of theme/plugin need add in queue. }
+		 { --concurrency=@value : Worker's concurrency. (This number of site will create at a time on secondary server.) ( Min= 10, Max= 120, Default= 100 ) }`;
 	}
 
 	/**
@@ -53,10 +54,13 @@ class SyntheticDataStart extends Command {
 
 		Logger.level = 'debug';
 
+		const concurrency = parseInt( options.concurrency ) || 100;
+
 		this.options = {
 			onlyThemes: ( true === options.onlyThemes ),
 			onlyPlugins: ( true === options.onlyPlugins ),
 			limit: ( ! isNaN( options.limit ) && 0 < parseInt( options.limit ) ) ? parseInt( options.limit ) : false,
+			concurrency: ( concurrency >= 2 && concurrency <= 120 ) ? concurrency : 100,
 		};
 
 		this.info( 'Fetching synthetic data jobs.' );
@@ -86,7 +90,7 @@ class SyntheticDataStart extends Command {
 
 		// Start synthetic data worker in secondary instance.
 		this.info( 'Starting worker for synthetic data on compute instance.' );
-		await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${this.options.limit}` );
+		await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency }` );
 
 		// Delete secondary instance.
 		this.info( 'Deleting compute instance.' );
