@@ -8,7 +8,7 @@ plugin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 function wp() {
   wp_path=$(which wp)
-  php "$wp_path" "$url_flag" --allow-root "$@"
+  php "$wp_path" $url_flag --allow-root "$@"
 }
 
 setup_site() {
