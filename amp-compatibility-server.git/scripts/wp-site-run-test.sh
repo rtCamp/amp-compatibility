@@ -29,12 +29,12 @@ function setup_site() {
 
 	cd_site
 	wp plugin install --activate amp
-	wp option update --json amp-options '{"theme_support":"standard"}'
 	wp plugin delete nginx-helper
 
 	cd_plugins
 	ln -sn /var/www/amp-wp-dummy-data-generator .
 	wp plugin activate amp-wp-dummy-data-generator
+	wp cache flush
 }
 
 process_site() {
@@ -65,7 +65,6 @@ function destroy_site() {
 
 function main() {
 
-  cd_site
   setup_site
   process_site
   process_amp
