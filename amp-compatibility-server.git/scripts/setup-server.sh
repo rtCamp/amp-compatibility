@@ -93,7 +93,7 @@ function setup_repo() {
 
 	cd "$HOME"
 	GITHUB_REPOSITORY="$1"
-	REMOTE_REPO="git@github.com:$GITHUB_REPOSITORY.git"
+	REMOTE_REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
 	git clone "$REMOTE_REPO"
 }
 
