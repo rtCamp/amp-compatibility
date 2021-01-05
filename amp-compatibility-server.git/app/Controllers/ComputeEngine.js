@@ -19,6 +19,10 @@ class ComputeEngine {
 		return Env.get( 'DEPLOY_KEY_PATH', '~/.ssh/id_rsa_gcloud' );
 	}
 
+	get githubToken() {
+		return Env.get( 'GITHUB_TOKEN', '' );
+	}
+
 	get config() {
 
 		const sshPubKey = fs.readFileSync( this.deployKeyPath + '.pub' );
@@ -133,6 +137,7 @@ class ComputeEngine {
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
 		await this.copyFileToRemote( projectRoot + 'scripts/site.sh', '/root/site.sh' );
+		await this.executeCommand( "echo '" + this.githubToken + "' > ~/.bashrc" );
 
 		Logger.debug( 'Installing and setting up the server.' );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
