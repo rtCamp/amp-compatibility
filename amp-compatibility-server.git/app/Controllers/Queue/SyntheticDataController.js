@@ -3,8 +3,12 @@
 const Base = use( 'App/Controllers/Queue/Base' );
 const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
+const BigQuery = use( 'App/BigQuery' );
+
+const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
 const { exit } = require( 'process' );
+const _ = require( 'underscore' );
 
 /**
  * Helper to manage request queue.
@@ -76,13 +80,33 @@ class SyntheticDataController extends Base {
 		}
 
 		let result = {};
+		let response = {};
 		try {
 			result = await siteInstance.runTest( job.data ) || {};
+
+			const extensionVersionSlug = job.data.extension_version_slug || '';
+
+			if ( ! _.isEmpty( extensionVersionSlug ) ) {
+				const item = {
+					extension_version_slug: extensionVersionSlug,
+					has_synthetic_data: true,
+				};
+
+				try {
+					const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
+					await BigQuery.query( updateQuery );
+					response = { status: 'ok' };
+				} catch ( exception ) {
+					response = { status: 'fail' };
+				}
+
+			}
+
 		} catch ( exception ) {
 			console.error( exception );
 		}
 
-		return { status: 'ok', data: result };
+		return { status: 'ok', data: { result: result, response: response } };
 	}
 }
 
