@@ -1,59 +1,18 @@
 # AMP WP Dummy data generator
-Plugin that generate ideal content for website considering active plugins and theme to validate AMP compatibility of the site and send data to node server.
+Plugin that generate ideal content for website considering active plugins and theme.
 
 ## How to use?
 Install this plugin in WordPress installation. And run below command from current plugin directory.
 
 ```bash
-bash ./setup.sh
+bash ./start.sh
 ```
 
 ## WP CLI Commands
 
-#### Test themes
-```bash
-wp amp-test-themes | bash
-```
-
-#### Test one theme
-```bash
-wp amp-test-themes --theme=99fy | bash
-```
-
-#### Test plugins
-```bash
-wp amp-test-plugins | bash
-```
-
-#### Test one plugin
-```bash
-wp amp-test-plugins --plugin=woocommerce | bash
-```
-
-#### To generate data.
-```bash
-wp amp-wp-dummy-data-generator generate
-```
-
 #### To send AMP validation data.
-File location: [./amp-send-data.php](./amp-send-data.php)
 ```bash
 wp amp-send-data
-```
-
-#### To get list XML file name that need to import (Filename separated with pipeline "|")
-```bash
-wp amp-wp-dummy-data-generator get_import_files
-```
-
-#### To get list WP CLI command that need to run after content importing (Command separated with pipeline "|")
-```bash
-wp amp-wp-dummy-data-generator get_plugin_commands
-```
-
-#### Run custom script of each active plugins after content importing.
-```bash
-wp amp-wp-dummy-data-generator plugin_after_setup
 ```
 
 ## Directory/File Info
@@ -68,4 +27,4 @@ Contains class for individual plugin. each class contain following information.
 - Custom function that will run after content creation. 
 
 ### [./inc/classes/wp-cli/class-commands.php](./inc/classes/wp-cli/class-commands.php)
-Define all helper WP CLI command for [bash script](./setup.sh)
+Define all helper WP CLI command for [bash script](./start.sh)
