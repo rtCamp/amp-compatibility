@@ -59,6 +59,7 @@ function autoloader( $resource = '' ) {
 			case 'widgets':
 			case 'wp-cli':
 			case 'generator':
+			case 'theme-configs': // phpcs:ignore PSR2.ControlStructures.SwitchDeclaration.TerminatingComment
 			case 'plugin-configs': // phpcs:ignore PSR2.ControlStructures.SwitchDeclaration.TerminatingComment
 				/**
 				 * If there is class name provided for specific directory then load that.

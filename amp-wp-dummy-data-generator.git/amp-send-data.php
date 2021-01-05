@@ -228,7 +228,7 @@ class AMP_Prepare_Data {
 		}
 
 		if ( ! empty( $theme_object->parent() ) && ! is_a( $theme_object->parent(), 'WP_Theme' ) ) {
-			$parent_theme = $theme_object->get_stylesheet();
+			$parent_theme = $theme_object->parent()->get_stylesheet();
 		}
 
 		$tags = $theme_object->get( 'Tags' );

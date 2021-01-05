@@ -22,9 +22,26 @@ setup_site() {
   wp plugin activate amp-wp-dummy-data-generator
 }
 
+### Actions before importing data.
+actions_before_importing() {
+
+  # CLI commands.
+  commands=$(wp amp-wp-dummy-data-generator get_commands --type=before)
+  IFS='|' read -ra command_array <<< "$commands"
+
+  for command in "${command_array[@]}"; do
+    $command
+  done
+
+  # Custom actions.
+  wp amp-wp-dummy-data-generator run_custom --type=before
+
+}
+
+### Import Data.
 import_data() {
 
-  ## Import data from XML file.
+  # Import data from XML file.
   import_files=$(wp amp-wp-dummy-data-generator get_import_files)
 
   IFS='|' read -ra import_files_array <<< "$import_files"
@@ -33,23 +50,29 @@ import_data() {
     wp import --authors=create $plugin_dir/data/$import_file
   done
 
-  ## Run Plugin CLI commands.
-  commands=$(wp amp-wp-dummy-data-generator get_plugin_commands)
+  # Generate custom content.
+  wp amp-wp-dummy-data-generator generate
 
+}
+
+### Actions before importing data.
+actions_after_importing() {
+
+  # CLI commands
+  commands=$(wp amp-wp-dummy-data-generator get_commands --type=after)
   IFS='|' read -ra command_array <<< "$commands"
 
   for command in "${command_array[@]}"; do
     $command
   done
 
-  ## Run After setup functions.
-  wp amp-wp-dummy-data-generator plugin_after_setup
-
-  wp amp-wp-dummy-data-generator generate
+  # Custom actions.
+  wp amp-wp-dummy-data-generator run_custom --type=after
 
 }
 
 
 setup_site
-
+actions_before_importing
 import_data
+actions_after_importing

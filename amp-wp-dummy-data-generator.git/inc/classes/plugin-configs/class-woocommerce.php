@@ -7,10 +7,19 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs;
 
+use AMP_WP_Dummy_Data_Generator\Inc\Config_Base;
+
 /**
  * Class Woocommerce
  */
-class Woocommerce extends Base {
+class Woocommerce extends Config_Base {
+
+	/**
+	 * Name of theme/plugin.
+	 *
+	 * @var string
+	 */
+	public $name = 'woocommerce';
 
 	/**
 	 * Get list of file name that need to import for plugin.
