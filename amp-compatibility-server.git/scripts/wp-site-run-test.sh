@@ -13,7 +13,7 @@ function cd_site() {
 
 function cd_plugins() {
 
-	cd $(wp plugin path);
+	cd "/var/www/$site_name/htdocs/wp-content/plugins"
 }
 
 function wp() {
@@ -29,12 +29,12 @@ function setup_site() {
 
 	cd_site
 	wp plugin install --activate amp
-	wp option update --json amp-options '{"theme_support":"standard"}'
 	wp plugin delete nginx-helper
 
 	cd_plugins
 	ln -sn /var/www/amp-wp-dummy-data-generator .
 	wp plugin activate amp-wp-dummy-data-generator
+	wp cache flush
 }
 
 process_site() {
@@ -49,7 +49,8 @@ process_site() {
 		wp theme install "$slug" --activate $version_string
 	fi
 
-	bash $(wp plugin path)/amp-wp-dummy-data-generator/start.sh
+	cd_plugins
+	bash amp-wp-dummy-data-generator/start.sh
 }
 
 process_amp() {
@@ -65,11 +66,10 @@ function destroy_site() {
 
 function main() {
 
-  cd_site
-  setup_site
-  process_site
-  process_amp
-  destroy_site
+	setup_site
+	process_site
+	process_amp
+	destroy_site
 }
 
 main

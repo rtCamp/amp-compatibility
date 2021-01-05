@@ -59,15 +59,15 @@ function install_dependencies() {
 function setup_wo() {
 
 	wget -qO wo wops.cc
-	git config --global user.email "testing@amp-comp.com"
-	git config --global user.name "amp-comp"
+	# git config --global user.email "testing@amp-comp.com"
+	# git config --global user.name "amp-comp"
 	echo "amp-comp
 testing@amp-comp.com" > answers.txt
 	bash wo < answers.txt
 	rm wo answers.txt
 
 	# Install basic nginx and mysql
-	wo stack install --nginx --mysql
+	wo stack install --nginx --mysql --php73 --wpcli
 
 }
 
@@ -93,6 +93,7 @@ function setup_repo() {
 
 	cd "$HOME"
 	GITHUB_REPOSITORY="$1"
+	GITHUB_ACTOR="rtBot"
 	REMOTE_REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
 	git clone "$REMOTE_REPO"
 }
@@ -103,6 +104,11 @@ function setup_local_repo() {
 	npm i
 }
 
+function move_dummy_data_repo() {
+
+	mv "$HOME/amp-wp-dummy-data-generator" /var/www/
+}
+
 function main() {
 
 	bootstrap
@@ -111,6 +117,7 @@ function main() {
 	setup_repo "rtCamp/amp-compatibility-server"
 	setup_repo "rtCamp/amp-wp-dummy-data-generator"
 	setup_local_repo "amp-compatibility-server"
+	move_dummy_data_repo
 }
 
 main

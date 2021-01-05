@@ -141,7 +141,7 @@ class ComputeEngine {
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
-		await this.executeCommand( "echo '" + this.githubToken + "' > ~/.bashrc" );
+		await this.executeCommand( "echo 'export GITHUB_TOKEN=" + this.githubToken + "' > ~/.bashrc" );
 
 		Logger.debug( 'Installing and setting up the server.' );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
@@ -157,7 +157,7 @@ class ComputeEngine {
 
 		// Local command.
 		await Utility.executeCommand( 'command -v rsync || apt install -y rsync' );
-		await Utility.executeCommand( 'rsync -avzhP ' + localPath + ' root@' + ip + ':' + remotePath );
+		await Utility.executeCommand( 'rsync -avzhPL ' + localPath + ' root@' + ip + ':' + remotePath );
 	}
 
 	async executeCommand( command ) {
