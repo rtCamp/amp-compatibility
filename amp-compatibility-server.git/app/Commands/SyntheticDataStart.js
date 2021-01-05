@@ -26,7 +26,7 @@ class SyntheticDataStart extends Command {
 		 { --only-themes : Fetch all the themes. }
 		 { --only-plugins : Fetch all the plugins. }
 		 { --limit=@value : Number of theme/plugin need add in queue. }
-		 { --concurrency=@value : Worker's concurrency. (This number of site will create at a time on secondary server.) ( Min= 10, Max= 120, Default= 100 ) }`;
+		 { --concurrency=@value : Worker's concurrency. (This number of site will create at a time on secondary server.) ( Min= 1, Max= 120, Default= 100 ) }`;
 	}
 
 	/**
@@ -60,7 +60,7 @@ class SyntheticDataStart extends Command {
 			onlyThemes: ( true === options.onlyThemes ),
 			onlyPlugins: ( true === options.onlyPlugins ),
 			limit: ( ! isNaN( options.limit ) && 0 < parseInt( options.limit ) ) ? parseInt( options.limit ) : false,
-			concurrency: ( concurrency >= 2 && concurrency <= 120 ) ? concurrency : 100,
+			concurrency: ( concurrency >= 1 && concurrency <= 120 ) ? concurrency : 100,
 		};
 
 		this.info( 'Fetching synthetic data jobs.' );
