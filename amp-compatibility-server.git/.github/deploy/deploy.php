@@ -88,6 +88,7 @@ task( 'deploy', [
 	'deploy:release',
 	'rsync',
 	'set:env',
+	'deploy:shared',
 	'deploy:symlink',
 	'permissions:set',
 	'deploy:unlock',
