@@ -19,6 +19,10 @@ class ComputeEngine {
 		return Env.get( 'DEPLOY_KEY_PATH', '~/.ssh/id_rsa_gcloud' );
 	}
 
+	get computeZone() {
+		return Env.get( 'GCP_ZONE', 'us-east1-b' );
+	}
+
 	get githubToken() {
 		return Env.get( 'GITHUB_TOKEN', '' );
 	}
@@ -85,7 +89,7 @@ class ComputeEngine {
 		this.options = _.defaults( options, {
 			name: 'synthetic-data-generator',
 			numberOfSites: 5,
-			zoneName: 'us-east1-b',
+			zoneName: this.computeZone,
 		} );
 
 	}
