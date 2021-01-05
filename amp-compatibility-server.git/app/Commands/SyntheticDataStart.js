@@ -90,7 +90,7 @@ class SyntheticDataStart extends Command {
 
 		// Start synthetic data worker in secondary instance.
 		this.info( 'Starting worker for synthetic data on compute instance.' );
-		await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency }` );
+		await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } > /var/log/adonis.log 2>&1` );
 
 		// Delete secondary instance.
 		this.info( 'Deleting compute instance.' );
