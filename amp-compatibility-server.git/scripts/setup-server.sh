@@ -67,7 +67,7 @@ testing@amp-comp.com" > answers.txt
 	rm wo answers.txt
 
 	# Install basic nginx and mysql
-	wo stack install --nginx --mysql
+	wo stack install --nginx --mysql --php73 --wpcli
 
 }
 
