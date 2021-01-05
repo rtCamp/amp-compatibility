@@ -162,24 +162,24 @@ class ComputeEngine {
 
 	async executeCommand( command ) {
 
-		await sshExec( command, {
-			user: 'root',
-			host: this.ip,
-			key: this.deployKeyPath,
-		}, ( error, stdout, stderr ) => {
+		return new Promise( ( done, failed ) => {
+			Logger.debug( 'Remote Command: %s', command );
+			sshExec( command, {
+				user: 'root',
+				host: this.ip,
+				key: this.deployKeyPath,
+			}, ( err, stdout, stderr ) => {
 
-			if ( error ) {
-				Logger.debug( `error: ${ error.message }` );
-				return;
-			}
-
-			if ( stderr ) {
-				Logger.debug( `stderr: ${ stderr }` );
-				return;
-			}
-
-			Logger.debug( stdout );
-			return stdout;
+				if ( err ) {
+					err.stdout = stdout;
+					err.stderr = stderr;
+					Logger.debug( 'stdout: %s, stderr: %s', stdout, stderr );
+					failed( err );
+					return;
+				}
+				Logger.debug( 'Stdout: %s', stdout );
+				done( { stdout, stderr } );
+			} );
 		} );
 	}
 
