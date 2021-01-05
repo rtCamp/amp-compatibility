@@ -22,7 +22,7 @@ class WordPressSite {
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/wp-site-run-test.sh`;
 
-		const command = `bash ${ bashFilePath } ${ args.extension_version_slug } ${ args.type } ${ args.slug } ${ args.version }`;
+		const command = `bash -x ${ bashFilePath } ${ args.extension_version_slug } ${ args.type } ${ args.slug } ${ args.version }`;
 
 		try {
 			await this.executeCommand( command );
