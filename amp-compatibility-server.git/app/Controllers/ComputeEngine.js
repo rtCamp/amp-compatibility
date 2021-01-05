@@ -126,6 +126,7 @@ class ComputeEngine {
 		Logger.debug( 'Waiting 120s for Virtual machine to be operational.' );
 		await Utility.sleep( 90 );
 
+		await Utility.executeCommand( 'touch ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts' );
 		await Utility.executeCommand( 'ssh-keygen -f ~/.ssh/known_hosts -R "' + this.ip + '"' );
 		await Utility.executeCommand( 'ssh-keyscan -H "' + this.ip + '" >> ~/.ssh/known_hosts' );
 
@@ -140,7 +141,6 @@ class ComputeEngine {
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
-		await this.copyFileToRemote( projectRoot + 'scripts/site.sh', '/root/site.sh' );
 		await this.executeCommand( "echo '" + this.githubToken + "' > ~/.bashrc" );
 
 		Logger.debug( 'Installing and setting up the server.' );
