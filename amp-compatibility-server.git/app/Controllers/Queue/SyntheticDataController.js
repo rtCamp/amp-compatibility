@@ -1,7 +1,7 @@
 'use strict';
 
 const Base = use( 'App/Controllers/Queue/Base' );
-const SiteManager = use( 'App/Controllers/SiteManager' );
+const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
 
 const { exit } = require( 'process' );
@@ -33,16 +33,6 @@ class SyntheticDataController extends Base {
 
 		// Terminate the worker if all jobs are completed
 		this.queue.on( 'job succeeded', this.onJobSucceeded );
-
-		// Setup site manager.
-		const siteManagerConfig = {
-			type: 'wp',
-			paths: [
-				'/Users/dhavalparekh/Sites/sample',
-			],
-		};
-
-		this.siteManager = new SiteManager( siteManagerConfig );
 
 	}
 
@@ -77,7 +67,7 @@ class SyntheticDataController extends Base {
 	static async processJob( job, done ) {
 		Logger.info( `Queue: %s | Job: %s started.`, this.queueName, job.id );
 
-		const siteInstance = this.siteManager.getAvailableSite();
+		const siteInstance = new WordPressSite();
 
 		if ( false === siteInstance ) {
 			Logger.debug( `We don't have any available site. Please try after some site.` );

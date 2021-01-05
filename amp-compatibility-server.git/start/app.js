@@ -67,7 +67,6 @@ const commands = [
 	'App/Commands/WorkerStart',
 	'App/Commands/Cache',
 	'App/Commands/UserCreate',
-	'App/Commands/SyntheticData',
 	'App/Commands/SyntheticDataStart',
 ];
 

@@ -139,11 +139,6 @@ class ComputeEngine {
 
 	}
 
-	async createSites() {
-		Logger.debug( 'Creating sites.' );
-		await this.executeCommand( 'bash -x /root/site.sh ' + this.numberOfSites + ' > /var/log/site.log 2>&1' );
-	}
-
 	async copyFileToRemote( localPath, remotePath ) {
 
 		const ip = this.ip;
