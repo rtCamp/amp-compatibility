@@ -1,47 +1,75 @@
 #!/usr/bin/env bash
 
-current_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 extension_version_slug=$1
 type=$2
 slug=$3
 version=$4
+site_name="$extension_version_slug.local"
 
+function cd_site() {
 
-echo extension_version_slug
-echo type
-echo slug
-echo version
-
-setup_site() {
-
-  wp rewrite flush
-  wp cache flush
-
-  wp plugin install --activate amp
-  wp option update --json amp-options '{"theme_support":"standard"}'
-
-  wp plugin install --activate amp-wp-dummy-data-generator
-  wp plugin activate amp-wp-dummy-data-generator
-
+	cd "/var/www/$site_name/htdocs"
 }
 
-proccess_site() {
+function cd_plugins() {
 
-  pwd
-
-  # wp core install --url=extension_version_slug.rt.gw.test --title=extension_version_slug --admin_user=supervisor --admin_password=strongpassword --admin_email=info@example.com
-
-  # if ( type=plugin ) then ( ( wp plugin install ${slug} --activate ) AND ( wp theme install treville --activate ) )
-  # if ( type=theme ) theme ( wp theme install ${slug} --activate )
-
-  # bash $(wp plugin path)/amp-wp-dummy-data-generator/start.sh
-
+	cd $(wp plugin path);
 }
 
-reset_site() {
-  wp db reset --yes
+function wp() {
+
+	wp_path=$(which wp)
+	php "$wp_path" --allow-root "$@"
 }
 
-setup_site
-proccess_site
-reset_site
+function setup_site() {
+
+	echo "127.0.0.1 $site_name" >> /etc/hosts
+	wo site create "$site_name" --wp
+
+	cd_site
+	wp plugin install --activate amp
+	wp option update --json amp-options '{"theme_support":"standard"}'
+	wp plugin delete nginx-helper
+
+	cd_plugins
+	ln -sn /var/www/amp-wp-dummy-data-generator .
+	wp plugin activate amp-wp-dummy-data-generator
+}
+
+process_site() {
+
+	cd_plugins
+	[[ -n "$version" ]] && version_string="--version=$version" || version_string=""
+
+	if [[ "$type" == "plugin" ]]; then
+		wp plugin install "$slug" --activate $version_string
+		wp theme install treville --activate
+	else
+		wp theme install "$slug" --activate $version_string
+	fi
+
+	bash $(wp plugin path)/amp-wp-dummy-data-generator/start.sh
+}
+
+process_amp() {
+  wp amp validation reset --yes
+  wp amp validation run --force
+  wp amp-send-data
+}
+
+function destroy_site() {
+
+	wo site delete "$site_name" --no-prompt
+}
+
+function main() {
+
+  cd_site
+  setup_site
+  process_site
+  process_amp
+  destroy_site
+}
+
+main

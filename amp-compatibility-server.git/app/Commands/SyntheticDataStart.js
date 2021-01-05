@@ -63,7 +63,6 @@ class SyntheticDataStart extends Command {
 
 		// Refill queue with new tasks.
 		await this.refillQueue();
-		exit( 1 );
 
 		const queueHealth = await this.queue.checkHealth();
 		const totalJobs = parseInt( queueHealth.waiting + queueHealth.delayed );
@@ -80,13 +79,17 @@ class SyntheticDataStart extends Command {
 
 		// Setup secondary instance.
 		await this.computeEngine.create();
+		this.info( 'Compute instance created.' );
+
 		await this.computeEngine.setup();
-		await this.computeEngine.createSites();
+		this.info( 'Setup Completed on compute instance.' );
 
 		// Start synthetic data worker in secondary instance.
-		await this.computeEngine.executeCommand( `node ace worker:start --name=synthetic-data --concurrency=10` );
+		this.info( 'Starting worker for synthetic data on compute instance.' );
+		await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${this.options.limit}` );
 
 		// Delete secondary instance.
+		this.info( 'Deleting compute instance.' );
 		await this.computeEngine.delete();
 
 		exit( 1 );

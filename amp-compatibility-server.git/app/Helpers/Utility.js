@@ -200,22 +200,19 @@ class Utility {
 
 	static async executeCommand( command ) {
 
-		await exec( command, ( error, stdout, stderr ) => {
-
-			Logger.debug( `Command: ${ command }` );
-
-			if ( error ) {
-				Logger.debug( `Error: ${ error.message }` );
-				return;
-			}
-
-			if ( stderr ) {
-				Logger.debug( `Output: ${ stderr }` );
-				return;
-			}
-
-			Logger.debug( `Result: ${ stdout }` );
-			return stdout;
+		return new Promise( ( done, failed ) => {
+			exec( command, ( err, stdout, stderr ) => {
+				Logger.debug( 'Command: %s', command );
+				if ( err ) {
+					err.stdout = stdout;
+					err.stderr = stderr;
+					Logger.debug( 'stdout: %s, stderr: %s', stdout, stderr );
+					failed( err );
+					return;
+				}
+				Logger.debug( 'Stdout: %s', stdout );
+				done( { stdout, stderr } );
+			} );
 		} );
 	}
 }
