@@ -141,7 +141,7 @@ class ComputeEngine {
 
 		Logger.debug( 'Installing and setting up the server.' );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
-
+		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility-server/' );
 	}
 
 	async copyFileToRemote( localPath, remotePath ) {
