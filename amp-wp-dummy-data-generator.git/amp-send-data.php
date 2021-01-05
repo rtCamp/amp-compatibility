@@ -105,7 +105,7 @@ class AMP_Prepare_Data {
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$amp_settings = get_option( 'amp-options' );
+		$amp_settings = get_option( 'amp-options', AMP_Options_Manager::get_options() );
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';
