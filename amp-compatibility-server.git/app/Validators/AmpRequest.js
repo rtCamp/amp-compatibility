@@ -113,9 +113,9 @@ class AmpRequest extends Base {
 			/**
 			 * URLs
 			 */
-			'urls.*.urls': 'url|required',
-			'urls.*.errors.*.error_slug': 'string|required',
-			'urls.*.errors.*.sources.*': 'string|required',
+			// 'urls.*.url': 'url|required',
+			// 'urls.*.errors.*.error_slug': 'string|required',
+			// 'urls.*.errors.*.sources.*': 'string|required',
 		};
 	}
 
