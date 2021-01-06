@@ -3,6 +3,7 @@
 const _ = require( 'underscore' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
+const Logger = use( 'Logger' );
 
 class RestController {
 
@@ -42,6 +43,8 @@ class RestController {
 		}
 
 		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
+		const siteUrl = requestData.site_url || '';
+		Logger.info( 'Site: %s', siteUrl );
 
 		await RequestQueueController.createJob( requestData );
 
