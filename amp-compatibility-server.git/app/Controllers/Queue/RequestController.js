@@ -14,6 +14,7 @@ const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
+const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
@@ -32,6 +33,44 @@ class RequestController extends Base {
 	}
 
 	/**
+	 * Action before starting worker.
+	 *
+	 * @param {Object} options Options pass in startWorker.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	static async beforeStartWorker( options ) {
+
+		Logger.level = 'debug';
+
+		console.log( await this.queue.checkHealth() );
+
+		this.onJobSucceeded = this.onJobSucceeded.bind( this );
+		this.onJobRetrying = this.onJobRetrying.bind( this );
+
+		// Terminate the worker if all jobs are completed
+		this.queue.on( 'job succeeded', this.onJobSucceeded );
+		this.queue.on( 'job retrying', this.onJobRetrying );
+
+		this.queue.on( 'job progress', ( jobId, progress ) => {
+			Logger.debug( `Job: ${ jobId } reported progress: ${ progress }%` );
+		} );
+
+	}
+
+	static onJobSucceeded( jobId, result ) {
+		Logger.info( 'Result: Job ID: %s | Site: %s', jobId, this.jobName );
+		const preparedLog = this.prepareLog( result );
+		console.log( preparedLog );
+	}
+
+	static onJobRetrying( jobId, error ) {
+		Logger.info( 'Retrying: Job ID: %s | Site: %s', jobId, this.jobName );
+		Logger.debug( 'Job ID: %s | Site: %s was failed with below error but is being retried!', jobId, this.jobName );
+		console.log( error );
+	}
+
+	/**
 	 * Handler to process the job.
 	 *
 	 * @param {Object} job Job to process.
@@ -42,12 +81,15 @@ class RequestController extends Base {
 	static async processJob( job, done ) {
 
 		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
-		console.log( `Job: ${ job.id } started.` );
 		let response = {};
 
 		try {
 
 			const data = _.clone( job.data );
+			const siteUrl = data.site_url;
+			this.jobName = siteUrl;
+
+			Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.jobName );
 
 			// Prepare site_info.
 			response.site = await this.saveSite( data.site_info );
@@ -64,7 +106,7 @@ class RequestController extends Base {
 			response.plugins = await this.savePlugins( data.plugins );
 			job.reportProgress( 30 );
 
-			response.siteToExtension = await this.saveSiteToExtension( data.site_info.site_url, data.plugins );
+			response.siteToExtension = await this.saveSiteToExtension( siteUrl, data.plugins );
 			job.reportProgress( 40 );
 
 			response.errors = await this.saveErrors( data.errors );
@@ -73,16 +115,18 @@ class RequestController extends Base {
 			response.errorSources = await this.saveErrorSources( data.error_sources );
 			job.reportProgress( 70 );
 
-			response.urls = await this.saveValidatedUrls( data.site_info.site_url, data.urls );
+			response.urls = await this.saveValidatedUrls( siteUrl, data.urls );
 			job.reportProgress( 100 );
 
-		} catch ( exception ) {
-			console.error( 'Failed to insert Item', exception );
-			response = exception;
-		}
+			Logger.info( 'Job ID: %s | Site: %s completed.', job.id, this.jobName );
 
-		console.log( Utility.jsonPrettyPrint( response ) );
-		console.log( `Job: ${ job.id } finished.` );
+		} catch ( exception ) {
+
+			Logger.error( 'Job ID: %s | Site: %s failed.', job.id, this.jobName );
+			console.error( exception );
+
+			throw exception;
+		}
 
 		return response;
 	}
@@ -452,6 +496,61 @@ class RequestController extends Base {
 
 		return response;
 
+	}
+
+	static prepareLog( result ) {
+
+		const response = {};
+		const prepareLog = ( log ) => {
+
+			let preparedLog = {};
+
+			if ( _.has( log, 'code' ) || _.has( log, 'message' ) ) {
+				preparedLog = {
+					code: log.code || '',
+					message: log.message || '',
+				};
+			} else if ( _.has( log, 'requestedCount' ) ) {
+
+				preparedLog = {
+					requestedCount: parseInt( log.requestedCount ) || 0,
+					inserted: parseInt( log.inserted.count ) || 0,
+					updated: parseInt( log.updated.count ) || 0,
+					ignored: parseInt( log.ignored.count ) || 0,
+				};
+				preparedLog.total = ( preparedLog.inserted + preparedLog.updated + preparedLog.ignored );
+			}
+
+			return preparedLog;
+		};
+
+		for ( const key in result ) {
+
+			if ( [ 'themes', 'plugins' ].includes( key ) ) {
+
+				response[ `${ key }_extensions` ] = prepareLog( result[ key ].extensions );
+				response[ `${ key }_extensionVersions` ] = prepareLog( result[ key ].extensionVersions );
+
+			} else if ( [ 'siteToExtension' ].includes( key ) ) {
+
+				response[ key ] = prepareLog( result[ key ].insert );
+
+			} else if ( [ 'urls' ].includes( key ) ) {
+
+				const urls = result[ key ].ampValidatedUrl.insert || result[ key ].ampValidatedUrl;
+				const relationShip = result[ key ].urlErrorRelationship.insert || result[ key ].urlErrorRelationship;
+
+				response[ `${ key }_ampValidatedUrl` ] = prepareLog( urls );
+				response[ `${ key }_urlErrorRelationship` ] = prepareLog( relationShip );
+
+			} else {
+
+				response[ key ] = prepareLog( result[ key ] );
+
+			}
+		}
+
+		return response;
 	}
 
 }
