@@ -69,26 +69,19 @@ class SyntheticDataController extends Base {
 	 * @returns {*}
 	 */
 	static async processJob( job, done ) {
-		Logger.info( `Queue: %s | Job: %s started.`, this.queueName, job.id );
+		this.site = job.data.extension_version_slug || '';
+		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
 
 		const siteInstance = new WordPressSite();
-
-		if ( false === siteInstance ) {
-			Logger.debug( `We don't have any available site. Please try after some site.` );
-			done( 'fail' );
-			return;
-		}
 
 		let result = {};
 		let response = {};
 		try {
 			result = await siteInstance.runTest( job.data ) || {};
 
-			const extensionVersionSlug = job.data.extension_version_slug || '';
-
-			if ( ! _.isEmpty( extensionVersionSlug ) ) {
+			if ( ! _.isEmpty( this.site ) ) {
 				const item = {
-					extension_version_slug: extensionVersionSlug,
+					extension_version_slug: this.site,
 					has_synthetic_data: true,
 				};
 
