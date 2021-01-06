@@ -5,22 +5,26 @@ type=$2
 slug=$3
 version=$4
 site_name="$extension_version_slug.local"
+machine_ip=$(curl -s https://icanhazip.com)
+check_os="$(uname -s)"
+case "${check_os}" in
+	Linux*)     os=linux;;
+	Darwin*)    os=mac;;
+	*)          os="UNKNOWN:${check_os}"
+esac
 
-# TODO: This variable should be change dynamically based on current os.
-os='ubuntu' # Values can be mac,ubuntu
-
-# TODO: This variable should be change dynamically based on environment.
-environment='prod' # Values can be prod,dev
 amp_endpoint_flag=''
 
 if [[ "mac" == "$os" ]]; then
-  sites_root="$HOME/Sites"
+	sites_root="$HOME/Sites"
+	environment='dev'
 else
-  sites_root='/var/www'
+	sites_root='/var/www'
+	environment='prod'
 fi
 
 if [[ "prod" != "$environment" ]]; then
-  amp_endpoint_flag='--endpoint=http://127.0.0.1:3333'
+	amp_endpoint_flag='--endpoint=http://127.0.0.1:3333'
 fi
 
 function wp() {
@@ -29,23 +33,23 @@ function wp() {
 }
 
 function get_site_path() {
-  if [[ "mac" == "$os" ]]; then
-    echo "$sites_root/$extension_version_slug"
-  else
-    echo "$sites_root/$site_name/htdocs"
-  fi
+	if [[ "mac" == "$os" ]]; then
+		echo "$sites_root/$extension_version_slug"
+	else
+		echo "$sites_root/$site_name/htdocs"
+	fi
 }
 
 function get_plugins_path() {
-  if [[ "mac" == "$os" ]]; then
-    echo "$sites_root/$extension_version_slug/wp-content/plugins"
-  else
-    echo "$sites_root/$site_name/htdocs/wp-content/plugins"
-  fi
+	if [[ "mac" == "$os" ]]; then
+		echo "$sites_root/$extension_version_slug/wp-content/plugins"
+	else
+		echo "$sites_root/$site_name/htdocs/wp-content/plugins"
+	fi
 }
 
 function cd_sites_root() {
-  cd $sites_root
+	cd $sites_root
 }
 
 function cd_site() {
@@ -53,30 +57,36 @@ function cd_site() {
 }
 
 function cd_plugins() {
-  cd $(get_plugins_path)
+	cd $(get_plugins_path)
 }
 
 function create_site() {
-  cd_sites_root
-  if [[ "mac" == "$os" ]]; then
-    wp valet new "$extension_version_slug"
-  else
-    wo site create "$site_name" --wp
-  fi
+
+	cd_sites_root
+	if [[ "mac" == "$os" ]]; then
+		wp valet new "$extension_version_slug"
+	else
+		wo site create "$site_name" --wp
+	fi
 }
 
 function destroy_site() {
-  cd_sites_root
-  if [[ "mac" == "$os" ]]; then
-    wp valet destroy "$extension_version_slug" --yes
-  else
-    wo site delete "$site_name" --no-prompt
-  fi
+
+	cd_sites_root
+	if [[ "mac" == "$os" ]]; then
+		wp valet destroy "$extension_version_slug" --yes
+	else
+		wo site delete "$site_name" --no-prompt
+	fi
 }
 
 function setup_site() {
 
-	echo "127.0.0.1 $site_name" >> /etc/hosts
+	if [[ "mac" == "$os" ]]; then
+		sudo echo "127.0.0.1 $site_name" >>/etc/hosts
+	else
+		echo "$machine_ip $site_name" >>/etc/hosts
+	fi
 
 	create_site
 
@@ -88,9 +98,10 @@ function setup_site() {
 	ln -sn "$sites_root/amp-wp-dummy-data-generator" .
 	wp plugin activate amp-wp-dummy-data-generator
 	wp cache flush
+	wp rewrite flush
 }
 
-process_site() {
+function process_site() {
 
 	cd_plugins
 	[[ -n "$version" ]] && version_string="--version=$version" || version_string=""
@@ -107,12 +118,15 @@ process_site() {
 }
 
 function process_amp() {
-  wp amp validation reset --yes
-  wp amp validation run --force
-  wp amp-send-data "$amp_endpoint_flag"
+
+	wp rewrite flush
+	wp amp validation reset --yes
+	wp amp validation run --force
+	wp amp-send-data $amp_endpoint_flag
 }
 
 function main() {
+
 	setup_site
 	process_site
 	process_amp
