@@ -19,10 +19,6 @@ class ComputeEngine {
 		return Env.get( 'DEPLOY_KEY_PATH', '~/.ssh/id_rsa_gcloud' );
 	}
 
-	get computeZone() {
-		return Env.get( 'GCP_ZONE', 'us-east1-b' );
-	}
-
 	get githubToken() {
 		return Env.get( 'GITHUB_TOKEN', '' );
 	}
@@ -77,8 +73,8 @@ class ComputeEngine {
 		return this.options.zoneName;
 	}
 
-	get numberOfSites() {
-		return this.options.numberOfSites;
+	get isVMExists() {
+		return ( 'undefined' !== typeof this.virtualMachine );
 	}
 
 	/**
@@ -89,12 +85,51 @@ class ComputeEngine {
 		this.options = _.defaults( options, {
 			name: 'synthetic-data-generator',
 			numberOfSites: 5,
-			zoneName: this.computeZone,
+			zoneName: Env.get( 'GCP_ZONE', 'us-central1-a' ),
 		} );
 
 	}
 
+	async getInstanceIfExists() {
+
+		if ( this.isVMExists ) {
+			throw 'Virtual machine is already exists.';
+		}
+
+		const compute = new Compute();
+		const zone = compute.zone( this.zoneName );
+
+		const options = {
+			autoPaginate: false,
+			filter: {
+				name: this.name,
+				comparison: 'eq',
+			},
+		};
+		const [ virtualMachines ] = await zone.getVMs( options );
+
+		for ( const index in virtualMachines ) {
+
+			if ( this.name === virtualMachines[ index ].name ) {
+				this.virtualMachine = virtualMachines[ index ];
+
+				await this.getIP();
+
+				Logger.debug( 'Using existing virtual machine. IP: %s', this.ip );
+
+				return true;
+			}
+
+		}
+
+		return false;
+	}
+
 	async create() {
+
+		if ( this.isVMExists ) {
+			throw 'Virtual machine is already exists.';
+		}
 
 		const compute = new Compute();
 		const zone = compute.zone( this.zoneName );
@@ -104,15 +139,29 @@ class ComputeEngine {
 
 		this.virtualMachine = virtualMachine;
 
-		const metadata = await this.virtualMachine.getMetadata();
-		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].accessConfigs[ 0 ].natIP;
+		await this.getIP();
 
 		Logger.debug( 'Virtual machine created. IP: %s', this.ip );
 
 		return true;
 	}
 
+	async getIP() {
+
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
+
+		const metadata = await this.virtualMachine.getMetadata();
+		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].accessConfigs[ 0 ].natIP;
+	}
+
 	async delete() {
+
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
+
 		const [ operation ] = await this.virtualMachine.delete();
 		await operation.promise();
 
@@ -122,6 +171,10 @@ class ComputeEngine {
 	}
 
 	async setup() {
+
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
 
 		Logger.debug( 'Waiting 120s for Virtual machine to be operational.' );
 		await Utility.sleep( 90 );
@@ -150,6 +203,10 @@ class ComputeEngine {
 
 	async copyFileToRemote( localPath, remotePath ) {
 
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
+
 		const ip = this.ip;
 
 		// Remote command.
@@ -161,6 +218,10 @@ class ComputeEngine {
 	}
 
 	async executeCommand( command ) {
+
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
 
 		return new Promise( ( done, failed ) => {
 			Logger.debug( 'Remote Command: %s', command );
@@ -181,6 +242,7 @@ class ComputeEngine {
 				done( { stdout, stderr } );
 			} );
 		} );
+
 	}
 
 }
