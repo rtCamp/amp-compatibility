@@ -90,7 +90,7 @@ class SyntheticDataStart extends Command {
 			exit( 1 );
 		}
 
-		this.info( `Synthetic data will be generated for ${ totalJobs } extensions (themes/plugins).` );
+		// this.info( `Synthetic data will be generated for ${ totalJobs } extensions (themes/plugins).` );
 
 		try {
 
@@ -162,7 +162,18 @@ class SyntheticDataStart extends Command {
 
 			for ( const index in result ) {
 				const jobData = result[ index ];
-				await SyntheticDataQueueController.createJob( jobData );
+				const plugin = jobData.slug || '';
+
+				const excludeList = [
+					'contact-form-7',
+					'woocommerce',
+					'bbpress',
+				];
+
+				if ( ! excludeList.includes( plugin ) ) {
+					await SyntheticDataQueueController.createJob( jobData );
+				}
+
 				count++;
 			}
 
