@@ -25,6 +25,15 @@ class Base {
 	}
 
 	/**
+	 * How many times the job should be automatically retried in case of failure.
+	 *
+	 * @returns {number}
+	 */
+	static get retries() {
+		return 3;
+	}
+
+	/**
 	 * To get request queue object.
 	 *
 	 * @returns {*} Object of queue.
@@ -77,7 +86,7 @@ class Base {
 
 		const jobId = await this.getJobID( data );
 
-		return await this.queue.createJob( data ).setId( jobId ).save();
+		return await this.queue.createJob( data ).retries( this.retries ).setId( jobId ).save();
 	}
 
 	/**
@@ -87,13 +96,7 @@ class Base {
 	 *
 	 * @returns {Promise<void>}
 	 */
-	static async beforeStartWorker( options ) {
-
-		this.queue.on( 'job progress', ( jobId, progress ) => {
-			console.log( `Job ${ jobId } reported progress: ${ progress }%` );
-		} );
-
-	}
+	static async beforeStartWorker( options ) {}
 
 	/**
 	 * To start worker process.
