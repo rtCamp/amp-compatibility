@@ -37,6 +37,7 @@ wp widget reset --all
 wp user delete $(wp user list --field=ID)
 wp transient delete --all
 
-
-
+upload_dir=$(wp eval 'echo wp_get_upload_dir()["basedir"];')
+rm -rf "$upload_dir"
+mkdir "$upload_dir"
 
