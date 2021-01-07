@@ -29,7 +29,7 @@ class ComputeEngine {
 
 		return {
 			http: true,
-			machineType: 'e2-standard-4',
+			machineType: Env.get( 'GCP_INSTANCE_TYPE', 'c2-standard-4' ),
 			disks: [
 				{
 					boot: true,
