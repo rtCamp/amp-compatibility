@@ -105,7 +105,7 @@ class AMP_Prepare_Data {
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$amp_settings = get_option( 'amp-options', AMP_Options_Manager::get_options() );
+		$amp_settings = AMP_Options_Manager::get_options();
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';
@@ -201,9 +201,14 @@ class AMP_Prepare_Data {
 	 */
 	protected static function get_theme_info() {
 
-		return [
-			static::normalize_theme_info( wp_get_theme() ),
-		];
+		$themes   = wp_get_themes();
+		$response = [];
+
+		foreach ( $themes as $theme ) {
+			$response[] = static::normalize_theme_info( $theme );
+		}
+
+		return $response;
 	}
 
 	/**
