@@ -5,7 +5,7 @@ type=$2
 slug=$3
 version=$4
 site_name="$extension_version_slug.local"
-machine_ip=$(curl -s https://icanhazip.com)
+machine_ip="127.0.0.1"
 check_os="$(uname -s)"
 case "${check_os}" in
 	Linux*)     os=linux;;
@@ -83,7 +83,7 @@ function destroy_site() {
 function setup_site() {
 
 	if [[ "mac" == "$os" ]]; then
-		sudo echo "127.0.0.1 $site_name" >>/etc/hosts
+		sudo echo "$machine_ip $site_name" >>/etc/hosts
 	else
 		echo "$machine_ip $site_name" >>/etc/hosts
 	fi
