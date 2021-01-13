@@ -68,6 +68,7 @@ const commands = [
 	'App/Commands/Cache',
 	'App/Commands/UserCreate',
 	'App/Commands/SyntheticDataStart',
+	'App/Commands/SyntheticDataAdd',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };

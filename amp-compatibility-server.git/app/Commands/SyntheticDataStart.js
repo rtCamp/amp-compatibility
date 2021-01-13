@@ -162,7 +162,24 @@ class SyntheticDataStart extends Command {
 
 			for ( const index in result ) {
 				const jobData = result[ index ];
-				await SyntheticDataQueueController.createJob( jobData );
+				const job = {
+					domain: jobData.extension_version_slug,
+					type: jobData.type,
+					plugins: '',
+					plugin_versions: '',
+					theme: '',
+					theme_version: '',
+				};
+
+				if ( 'plugin' === jobData.type ) {
+					job.plugins = jobData.slug;
+					job.plugin_versions = jobData.version;
+				} else if ( 'theme' === jobData.type ) {
+					job.theme = jobData.slug;
+					job.theme_version = jobData.version;
+				}
+
+				await SyntheticDataQueueController.createJob( job );
 				count++;
 			}
 

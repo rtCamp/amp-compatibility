@@ -1,9 +1,33 @@
 #!/usr/bin/env bash
 
-extension_version_slug=$1
-type=$2
-slug=$3
-version=$4
+for i in "$@"; do
+	case $i in
+	-d=* | --domain=*)
+		extension_version_slug="${i#*=}"
+		shift
+		;;
+	-p=* | --plugins=*)
+		plugins="${i#*=}"
+		shift
+		;;
+	-pv=* | --plugin-versions=*)
+		plugin_versions="${i#*=}"
+		shift
+		;;
+	-t=* | --theme=*)
+		theme="${i#*=}"
+		shift
+		;;
+	-tv=* | --theme-version=*)
+		theme_version="${i#*=}"
+		shift
+		;;
+	*)
+		# unknown option
+		;;
+	esac
+done
+
 site_name="$extension_version_slug.local"
 machine_ip="127.0.0.1"
 check_os="$(uname -s)"
@@ -104,14 +128,20 @@ function setup_site() {
 function process_site() {
 
 	cd_plugins
-	[[ -n "$version" ]] && version_string="--version=$version" || version_string=""
 
-	if [[ "$type" == "plugin" ]]; then
-		wp plugin install "$slug" --activate $version_string
-		wp theme install treville --activate
-	else
-		wp theme install "$slug" --activate $version_string
-	fi
+	i=0
+	cs_plugins=(${plugins//,/ })
+	versions=(${plugin_versions//,/ })
+
+	for plugin_slug in "${cs_plugins[@]}"; do
+		[[ -n "${versions[$i]}" ]] && version_string="--version=${versions[$i]}" || version_string=""
+		wp plugin install "$plugin_slug" --activate $version_string
+		i=$((i + 1))
+	done
+
+	theme_slug=${theme:-"treville"}
+	[[ -n "$theme_version" ]] && version_string="--version=$theme_version" || version_string=""
+	wp theme install "$theme_slug" --activate $version_string
 
 	cd_plugins
 	bash amp-wp-dummy-data-generator/start.sh
