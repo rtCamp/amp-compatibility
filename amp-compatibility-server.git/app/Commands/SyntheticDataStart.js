@@ -158,10 +158,21 @@ class SyntheticDataStart extends Command {
 		const result = await BigQuery.query( query );
 		let count = 0;
 
+		const excludeList = [
+			'woocommerce',
+			'contact-form',
+			'bbpress',
+		];
+
 		if ( _.isArray( result ) && ! _.isEmpty( result ) ) {
 
 			for ( const index in result ) {
 				const jobData = result[ index ];
+
+				if ( 'plugin' === jobData.type && excludeList.includes( jobData.slug ) ) {
+					continue;
+				}
+
 				const job = {
 					domain: jobData.extension_version_slug,
 					type: jobData.type,
