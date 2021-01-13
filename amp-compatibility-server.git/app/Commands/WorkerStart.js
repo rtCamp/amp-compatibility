@@ -3,6 +3,7 @@
 const { Command } = require( '@adonisjs/ace' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
+const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
 const Logger = use( 'Logger' );
 
 // Utilities
@@ -33,7 +34,7 @@ class WorkerStart extends Command {
 	 */
 	async handle( args, options ) {
 
-		const allowedWorker = [ 'request', 'synthetic-data' ];
+		const allowedWorker = [ 'request', 'synthetic-data', 'adhoc-synthetic-data' ];
 
 		let workerName = options.name || '';
 		workerName = workerName.toLowerCase().trim();
@@ -51,6 +52,7 @@ class WorkerStart extends Command {
 		Logger.level = 'debug';
 
 		const workerOptions = {
+			name: workerName,
 			concurrency: options.concurrency,
 		};
 
@@ -60,6 +62,9 @@ class WorkerStart extends Command {
 				break;
 			case 'synthetic-data':
 				await SyntheticDataQueueController.startWorker( workerOptions );
+				break;
+			case 'adhoc-synthetic-data':
+				await SyntheticDataQueueAdhocController.startWorker( workerOptions );
 				break;
 		}
 

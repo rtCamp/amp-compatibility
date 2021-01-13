@@ -21,7 +21,7 @@ function bootstrap() {
 	fi
 
 	maybe_install_packages curl wget git tmux
-	create_swap
+	check_swap
 }
 
 function maybe_install_packages() {
@@ -33,6 +33,16 @@ function maybe_install_packages() {
 			apt install -y "$ARG"
 		fi
 	done
+}
+
+function check_swap() {
+
+	log_info2 "Checking swap"
+	if free | awk '/^Swap:/ {exit !$2}'; then
+		:
+	else
+		create_swap
+	fi
 }
 
 function create_swap() {
@@ -52,8 +62,14 @@ function create_swap() {
 }
 
 function install_dependencies() {
-	setup_wo
-	setup_node
+
+	if [ ! command -v wo >/dev/null 2>&1 ]; then
+		setup_wo
+	fi
+
+	if [ ! command -v node >/dev/null 2>&1 ]; then
+		setup_node
+	fi
 }
 
 function setup_wo() {
@@ -91,11 +107,14 @@ function add_gh_pub_key() {
 
 function setup_repo() {
 
-	cd "$HOME"
 	GITHUB_REPOSITORY="$1"
-	GITHUB_ACTOR="rtBot"
-	REMOTE_REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
-	git clone "$REMOTE_REPO"
+	repo_data=(${GITHUB_REPOSITORY//\// })
+	cd "$HOME"
+	if [[ ! -d "${repo_data[1]}" ]]; then
+		GITHUB_ACTOR="rtBot"
+		REMOTE_REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
+		git clone "$REMOTE_REPO"
+	fi
 }
 
 function setup_local_repo() {
@@ -106,6 +125,7 @@ function setup_local_repo() {
 
 function move_dummy_data_repo() {
 
+	mkdir -p /var/www
 	mv "$HOME/amp-wp-dummy-data-generator" /var/www/
 }
 
