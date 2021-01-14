@@ -12,6 +12,22 @@ class ConvertEmptyStringsToNull {
 			);
 		}
 
+
+		const Exception = use('Exception')
+		const Logger = use('Logger')
+
+		Exception.handle('InvalidSessionException', async (error, { request, response, session }) => {
+			Logger.error(error)
+			Logger.info(session.all())
+
+			const dest = request.url()
+			Logger.info(dest)
+			session.put('original-destination', dest)
+
+			// redirect to login
+			return response.redirect('/login', 302)
+		})
+
 		await next();
 	}
 }

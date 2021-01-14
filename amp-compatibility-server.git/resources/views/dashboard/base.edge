@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dashboard</title>
+	{{ style('css/dashboard') }}
+</head>
+<body>
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+	<a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ route('DashboardController.index') }}">Company name</a>
+	<button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse"
+			data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+			aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+	<ul class="navbar-nav px-3">
+		<li class="nav-item text-nowrap">
+			<a class="nav-link" href="{{ route('AuthController.logout') }}">Log out</a>
+		</li>
+	</ul>
+</header>
+
+<div class="container-fluid">
+	<div class="row">
+		<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+			<div class="position-sticky pt-3">
+				<ul class="nav flex-column">
+					@each(menuItem in dashboardMenuItems)
+
+					<li class="nav-item">
+						<a href="{{menuItem.url}}"
+						   class="nav-link {{ menuItem.isActive ? 'active':'' }}">
+							<span data-feather="{{menuItem.icon}}"></span>
+							{{menuItem.title}}
+						</a>
+						@if( menuItem.childs )
+							<ul class="flex-column">
+								@each( item in menuItem.childs )
+								<li class="nav-item {{ item.isActive ? 'active':'' }}">
+									<a class="nav-link" href="{{item.url}}">
+										<span data-feather="{{item.icon}}"></span>
+										{{item.title}}
+									</a>
+								</li>
+								@endeach
+							</ul>
+						@endif
+					</li>
+					@endeach
+				</ul>
+			</div>
+		</nav>
+		<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+				<h1 class="h2">{{dashboardActivePage.title}}</h1>
+			</div>
+			<div>
+				@!section('page')
+			</div>
+		</main>
+	</div>
+</div>
+
+{{ script('js/dashboard') }}
+</body>
+</html>

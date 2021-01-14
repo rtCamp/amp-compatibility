@@ -18,6 +18,26 @@ const Route = use( 'Route' );
 
 Route.on( '/' ).render( 'welcome' );
 
+Route.get( 'login', 'AuthController.renderLogin' );
+Route.post( 'login', 'AuthController.login' );
+Route.get( 'logout', 'AuthController.logout' );
+
+/**
+ * Admin Dashboard.
+ */
+Route.group( () => {
+
+	Route.get( '/', 'DashboardController.index' );
+	Route.get( '/request-queue', 'DashboardController.requestQueue' );
+	Route.get( '/synthetic-queue', 'DashboardController.syntheticQueue' );
+	Route.get( '/adhoc-synthetic-queue', 'DashboardController.adhocSyntheticQueue' );
+	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
+
+} ).prefix( 'admin' ).middleware( 'auth' );
+
+/**
+ * API endpoint.
+ */
 Route.group( () => {
 
 	/**
@@ -25,11 +45,5 @@ Route.group( () => {
 	 */
 	Route.get( 'amp-wp', 'RestController.index' );
 	Route.post( 'amp-wp', 'RestController.store' );
-
-	/**
-	 * Rest APIs for synthetic data generator server.
-	 */
-	Route.get( 'synthetic-data', 'SyntheticDataController.index' ).middleware( 'auth:basic' );
-	Route.post( 'synthetic-data', 'SyntheticDataController.store' ).middleware( 'auth:basic' );
 
 } ).prefix( 'api/v1' );
