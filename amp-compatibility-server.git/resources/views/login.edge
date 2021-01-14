@@ -1,0 +1,39 @@
+@layout( 'index' )
+
+@section( 'page' )
+
+	<div class="text-center form-signin">
+
+		<form action="/login" method="POST" class="row px-5 g-3">
+
+			<h1 class="h3 mb-3 fw-normal">Please login in</h1>
+
+			<div class="col-md-12 text-start">
+				<label for="email" class="visually-hidden">Email address</label>
+				<input name="email" id="email" type="text" placeholder="Email address" value="{{ old('email', '') }}"
+					   class="form-control {{ elIf( '$self', 'is-invalid', hasErrorFor('email')  )  }}">
+				{{ elIf('<small class="invalid-feedback p-1">$self</small>', getErrorFor('email'), hasErrorFor('email')) }}
+			</div>
+
+			<div class="col-md-12 text-start">
+				<label for="password" class="visually-hidden">Password</label>
+				<input name="password" id="password" type="password" placeholder="Password"
+					   class="form-control {{ elIf( '$self', 'is-invalid', hasErrorFor('password')  )  }}">
+				{{ elIf('<small class="invalid-feedback p-1">$self</small>', getErrorFor('password'), hasErrorFor('password')) }}
+			</div>
+
+			<div class="col-md-12 text-start">
+				<label for="remember_me">
+					<input name="remember_me" id="remember_me" type="checkbox" value="true">&nbsp;&nbsp;Remember me
+				</label>
+			</div>
+
+			<div class="col-md-12">
+				<button class="w-100 btn btn-lg btn-primary" type="submit">Login in</button>
+			</div>
+
+
+		</form>
+
+	</div>
+@endsection

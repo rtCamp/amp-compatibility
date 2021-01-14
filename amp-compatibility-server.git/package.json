@@ -5,9 +5,16 @@
 	"description": "AMP compatibility server",
 	"main": "index.js",
 	"scripts": {
-		"start": "node server.js",
+		"start": "npm run prod && node server.js",
 		"test": "node ace test",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"dev": "npm run development",
+		"development": "mix",
+		"watch": "mix watch",
+		"watch-poll": "mix watch -- --watch-options-poll=1000",
+		"hot": "mix watch --hot",
+		"prod": "npm run production",
+		"production": "mix --production"
 	},
 	"keywords": [
 		"adonisjs",
@@ -27,12 +34,16 @@
 		"@adonisjs/logger": "^3.0.4",
 		"@adonisjs/lucid": "^6.2.1",
 		"@adonisjs/redis": "^2.0.7",
+		"@adonisjs/session": "^1.0.29",
 		"@adonisjs/validator": "^5.0.6",
 		"@google-cloud/bigquery": "^5.5.0",
 		"@google-cloud/compute": "^2.4.1",
+		"@popperjs/core": "^2.6.0",
 		"bee-queue": "^1.3.1",
+		"bootstrap": "^5.0.0-beta1",
 		"mysql": "^2.18.1",
 		"ssh-exec": "^2.0.0",
+		"typescript": "^4.1.3",
 		"underscore": "^1.12.0",
 		"wporg-api-client": "^1.0.1"
 	},
@@ -41,7 +52,12 @@
 		"eslint-config-prettier": "^7.1.0",
 		"eslint-plugin-adonis": "^1.0.15",
 		"eslint-plugin-prettier": "^3.3.0",
-		"prettier": "^2.2.1"
+		"laravel-mix": "^6.0.9",
+		"postcss": "^8.2.4",
+		"prettier": "^2.2.1",
+		"resolve-url-loader": "^3.1.0",
+		"sass": "^1.32.4",
+		"sass-loader": "^8.0.2"
 	},
 	"autoload": {
 		"App": "./app"
