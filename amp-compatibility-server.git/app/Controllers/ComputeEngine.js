@@ -153,7 +153,7 @@ class ComputeEngine {
 		}
 
 		const metadata = await this.virtualMachine.getMetadata();
-		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].accessConfigs[ 0 ].natIP;
+		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].networkIP;
 	}
 
 	async delete() {
