@@ -17,7 +17,7 @@ class SyntheticDataAdd extends Command {
 			 { --theme=@value : Theme to test synthetic data for/against. }
 			 { --theme-version=@value : Version of the theme to be used. Defaults to latest. }
 			 { --plugins=@value : Plugin(s) to be used in synthetic data test. Excepts comma seprated values. }
-			 { --plugin-versions=@value : Plugin version(s). Excepts comma seprated value. }
+			 { --plugin-versions=@value : Plugin version(s). Excepts comma separated value. }
 			 { --email=@value : Email id to which mail will be sent with updates and data. }`;
 	}
 

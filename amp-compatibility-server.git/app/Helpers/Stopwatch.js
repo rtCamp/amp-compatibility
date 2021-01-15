@@ -2,6 +2,9 @@
  * Stopwatch class.
  * Reference: https://github.com/joeltok/performance-stopwatch/blob/master/src/index.js
  */
+
+const Logger = use( 'Logger' );
+
 class Stopwatch {
 
 	constructor( options = {} ) {
@@ -89,7 +92,7 @@ class Stopwatch {
 				throw new Error( `option loggerFunc needs to be a function` );
 			}
 		} else {
-			console.log( logString );
+			Logger.debug( logString );
 		}
 	}
 }
