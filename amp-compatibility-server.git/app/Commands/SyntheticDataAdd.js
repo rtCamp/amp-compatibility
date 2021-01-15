@@ -52,8 +52,8 @@ class SyntheticDataAdd extends Command {
 		this.options.theme_version = this.options.theme_version.toString().toLowerCase().trim();
 		this.options.email = this.options.email.toString().toLowerCase().trim();
 
-		if ( ! this.options.domain ) {
-			this.options.domain = Utility.makeHash( this.options );
+		if ( !this.options.domain ) {
+			this.options.domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );
 		}
 
 	}
