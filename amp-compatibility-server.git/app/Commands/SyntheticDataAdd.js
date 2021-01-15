@@ -14,10 +14,8 @@ class SyntheticDataAdd extends Command {
 	static get signature() {
 		return `synthetic-data:add
 			 { --domain=@value : Domain name }
-			 { --theme=@value : Theme to test synthetic data for/against. }
-			 { --theme-version=@value : Version of the theme to be used. Defaults to latest. }
-			 { --plugins=@value : Plugin(s) to be used in synthetic data test. Excepts comma seprated values. }
-			 { --plugin-versions=@value : Plugin version(s). Excepts comma separated value. }
+			 { --theme=@value : Theme to test synthetic data for/against eg. treville:latest. }
+			 { --plugins=@value : Plugin(s) to be used in synthetic data test. Excepts comma seprated values of plugin_name:version. }
 			 { --email=@value : Email id to which mail will be sent with updates and data. }`;
 	}
 
@@ -39,17 +37,13 @@ class SyntheticDataAdd extends Command {
 		this.options = {
 			domain: options.domain || '',
 			plugins: options.plugins || '',
-			plugin_versions: options.pluginVersions || '',
 			theme: options.theme || '',
-			theme_version: options.themeVersion || '',
 			email: options.email || '',
 		};
 
 		this.options.domain = this.options.domain.toString().toLowerCase().trim();
 		this.options.plugins = this.options.plugins.toString().toLowerCase().trim();
-		this.options.plugin_versions = this.options.plugin_versions.toString().toLowerCase().trim();
 		this.options.theme = this.options.theme.toString().toLowerCase().trim();
-		this.options.theme_version = this.options.theme_version.toString().toLowerCase().trim();
 		this.options.email = this.options.email.toString().toLowerCase().trim();
 
 		if ( !this.options.domain ) {
