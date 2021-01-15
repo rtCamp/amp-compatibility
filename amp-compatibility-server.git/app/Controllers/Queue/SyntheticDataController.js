@@ -9,6 +9,7 @@ const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
+const os = require( 'os' );
 
 /**
  * Helper to manage request queue.
@@ -22,6 +23,10 @@ class SyntheticDataController extends Base {
 	 */
 	static get queueName() {
 		return 'synthetic_data_queue';
+	}
+
+	static get concurrency() {
+		return parseInt( os.cpus().length ) * 2;
 	}
 
 	/**
@@ -38,6 +43,27 @@ class SyntheticDataController extends Base {
 		// Terminate the worker if all jobs are completed
 		this.queue.on( 'job succeeded', this.onJobSucceeded );
 
+	}
+
+	/**
+	 * To start worker process.
+	 *
+	 * @returns {Queue}
+	 */
+	static async startWorker( options ) {
+
+		this.processJob = this.processJob.bind( this );
+
+		await this.beforeStartWorker( options );
+
+		let concurrency = parseInt( options.concurrency || this.concurrency );
+
+		if ( ! _.isNumber( concurrency ) || concurrency > this.concurrency ) {
+			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency,  concurrency );
+			concurrency = this.concurrency;
+		}
+
+		return this.queue.process( concurrency, this.processJob );
 	}
 
 	/**
