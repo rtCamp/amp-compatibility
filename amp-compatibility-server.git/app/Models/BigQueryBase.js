@@ -4,6 +4,7 @@ const BigQuery = use( 'App/BigQuery' );
 const Cache = use( 'App/Helpers/Cache' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
+const Encryption = use( 'Encryption' );
 
 class BigQueryBase {
 
@@ -76,7 +77,20 @@ class BigQueryBase {
 	}
 
 	/**
-	 * The attribute name for updated at timestamp.
+	 * The attribute name for created at date time.
+	 *
+	 * @attribute createdAtColumn
+	 *
+	 * @return {String}
+	 *
+	 * @static
+	 */
+	static get createdAtColumn() {
+		return '';
+	}
+
+	/**
+	 * The attribute name for updated at date time.
 	 *
 	 * @attribute updatedAtColumn
 	 *
@@ -142,14 +156,9 @@ class BigQueryBase {
 				return;
 			}
 
-			// Remove updated at field.
-			if ( ! _.isEmpty( this.updatedAtColumn ) ) {
-				delete ( clonedItem[ this.updatedAtColumn ] );
-			}
+			const data = Encryption.encrypt( clonedItem );
 
-			const hash = Utility.makeHash( clonedItem );
-
-			await Cache.set( primaryValue, hash, this.table );
+			await Cache.set( primaryValue, data, this.table );
 		};
 
 		items = Array.isArray( items ) ? items : [ items ];
@@ -182,20 +191,29 @@ class BigQueryBase {
 			return -1;
 		}
 
+		const encryptedStoredItem = await Cache.get( primaryValue, this.table );
+		const storedItem = Encryption.decrypt( encryptedStoredItem );
+
 		const clonedItem = _.clone( item );
 
-		// Remove updated at field.
+		/**
+		 * Do not consider diff of updated_at and created_at field.
+		 * Since those field likely to change every time we proccess data.
+		 */
 		if ( ! _.isEmpty( this.updatedAtColumn ) ) {
 			delete ( clonedItem[ this.updatedAtColumn ] );
+			delete ( storedItem[ this.updatedAtColumn ] );
 		}
 
-		const hash = Utility.makeHash( clonedItem );
-		const storedHash = await Cache.get( primaryValue, this.table );
+		if ( ! _.isEmpty( this.createdAtColumn ) ) {
+			delete ( clonedItem[ this.createdAtColumn ] );
+			delete ( storedItem[ this.createdAtColumn ] );
+		}
 
 		/**
 		 * If we don't have store hash then we need to insert that item.
 		 */
-		if ( ! storedHash ) {
+		if ( ! storedItem ) {
 			return 1;
 		}
 
@@ -203,7 +221,7 @@ class BigQueryBase {
 		 * If we have stored hash and that does not match with new hash
 		 * Then we need to update it.
 		 */
-		if ( storedHash && storedHash !== hash ) {
+		if ( ! _.isEqual( clonedItem, storedItem ) ) {
 			return 2;
 		}
 
@@ -211,7 +229,7 @@ class BigQueryBase {
 		 * If we have stored hash and that match with new hash
 		 * Then we don't need to take any action.
 		 */
-		if ( storedHash && storedHash === hash ) {
+		if ( _.isEqual( clonedItem, storedItem ) ) {
 			return 0;
 		}
 
@@ -231,7 +249,7 @@ class BigQueryBase {
 	 */
 	static async saveMany( items, options = {} ) {
 
-		if ( ! _.isArray( items ) ) {
+		if ( ! _.isArray( items ) && ! _.isObject( items ) ) {
 			return [];
 		}
 
@@ -694,7 +712,7 @@ class BigQueryBase {
 		 * Set updated at field
 		 */
 		if ( ! _.isEmpty( this.updatedAtColumn ) &&
-		     ( ! _.has( item, this.updatedAtColumn ) || _.isEmpty( item[ this.updatedAtColumn ] ) )
+			 ( ! _.has( item, this.updatedAtColumn ) || _.isEmpty( item[ this.updatedAtColumn ] ) )
 		) {
 			item[ this.updatedAtColumn ] = Utility.getCurrentDateTime();
 		}
@@ -706,6 +724,16 @@ class BigQueryBase {
 
 		if ( isNew ) {
 			item = _.defaults( item, this.defaults );
+
+			/**
+			 * Set created at field.
+			 */
+			if ( ! _.isEmpty( this.createdAtColumn ) &&
+				 ( ! _.has( item, this.createdAtColumn ) || _.isEmpty( item[ this.createdAtColumn ] ) )
+			) {
+				item[ this.createdAtColumn ] = Utility.getCurrentDateTime();
+			}
+
 		}
 
 		/**
