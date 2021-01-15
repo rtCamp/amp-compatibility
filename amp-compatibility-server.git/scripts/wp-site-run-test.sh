@@ -10,16 +10,8 @@ for i in "$@"; do
 		plugins="${i#*=}"
 		shift
 		;;
-	-pv=* | --plugin-versions=*)
-		plugin_versions="${i#*=}"
-		shift
-		;;
 	-t=* | --theme=*)
 		theme="${i#*=}"
-		shift
-		;;
-	-tv=* | --theme-version=*)
-		theme_version="${i#*=}"
 		shift
 		;;
 	*)
@@ -129,19 +121,21 @@ function process_site() {
 
 	cd_plugins
 
-	i=0
 	cs_plugins=(${plugins//,/ })
-	versions=(${plugin_versions//,/ })
-
 	for plugin_slug in "${cs_plugins[@]}"; do
-		[[ -n "${versions[$i]}" ]] && version_string="--version=${versions[$i]}" || version_string=""
-		wp plugin install "$plugin_slug" --activate $version_string
-		i=$((i + 1))
+
+		data=(${plugin_slug//:/ })
+		version=${data[1]}
+		[[ -n "${version}" ]] && version_string="--version=${version}" || version_string=""
+
+		wp plugin install "${data[0]}" --activate $version_string
 	done
 
 	theme_slug=${theme:-"treville"}
-	[[ -n "$theme_version" ]] && version_string="--version=$theme_version" || version_string=""
-	wp theme install "$theme_slug" --activate $version_string
+	data=(${theme_slug//:/ })
+	version=${data[1]}
+	[[ -n "${version}" ]] && version_string="--version=${version}" || version_string=""
+	wp theme install "${data[0]}" --activate $version_string
 
 	cd_plugins
 	bash amp-wp-dummy-data-generator/start.sh
