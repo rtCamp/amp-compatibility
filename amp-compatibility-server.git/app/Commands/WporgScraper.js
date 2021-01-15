@@ -12,7 +12,10 @@ const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 // Utilities
 const { exit } = require( 'process' );
 const Utility = use( 'App/Helpers/Utility' );
+const FileSystem = use( 'App/Helpers/FileSystem' );
 const Stopwatch = use( 'App/Helpers/Stopwatch' );
+const Logger = use( 'Logger' );
+const Helpers = use( 'Helpers' );
 const _ = require( 'underscore' );
 
 class WporgScraper extends Command {
@@ -26,6 +29,7 @@ class WporgScraper extends Command {
 		return `wporg:scraper
 			 { --only-themes : Fetch all the themes. }
 			 { --only-plugins : Fetch all the plugins. }
+			 { --only-store-in-local : It will only store data in local directory, And won't import in BigQuery. }
 			 { --browse=@value : Predefined query ordering. Possible values are popular,featured,updated and new }
 			 { --use-stream : Use stream method to if possible. Fast but with certain limitation. Reference - //cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations }
 			 { --per-page=@value : Number of theme/plugin need to fetch per API call ( Min= 2, Max= 100 ). }
@@ -130,6 +134,7 @@ class WporgScraper extends Command {
 			pluginStartFrom: parseInt( flags.pluginStartFrom ) || 1,
 			useStream: ( true === flags.useStream ),
 			browse: ( ! _.isEmpty( flags.browse ) && allowedBrowse.includes( flags.browse ) ) ? flags.browse : 'popular',
+			onlyStoreInLocal: ( true === flags.onlyStoreInLocal ),
 		};
 
 		try {
@@ -195,8 +200,8 @@ class WporgScraper extends Command {
 
 			const results = await this.importPluginsByPage( page );
 
-			for ( let index in results ) {
-				console.log( `Response of "${ index }": `, Utility.jsonPrettyPrint( results[ index ] ) );
+			if ( ! this.options.onlyStoreInLocal ) {
+				Logger.info( Utility.jsonPrettyPrint( results ) );
 			}
 
 			stopwatch.stop();
@@ -239,8 +244,8 @@ class WporgScraper extends Command {
 
 			const results = await this.importThemesByPage( page );
 
-			for ( let index in results ) {
-				console.log( `Response of "${ index }": `, Utility.jsonPrettyPrint( results[ index ] ) );
+			if ( ! this.options.onlyStoreInLocal ) {
+				Logger.info( Utility.jsonPrettyPrint( results ) );
 			}
 
 			stopwatch.stop();
@@ -281,6 +286,13 @@ class WporgScraper extends Command {
 			const pluginData = responsePlugins[ index ];
 
 			if ( ! _.isObject( pluginData ) || ! _.has( pluginData, 'slug' ) ) {
+				continue;
+			}
+
+			// Store in local directory.
+			await this.saveJSON( 'plugin', pluginData );
+
+			if ( this.options.onlyStoreInLocal ) {
 				continue;
 			}
 
@@ -348,6 +360,13 @@ class WporgScraper extends Command {
 			const themeData = responseThemes[ index ];
 
 			if ( ! _.isObject( themeData ) || ! _.has( themeData, 'slug' ) ) {
+				continue;
+			}
+
+			// Store in local directory.
+			await this.saveJSON( 'theme', themeData );
+
+			if ( this.options.onlyStoreInLocal ) {
 				continue;
 			}
 
@@ -596,6 +615,29 @@ class WporgScraper extends Command {
 		throw error;
 	}
 
+	/**
+	 * To save content of wp.org in respected JSON file.
+	 *
+	 * @param {String} type Either "plugin"
+	 * @param {Object} data Data that need to save.
+	 *
+	 * @return {Promise<boolean>} True on success otherwise False.
+	 */
+	async saveJSON( type, data ) {
+
+		if ( _.isEmpty( type ) || _.isEmpty( data ) ) {
+			return false;
+		}
+
+		let slug = data.slug || '';
+
+		type = type.toString().toLowerCase();
+		slug = slug.toString().toLowerCase();
+
+		const fileToSave = Helpers.appRoot() + `/data/${ type }/${ slug }/info.json`;
+
+		return ( await FileSystem.writeFile( fileToSave, Utility.jsonPrettyPrint( data ) ) );
+	}
 }
 
 module.exports = WporgScraper;
