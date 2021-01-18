@@ -38,8 +38,8 @@
 						@if( menuItem.childs )
 							<ul class="flex-column">
 								@each( item in menuItem.childs )
-								<li class="nav-item {{ item.isActive ? 'active':'' }}">
-									<a class="nav-link" href="{{item.url}}">
+								<li class="nav-item">
+									<a class="nav-link {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
 										<span data-feather="{{item.icon}}"></span>
 										{{item.title}}
 									</a>

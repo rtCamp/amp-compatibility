@@ -52,7 +52,9 @@ class DashboardController {
 	adhocSyntheticQueue() {
 	}
 
-	addAdhocSyntheticQueue() {
+	addAdhocSyntheticQueue( { view } ) {
+
+		return view.render( 'dashboard/add-adhoc-synthetic' );
 	}
 }
 

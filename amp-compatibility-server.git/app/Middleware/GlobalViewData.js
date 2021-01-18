@@ -55,43 +55,43 @@ class GlobalViewData {
 	getDashboardMenuItems( request ) {
 
 		let currentRequest = request.url()
-		currentRequest = currentRequest.toString().toLowerCase().replace( /\//g, '' );
+		currentRequest = currentRequest.toString().toLowerCase();
 
 		return {
 			dashboard: {
 				title: 'Dashboard',
 				icon: 'home',
-				url: 'admin',
-				isActive: ( 'admin' === currentRequest ),
+				url: '/admin',
+				isActive: ( '/admin' === currentRequest ),
 			},
 			requestQueue: {
 				title: 'Request Queue',
 				icon: '',
-				url: 'admin/request-queue',
-				isActive: ( 'admin/request-queue' === currentRequest ),
+				url: '/admin/request-queue',
+				isActive: ( '/admin/request-queue' === currentRequest ),
 			},
 			syntheticQueue: {
 				title: 'Synthetic Data Queue',
-				url: 'admin/synthetic-queue',
-				isActive: ( 'admin/synthetic-queue' === currentRequest ),
+				url: '/admin/synthetic-queue',
+				isActive: ( '/admin/synthetic-queue' === currentRequest ),
 			},
 			adhocSyntheticQueue: {
 				title: 'Adhoc Synthetic Data Queue',
 				icon: '',
-				url: 'admin/adhoc-synthetic-queue',
-				isActive: ( 'admin/adhoc-synthetic-queue' === currentRequest ),
+				url: '/admin/adhoc-synthetic-queue',
+				isActive: ( '/admin/adhoc-synthetic-queue' === currentRequest ),
 				childs: {
 					list: {
 						title: 'All Adhoc Requests',
 						icon: '',
-						url: 'admin/adhoc-synthetic-queue',
-						isActive: ( 'admin/adhoc-synthetic-queue' === currentRequest ),
+						url: '/admin/adhoc-synthetic-queue',
+						isActive: ( '/admin/adhoc-synthetic-queue' === currentRequest ),
 					},
 					add: {
 						title: 'Add Adhoc Requests',
 						icon: '',
-						url: 'admin/adhoc-synthetic-queue/add',
-						isActive: ( 'admin/adhoc-synthetic-queue/add' === currentRequest ),
+						url: '/admin/adhoc-synthetic-queue/add',
+						isActive: ( '/admin/adhoc-synthetic-queue/add' === currentRequest ),
 					},
 				},
 			},
