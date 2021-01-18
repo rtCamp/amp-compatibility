@@ -29,8 +29,8 @@ jobs:
         ENV: ${{ secrets.ENV }}
         APP_YAML: ${{ secrets.APP_YAML }}
 
-    - name: npm i
-      run: npm i
+    - name: Install modules and asset build
+      run: npm i && npm run prod
 
     - name: Deploy to App Engine
       run: gcloud app deploy --promote -q
