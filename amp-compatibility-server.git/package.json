@@ -5,7 +5,7 @@
 	"description": "AMP compatibility server",
 	"main": "index.js",
 	"scripts": {
-		"start": "npm run prod && node server.js",
+		"start": "node server.js",
 		"test": "node ace test",
 		"format": "prettier --write .",
 		"dev": "npm run development",
