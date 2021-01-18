@@ -197,6 +197,13 @@ class BigQueryBase {
 		const clonedItem = _.clone( item );
 
 		/**
+		 * If we don't have store hash then we need to insert that item.
+		 */
+		if ( ! storedItem ) {
+			return 1;
+		}
+
+		/**
 		 * Do not consider diff of updated_at and created_at field.
 		 * Since those field likely to change every time we proccess data.
 		 */
@@ -208,13 +215,6 @@ class BigQueryBase {
 		if ( ! _.isEmpty( this.createdAtColumn ) ) {
 			delete ( clonedItem[ this.createdAtColumn ] );
 			delete ( storedItem[ this.createdAtColumn ] );
-		}
-
-		/**
-		 * If we don't have store hash then we need to insert that item.
-		 */
-		if ( ! storedItem ) {
-			return 1;
 		}
 
 		/**
