@@ -13,6 +13,18 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
 }
 
+\WP_CLI::add_command( 'setup-amp-site', function ( $args = [], $assoc_args = [] ) {
+
+
+	$amp_settings = get_option( 'amp-options', [] );
+	$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
+
+	$amp_settings['theme_support'] = 'standard';
+
+	update_option( 'amp-options', $amp_settings );
+
+} );
+
 \WP_CLI::add_command( 'amp-send-data', function ( $args = [], $assoc_args = [] ) {
 
 	$is_print = filter_var( get_flag_value( $assoc_args, 'print' ), FILTER_SANITIZE_STRING );
@@ -105,7 +117,13 @@ class AMP_Prepare_Data {
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$amp_settings = AMP_Options_Manager::get_options();
+		$default = [];
+
+		if ( class_exists( 'AMP_Options_Manager' ) ) {
+			$default = AMP_Options_Manager::get_options();
+		}
+
+		$amp_settings = get_option( 'amp-options', $default );
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';

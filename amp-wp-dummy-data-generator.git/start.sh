@@ -19,6 +19,8 @@ setup_site() {
   wp plugin install --activate block-unit-test
   wp plugin install --activate coblocks
 
+  wp setup-amp-site
+
   wp plugin activate amp-wp-dummy-data-generator
 }
 
