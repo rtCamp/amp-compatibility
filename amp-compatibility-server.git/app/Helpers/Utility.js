@@ -215,6 +215,18 @@ class Utility {
 			} );
 		} );
 	}
+
+	/**
+	 * To get random number between two number.
+	 *
+	 * @param {number} min Minimum number.
+	 * @param {number} max Maximum number.
+	 *
+	 * @return {number} Random number between.
+	 */
+	static random( min = 0, max = 100 ) {
+		return Math.floor( ( Math.random() * max ) + min );
+	}
 }
 
 module.exports = Utility;
