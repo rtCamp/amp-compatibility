@@ -95,7 +95,7 @@ class SyntheticDataController extends Base {
 	 * @returns {*}
 	 */
 	static async processJob( job, done ) {
-		this.site = job.data.extension_version_slug || '';
+		this.site = job.data.domain || '';
 		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
 
 		const siteInstance = new WordPressSite();
