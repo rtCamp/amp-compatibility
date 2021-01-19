@@ -28,7 +28,7 @@ function maybe_install_packages() {
 
 	apt update
 	for ARG in "$@"; do
-		if [ ! command -v "$ARG" > /dev/null 2>&1 ]; then
+		if ! command -v "$ARG" > /dev/null 2>&1; then
 			log_info2 "Installing package: $ARG"
 			apt install -y "$ARG"
 		fi
@@ -63,11 +63,11 @@ function create_swap() {
 
 function install_dependencies() {
 
-	if [ ! command -v wo >/dev/null 2>&1 ]; then
+	if ! command -v wo; then
 		setup_wo
 	fi
 
-	if [ ! command -v node >/dev/null 2>&1 ]; then
+	if ! command -v node >/dev/null 2>&1; then
 		setup_node
 	fi
 }
@@ -97,6 +97,7 @@ function setup_node() {
 
 	# Install adonis cli
 	npm install -g @adonisjs/cli
+	npm install -g pm2
 }
 
 function add_gh_pub_key() {

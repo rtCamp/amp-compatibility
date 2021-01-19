@@ -79,6 +79,13 @@ task( 'permissions:set', function () {
 	writeln( '<info>' . $output . '</info>' );
 } );
 
+desc( 'Restart pm2' );
+task( 'restart:pm2', function () {
+
+	$output = run( 'cd {{release_path}} && pm2 restart ecosystem.config.js' );
+	writeln( '<info>' . $output . '</info>' );
+} );
+
 /*   deployment task   */
 desc( 'Deploy the project' );
 task( 'deploy', [
@@ -91,6 +98,7 @@ task( 'deploy', [
 	'deploy:shared',
 	'deploy:symlink',
 	'permissions:set',
+	'restart:pm2',
 	'deploy:unlock',
 	'cleanup',
 ] );
