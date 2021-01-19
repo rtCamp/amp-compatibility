@@ -110,6 +110,10 @@ function setup_site() {
 	wp plugin install --activate amp
 	wp plugin delete nginx-helper
 
+	tmp_path="$(get_site_path)/tmp"
+	mkdir -p "$tmp_path"
+	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
+
 	cd_plugins
 	ln -sn "$sites_root/amp-wp-dummy-data-generator" .
 	wp plugin activate amp-wp-dummy-data-generator
