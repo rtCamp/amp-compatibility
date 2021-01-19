@@ -63,7 +63,7 @@ function create_swap() {
 
 function install_dependencies() {
 
-	if ! command -v wo; then
+	if ! command -v wo >/dev/null 2>&1; then
 		setup_wo
 	fi
 
