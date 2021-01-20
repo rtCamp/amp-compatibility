@@ -10,6 +10,7 @@ const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataCo
 const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
 
 const Utility = use( 'App/Helpers/Utility' );
+const _ = require( 'underscore' );
 
 class DashboardController {
 
@@ -55,6 +56,36 @@ class DashboardController {
 	addAdhocSyntheticQueue( { view } ) {
 
 		return view.render( 'dashboard/add-adhoc-synthetic' );
+	}
+
+	async addAdhocSyntheticQueueFetch( { view, request, response, session } ) {
+
+		const data = {};
+		const theme = request.input( 'theme' );
+		const plugins = _.filter( request.input( 'plugins' ), ( value ) => {
+			return ( ! _.isEmpty( value ) );
+		} );
+
+		if ( _.isEmpty( theme ) && _.isEmpty( plugins ) ) {
+			data.errorNotification = 'Please provide either theme or plugins.';
+			return view.render( 'dashboard/add-adhoc-synthetic', data );
+		}
+
+		const domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );
+		const job = {
+			domain: domain,
+			plugins: plugins.join( ',' ),
+		};
+
+		if ( ! _.isEmpty( theme ) ) {
+			job.theme = theme;
+		}
+
+		await SyntheticDataQueueAdhocController.createJob( job );
+
+		data.successNotification = `Job has been added with domain "${ domain }.local"`;
+
+		return view.render( 'dashboard/add-adhoc-synthetic', data );
 	}
 }
 

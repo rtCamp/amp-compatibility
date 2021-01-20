@@ -32,7 +32,7 @@ Route.group( () => {
 	Route.get( '/synthetic-queue', 'DashboardController.syntheticQueue' );
 	Route.get( '/adhoc-synthetic-queue', 'DashboardController.adhocSyntheticQueue' );
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
-
+	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
 } ).prefix( 'admin' ).middleware( 'auth' );
 
 /**
@@ -45,5 +45,8 @@ Route.group( () => {
 	 */
 	Route.get( 'amp-wp', 'RestController.index' );
 	Route.post( 'amp-wp', 'RestController.store' );
+
+	Route.get( 'list-plugins', 'RestController.listPlugins' );
+	Route.get( 'list-themes', 'RestController.listThemes' );
 
 } ).prefix( 'api/v1' );
