@@ -70,6 +70,7 @@ const commands = [
 	'App/Commands/UserCreate',
 	'App/Commands/SyntheticDataStart',
 	'App/Commands/SyntheticDataAdd',
+	'App/Commands/ExtensionMappingUpdate',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };
