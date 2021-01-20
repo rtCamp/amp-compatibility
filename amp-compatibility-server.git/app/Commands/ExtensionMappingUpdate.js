@@ -93,8 +93,8 @@ class ExtensionMappingUpdate extends Command {
 
 			} while ( _.isObject( nextQuery ) );
 
-			const pluginPath = Helpers.appRoot() + `/data/wporg_mapping/plugins.json`;
-			const themePath = Helpers.appRoot() + `/data/wporg_mapping/themes.json`;
+			const pluginPath = Helpers.publicPath( '/data/wporg_mapping/plugins.json' );
+			const themePath = Helpers.publicPath( '/data/wporg_mapping/themes.json' );
 
 			await FileSystem.writeFile( pluginPath, JSON.stringify( plugins ) );
 			await FileSystem.writeFile( themePath, JSON.stringify( themes ) );
