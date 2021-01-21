@@ -227,6 +227,34 @@ class Utility {
 	static random( min = 0, max = 100 ) {
 		return Math.floor( ( Math.random() * max ) + min );
 	}
+
+	/**
+	 * To parse extension string that passed in Adhoc synthetic data generation queue to object.
+	 *
+	 * @param {String} extensionsString extension string.
+	 *
+	 * @return {Array}
+	 */
+	static parseSyntheticExtensionParam( extensionsString ) {
+
+		if ( _.isEmpty( extensionsString ) || ! _.isString( extensionsString ) ) {
+			return [];
+		}
+
+		const extensionStrings = extensionsString.split( ',' );
+		const extensions = [];
+
+		for ( const index in extensionStrings ) {
+			const part = extensionStrings[ index ].toString().split( ':' );
+			extensions.push( {
+				name: part[ 0 ],
+				version: part[ 1 ],
+			} );
+		}
+
+		return extensions;
+
+	}
 }
 
 module.exports = Utility;

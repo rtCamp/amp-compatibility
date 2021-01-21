@@ -5,6 +5,7 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const View = use( 'View' );
+const Templates = use( 'App/Controllers/Templates' );
 
 class GlobalViewData {
 
@@ -13,11 +14,12 @@ class GlobalViewData {
 	 *
 	 * @param {object} ctx
 	 * @param {Request} ctx.request
+	 * @param {Object} ctx.params
 	 * @param {Function} next
 	 *
 	 * @return void
 	 */
-	async handle( { request }, next ) {
+	async handle( { request, params }, next ) {
 
 		const dashboardMenuItems = this.getDashboardMenuItems( request );
 		let dashboardActivePage = dashboardMenuItems.dashboard;
@@ -38,6 +40,15 @@ class GlobalViewData {
 
 		View.global( 'dashboardMenuItems', dashboardMenuItems );
 		View.global( 'dashboardActivePage', dashboardActivePage );
+		View.global( 'params', params );
+		View.global( 'snackCaseToString', ( string ) => {
+			return string.replace( /_+/g, ' ' );
+		} );
+
+		/**
+		 * Templates.
+		 */
+		View.global( 'renderPagination', Templates.renderPagination );
 
 		await next()
 	}
@@ -68,30 +79,30 @@ class GlobalViewData {
 				title: 'Request Queue',
 				icon: '',
 				url: '/admin/request-queue',
-				isActive: ( '/admin/request-queue' === currentRequest ),
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/request-queue' ) ),
 			},
 			syntheticQueue: {
 				title: 'Synthetic Data Queue',
 				url: '/admin/synthetic-queue',
-				isActive: ( '/admin/synthetic-queue' === currentRequest ),
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/synthetic-queue' ) ),
 			},
 			adhocSyntheticQueue: {
 				title: 'Adhoc Synthetic Data Queue',
 				icon: '',
 				url: '/admin/adhoc-synthetic-queue',
-				isActive: ( '/admin/adhoc-synthetic-queue' === currentRequest ),
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
 				childs: {
 					list: {
 						title: 'All Adhoc Requests',
 						icon: '',
 						url: '/admin/adhoc-synthetic-queue',
-						isActive: ( '/admin/adhoc-synthetic-queue' === currentRequest ),
+						isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
 					},
 					add: {
 						title: 'Add Adhoc Requests',
 						icon: '',
 						url: '/admin/adhoc-synthetic-queue/add',
-						isActive: ( '/admin/adhoc-synthetic-queue/add' === currentRequest ),
+						isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
 					},
 				},
 			},

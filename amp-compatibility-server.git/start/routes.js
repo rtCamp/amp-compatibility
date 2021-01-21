@@ -28,9 +28,17 @@ Route.get( 'logout', 'AuthController.logout' );
 Route.group( () => {
 
 	Route.get( '/', 'DashboardController.index' );
-	Route.get( '/request-queue', 'DashboardController.requestQueue' );
-	Route.get( '/synthetic-queue', 'DashboardController.syntheticQueue' );
-	Route.get( '/adhoc-synthetic-queue', 'DashboardController.adhocSyntheticQueue' );
+
+	Route.get( '/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)', 'DashboardController.renderQueue' );
+	Route.get(
+		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
+		'DashboardController.renderQueue'
+	);
+	Route.get(
+		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)/page/:paged',
+		'DashboardController.renderQueue'
+	);
+
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
 	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
 } ).prefix( 'admin' ).middleware( 'auth' );
