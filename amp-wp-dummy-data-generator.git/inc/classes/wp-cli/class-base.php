@@ -39,6 +39,13 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	public $dry_run = true;
 
 	/**
+	 * To exclude default test content command.
+	 *
+	 * @var bool
+	 */
+	public $exclude_default = false;
+
+	/**
 	 * Log file.
 	 *
 	 * @var string Log file.
@@ -63,11 +70,16 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 
 		$assoc_args = ( ! empty( $assoc_args ) && is_array( $assoc_args ) ) ? $assoc_args : [];
 
-		$this->assoc_args = $assoc_args;
-		$this->log_file   = filter_var( get_flag_value( $assoc_args, 'log-file' ), FILTER_SANITIZE_STRING );
-		$this->logs       = filter_var( get_flag_value( $assoc_args, 'logs', true ), FILTER_VALIDATE_BOOLEAN );
-		$this->dry_run    = filter_var( get_flag_value( $assoc_args, 'dry-run', true ), FILTER_VALIDATE_BOOLEAN );
+		$this->assoc_args      = $assoc_args;
+		$this->log_file        = filter_var( get_flag_value( $assoc_args, 'log-file' ), FILTER_SANITIZE_STRING );
+		$this->logs            = filter_var( get_flag_value( $assoc_args, 'logs', true ), FILTER_VALIDATE_BOOLEAN );
+		$this->dry_run         = filter_var( get_flag_value( $assoc_args, 'dry-run', true ), FILTER_VALIDATE_BOOLEAN );
+		$this->exclude_default = filter_var( get_flag_value( $assoc_args, 'exclude-default', false ), FILTER_VALIDATE_BOOLEAN );
 
+		/**
+		 * Define const so other class can check whether default content need to import or not.
+		 */
+		define( 'AMP_WP_DUMMY_DATA_GENERATOR_EXCLUDE_DEFAULT', $this->exclude_default );
 	}
 
 	/**
@@ -148,6 +160,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	 * @return void
 	 */
 	protected function error( $message ) {
+
 		$this->write_log( $message, -1 );
 	}
 
@@ -161,6 +174,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	 * @return void
 	 */
 	protected function success( $message ) {
+
 		$this->write_log( $message, 1 );
 	}
 
@@ -174,6 +188,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	 * @return void
 	 */
 	protected function warning( $message ) {
+
 		$this->write_log( $message, 2 );
 	}
 

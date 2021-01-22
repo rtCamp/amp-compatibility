@@ -123,9 +123,17 @@ class Commands extends Base {
 	}
 
 	/**
-	 * To get list of command that need
+	 * To get list of command that need to execute before or after setup.
 	 *
 	 * ## OPTIONS
+	 * [--exclude-default]
+	 * : Whether or not we need to import default test content or not.
+	 * ---
+	 * default: false
+	 * options:
+	 *  - true
+	 *  - false
+	 *
 	 * [--type=<type>]
 	 * : Which command need to get. Is it commands for before importing or after importing.
 	 * ---
@@ -196,6 +204,14 @@ class Commands extends Base {
 	 * To run custom code before or after importing data.
 	 *
 	 * ## OPTIONS
+	 * [--exclude-default]
+	 * : Whether or not we need to import default test content or not.
+	 * ---
+	 * default: false
+	 * options:
+	 *  - true
+	 *  - false
+	 *
 	 * [--type=<type>]
 	 * : Which command need to get. Is it commands for before importing or after importing.
 	 * ---
@@ -244,6 +260,15 @@ class Commands extends Base {
 	/**
 	 * To generate template pages.
 	 *
+	 * ## OPTIONS
+	 * [--exclude-default]
+	 * : Whether or not we need to import default test content or not.
+	 * ---
+	 * default: false
+	 * options:
+	 *  - true
+	 *  - false
+	 *
 	 * ## EXAMPLES
 	 *
 	 *      wp amp-wp-dummy-data-generator get_import_files
@@ -263,13 +288,15 @@ class Commands extends Base {
 
 		$import_files = [];
 
-		/**
-		 * WordPress default sample data.
-		 */
-		$import_files['themeunittestdata.wordpress.xml'] = 'https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml';
+		if ( empty( $this->exclude_default ) ) {
+			/**
+			 * WordPress default sample data.
+			 */
+			$import_files['themeunittestdata.wordpress.xml'] = 'https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml';
 
-		if ( self::is_gutenberg_active() ) {
-			$import_files['gutenberg-test-data.xml'] = 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/gutenberg-test-data.xml';
+			if ( self::is_gutenberg_active() ) {
+				$import_files['gutenberg-test-data.xml'] = 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/gutenberg-test-data.xml';
+			}
 		}
 
 		foreach ( $this->theme_configs as $theme_config ) {
@@ -315,6 +342,15 @@ class Commands extends Base {
 
 	/**
 	 * To generate template pages.
+	 *
+	 * ## OPTIONS
+	 * [--exclude-default]
+	 * : Whether or not we need to import default test content or not.
+	 * ---
+	 * default: false
+	 * options:
+	 *  - true
+	 *  - false
 	 *
 	 * ## EXAMPLES
 	 *
