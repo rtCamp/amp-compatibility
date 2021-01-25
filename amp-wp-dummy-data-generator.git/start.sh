@@ -1,10 +1,28 @@
 #!/usr/bin/env bash
 
-set -ex
-
 plugin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-[[ -n "$1" ]] && url_flag="$1" || url_flag=""
+# [[ -n "$1" ]] && url_flag="$1" || url_flag=""
+
+exclude_default_flag=""
+
+for i in "$@"; do
+	case $i in
+	--url=*)
+		url="${i#*=}"
+		url_flag="--url=$url"
+		shift
+		;;
+	--exclude-default*)
+		exclude_default_flag="--exclude-default"
+		shift
+		;;
+	*)
+		# unknown option
+		;;
+	esac
+done
+
 
 function wp() {
   wp_path=$(which wp)
@@ -19,8 +37,6 @@ setup_site() {
   wp plugin install --activate block-unit-test
   wp plugin install --activate coblocks
 
-  wp setup-amp-site
-
   wp plugin activate amp-wp-dummy-data-generator
 }
 
@@ -28,7 +44,7 @@ setup_site() {
 actions_before_importing() {
 
   # CLI commands.
-  commands=$(wp amp-wp-dummy-data-generator get_commands --type=before)
+  commands=$(wp amp-wp-dummy-data-generator get_commands --type=before "$exclude_default_flag")
   IFS='|' read -ra command_array <<< "$commands"
 
   for command in "${command_array[@]}"; do
@@ -36,7 +52,7 @@ actions_before_importing() {
   done
 
   # Custom actions.
-  wp amp-wp-dummy-data-generator run_custom --type=before
+  wp amp-wp-dummy-data-generator run_custom --type=before "$exclude_default_flag"
 
 }
 
@@ -44,7 +60,7 @@ actions_before_importing() {
 import_data() {
 
   # Import data from XML file.
-  import_files=$(wp amp-wp-dummy-data-generator get_import_files)
+  import_files=$(wp amp-wp-dummy-data-generator get_import_files "$exclude_default_flag")
 
   IFS='|' read -ra import_files_array <<< "$import_files"
 
@@ -53,7 +69,7 @@ import_data() {
   done
 
   # Generate custom content.
-  wp amp-wp-dummy-data-generator generate
+  wp amp-wp-dummy-data-generator generate "$exclude_default_flag"
 
 }
 
@@ -61,7 +77,7 @@ import_data() {
 actions_after_importing() {
 
   # CLI commands
-  commands=$(wp amp-wp-dummy-data-generator get_commands --type=after)
+  commands=$(wp amp-wp-dummy-data-generator get_commands --type=after "$exclude_default_flag")
   IFS='|' read -ra command_array <<< "$commands"
 
   for command in "${command_array[@]}"; do
@@ -69,7 +85,7 @@ actions_after_importing() {
   done
 
   # Custom actions.
-  wp amp-wp-dummy-data-generator run_custom --type=after
+  wp amp-wp-dummy-data-generator run_custom --type=after "$exclude_default_flag"
 
 }
 
