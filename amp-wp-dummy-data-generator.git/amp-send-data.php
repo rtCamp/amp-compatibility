@@ -21,6 +21,10 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 
 	$amp_settings['theme_support'] = 'standard';
 
+	if ( class_exists( 'AMP_Post_Type_Support' ) ) {
+		$amp_settings['supported_post_types'] = AMP_Post_Type_Support::get_eligible_post_types();
+	}
+
 	update_option( 'amp-options', $amp_settings );
 
 } );
