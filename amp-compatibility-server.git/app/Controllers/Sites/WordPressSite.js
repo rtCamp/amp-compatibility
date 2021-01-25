@@ -20,7 +20,7 @@ class WordPressSite {
 
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
-		const bashFilePath = `${ projectRoot }scripts/wp-site-run-test.sh`;
+		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
 
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
