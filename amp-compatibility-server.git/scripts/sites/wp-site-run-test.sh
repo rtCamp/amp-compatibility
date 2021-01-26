@@ -27,19 +27,49 @@ if [[ "prod" != "$environment" ]]; then
 	amp_endpoint_flag="--endpoint=$amp_endpoint"
 fi
 
+source "$base_dir/functions.sh"
+
+function setup_site() {
+
+	if [[ "mac" == "$os" ]]; then
+		sudo echo "$machine_ip $site_domain" >>/etc/hosts
+	else
+		echo "$machine_ip $site_domain" >>/etc/hosts
+	fi
+
+	create_site
+
+	cd_site
+
+	plugin_dirs=(amp amp-wp-dummy-data-generator wordpress-importer block-unit-test coblocks)
+	for plugin_dir in "${plugin_dirs[@]}"; do
+		ln -sn "$sites_root/repos/$plugin_dir" "$(get_site_path)/wp-content/plugins/$plugin_dir"
+	done
+
+	ln -sn "$sites_root/repos/treville" "$(get_site_path)/wp-content/themes/treville"
+
+	wp plugin delete nginx-helper
+
+	tmp_path="$(get_site_path)/tmp"
+	mkdir -p "$tmp_path"
+	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
+
+	wp cache flush
+	wp rewrite flush
+}
+
+
 function process_site() {
 
 	cd_site
 
 	wp db import "$sites_root/repos/base-site.mysql"
+	uploads_path="$(get_site_path)/wp-content/uploads"
+	rm -rf "$uploads_path"
+	ln -sn "$sites_root/repos/uploads" "$uploads_path"
 
-	cp -a "$sites_root/repos" "$(get_site_path)/wp-content/uploads"
-
-	if [[ "mac" == "$os" ]]; then
-		wp search-replace 'base-site.test' "$site_domain" --network
-	else
-		wp search-replace 'base-site.local' "$site_domain" --network
-	fi
+	wp config set "WP_HOME" "http://$site_domain" --add=true --type=constant
+	wp config set "WP_SITEURL" "http://$site_domain" --add=true --type=constant
 
 	wp plugin install --activate amp
 	wp plugin activate amp-wp-dummy-data-generator
@@ -76,33 +106,30 @@ function process_amp() {
 	wp amp-send-data $amp_endpoint_flag
 }
 
-source "$base_dir/base.sh"
-
 function main() {
 
-	start=`date +%s`
+	start=$(date +%s)
 
 	## Setup base site.
-	setup_base_site
-	setup_site_time=`date +%s`
+	setup_site
+	setup_site_time=$(date +%s)
 
 	process_site
-	process_site_time=`date +%s`
+	process_site_time=$(date +%s)
 
 	process_amp
-	process_amp_time=`date +%s`
+	process_amp_time=$(date +%s)
 
 	destroy_site
-	destroy_site_time=`date +%s`
+	destroy_site_time=$(date +%s)
 
-	end=`date +%s`
+	end=$(date +%s)
 
-	echo Setup site   : `expr $setup_site_time - $start` seconds.
-	echo Process site : `expr $process_site_time - $setup_site_time` seconds.
-	echo AMP process  : `expr $process_amp_time - $process_site_time` seconds.
-	echo Destroy site : `expr $destroy_site_time - $process_amp_time` seconds.
-	echo Total        : `expr $end - $start` seconds.
-
+	echo "Setup site   : $(expr $setup_site_time - $start) seconds."
+	echo "Process site : $(expr $process_site_time - $setup_site_time) seconds."
+	echo "AMP process  : $(expr $process_amp_time - $process_site_time) seconds."
+	echo "Destroy site : $(expr $destroy_site_time - $process_amp_time) seconds."
+	echo "Total        : $(expr $end - $start) seconds."
 }
 
 main

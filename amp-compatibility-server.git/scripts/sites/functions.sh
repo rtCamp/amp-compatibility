@@ -3,9 +3,9 @@
 ### Machine IP.
 machine_ip="127.0.0.1"
 
-wp_admin_user="admin"
+wp_admin_user="rtcamp"
 wp_admin_password="goodwork"
-wp_admin_email="robot@rtcamp.com"
+wp_admin_email="rtbot@rtcamp.com"
 
 ### Find operating system.
 check_os="$(uname -s)"
@@ -93,24 +93,19 @@ function setup_base_site() {
 
 	cd_site
 
-	ln -sn "$sites_root/repos/treville" "$(get_site_path)/wp-content/themes/"
-	ln -sn "$sites_root/repos/amp-wp-dummy-data-generator" "$(get_site_path)/wp-content/plugins/"
+	ln -sn "$sites_root/repos/amp-wp-dummy-data-generator" "$(get_site_path)/wp-content/plugins/amp-wp-dummy-data-generator"
 
 	## Set wp-configs.
 	tmp_path="$(get_site_path)/tmp"
 	mkdir -p "$tmp_path"
 	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
 
-	## Setup site.
-	wp core install --url="$site_domain" --title="$site_name" --admin_user="$wp_admin_user" --admin_password="$wp_admin_password" --admin_email="$wp_admin_email"
-
 	## Activate deactivate plugins.
 	wp plugin delete nginx-helper
+	wp plugin install --activate amp
 	wp plugin activate amp-wp-dummy-data-generator
-
 	wp theme install treville --activate
 
 	wp cache flush
 	wp rewrite flush
-
 }
