@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 log_info1() {
 
 	declare desc="log info1 formatter"
@@ -126,8 +128,12 @@ function setup_local_repo() {
 
 function move_dummy_data_repo() {
 
-	mkdir -p /var/www
-	mv "$HOME/amp-wp-dummy-data-generator" /var/www/
+	mkdir -p /var/www/repos
+	mv "$HOME/amp-wp-dummy-data-generator" /var/www/repos
+}
+
+function setup_base_data() {
+	bash "$base_dir/sites/base-site.sh"
 }
 
 function main() {
@@ -139,6 +145,7 @@ function main() {
 	setup_repo "rtCamp/amp-wp-dummy-data-generator"
 	setup_local_repo "amp-compatibility-server"
 	move_dummy_data_repo
+	setup_base_data
 }
 
 main
