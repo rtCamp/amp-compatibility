@@ -86,6 +86,12 @@ task( 'restart:pm2', function () {
 	writeln( '<info>' . $output . '</info>' );
 } );
 
+desc( 'Post deploy steps' );
+task( 'post:deploy', function () {
+	$output = run( 'cd {{release_path}} && node ace extension:mapping:update' );
+	writeln( '<info>' . $output . '</info>' );
+} );
+
 /*   deployment task   */
 desc( 'Deploy the project' );
 task( 'deploy', [
@@ -99,6 +105,7 @@ task( 'deploy', [
 	'deploy:symlink',
 	'permissions:set',
 	'restart:pm2',
+	'post:deploy',
 	'deploy:unlock',
 	'cleanup',
 ] );
