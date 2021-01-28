@@ -1,0 +1,42 @@
+<nav aria-label="Page navigation" class="mt-5">
+	<ul class="pagination justify-content-center">
+		@if(previousPage)
+			<li class="page-item">
+				<a class="page-link" href="{{baseUrl}}/page/{{previousPage}}" tabindex="-1">Previous</a>
+			</li>
+		@else
+			<li class="page-item disabled">
+				<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+			</li>
+		@endif
+
+		@if( showPreviousPadding )
+			<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">...</a></li>
+		@endif
+
+		@each( page in range( showPages.from, showPages.to ) )
+
+		@if( currentPage === page )
+			<li class="page-item active" aria-current="page"><a class=" page-link" href="#">{{page}}</a></li>
+		@else
+			<li class="page-item"><a class="page-link" href="{{baseUrl}}/page/{{page}}">{{page}}</a></li>
+		@endif
+
+		@endeach
+
+		@if( showNextPadding )
+			<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">...</a></li>
+		@endif
+
+		@if(nextPage)
+			<li class="page-item">
+				<a class="page-link" href="{{baseUrl}}/page/{{nextPage}}" tabindex="-1">Next</a>
+			</li>
+		@else
+			<li class="page-item disabled">
+				<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+			</li>
+		@endif
+
+	</ul>
+</nav>

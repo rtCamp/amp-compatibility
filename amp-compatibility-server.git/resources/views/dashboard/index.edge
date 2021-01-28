@@ -1,0 +1,25 @@
+@layout( 'dashboard/base' )
+
+@section('page')
+
+	<div class="row">
+		<div class="col-md-12">
+			<h5>Queue status</h5>
+			<hr/>
+		</div>
+
+		@each( queue in queues )
+
+		<div class="col-md-4">
+			<ul class="list-group">
+				<li class="list-group-item active" aria-current="true">{{queue.name}}</li>
+				@each( ( number, status ) in queue.health )
+				<li class="list-group-item">{{status}} <span class="badge bg-secondary float-end">{{number || 0}}</span>
+				</li>
+				@endeach
+			</ul>
+		</div>
+
+		@endeach
+	</div>
+@endsection
