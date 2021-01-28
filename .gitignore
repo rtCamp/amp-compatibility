@@ -1,0 +1,15 @@
+.idea
+.vscode
+.DS_STORE
+.DS_Store
+
+node_modules
+build
+coverage
+
+.env
+
+tmp
+private
+logs
+data
