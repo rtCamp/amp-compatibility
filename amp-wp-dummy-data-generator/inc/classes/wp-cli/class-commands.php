@@ -123,6 +123,30 @@ class Commands extends Base {
 	}
 
 	/**
+	 * To get the data directory/directories of a theme/plugin.
+	 *
+	 * @param string $slug Slug of theme/plugin.
+	 *
+	 * @return array Array of strings, containing data directory paths.
+	 */
+	private function get_data_dirs( $slug ) {
+		$return_locations = array();
+		$search_locations = array(
+			'/data/wporg/plugins/',
+			'/data/wporg/themes/',
+			'/data/premium/plugins/',
+			'/data/premium/themes/',
+		);
+		foreach ( $search_locations as $search_location ) {
+			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;
+
+			if ( is_dir( $maybe_data_dir ) ) {
+				$return_locations[] = $maybe_data_dir;
+			}
+			return $return_locations;
+	}
+
+	/**
 	 * To get list of command that need to execute before or after setup.
 	 *
 	 * ## OPTIONS
