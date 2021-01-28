@@ -167,7 +167,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	/**
 	 * Method to log a success message
 	 *
-	 * @param string $message Message to add to log and to outout on screen.
+	 * @param string $message Message to add to log and to output on screen.
 	 *
 	 * @throws \WP_CLI\ExitException WP CLI Exit Exception.
 	 *

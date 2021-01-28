@@ -59,6 +59,7 @@ function autoloader( $resource = '' ) {
 			case 'widgets':
 			case 'wp-cli':
 			case 'generator':
+			case 'analyzer':
 			case 'theme-configs': // phpcs:ignore PSR2.ControlStructures.SwitchDeclaration.TerminatingComment
 			case 'plugin-configs': // phpcs:ignore PSR2.ControlStructures.SwitchDeclaration.TerminatingComment
 				/**
