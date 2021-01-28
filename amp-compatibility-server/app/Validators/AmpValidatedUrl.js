@@ -16,7 +16,7 @@ class AmpValidatedUrl extends Base {
 		return {
 			site_url: 'url|required',
 			page_url: 'url|required',
-			object_type: 'string|in:post,term,user,search,404',
+			object_type: 'string|in:post,term,user,search,404,post_type',
 			object_subtype: 'string',
 			css_size_before: 'float|required',
 			css_size_after: 'float|required',
