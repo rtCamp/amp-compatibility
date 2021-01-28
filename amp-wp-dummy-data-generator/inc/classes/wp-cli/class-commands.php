@@ -340,24 +340,26 @@ class Commands extends Base {
 
 		}
 
-		foreach ( $this->plugin_configs as $plugin_config ) {
+		/**
+		 * Plugins
+		 */
+		$active_plugins = self::get_active_plugins();
+		$active_plugins = array_keys( $active_plugins );
 
-			$files = $plugin_config->get_import_files();
+		foreach ( $active_plugins as $active_plugin ) {
 
-			if ( empty( $plugin_config->name ) || empty( $files ) || ! is_array( $files ) ) {
+			$data_dirs = $this->get_data_dirs( $active_plugin );
+			if ( empty( $data_dirs ) ) {
 				continue;
 			}
 
-			$prefix = "plugins/$plugin_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
+			foreach ( $data_dirs as $data_dir ) {
+				$plugin_imports = glob( "{$data_dir}/*.xml" );
+				if ( false !== $plugin_imports && ! empty( $plugin_imports ) ) {
+					array_merge( $import_files, $plugin_imports );
+				}
 			}
-
 		}
-
-		$import_files = array_keys( $import_files );
-		$import_files = array_unique( $import_files );
 
 		if ( ! empty( $import_files ) ) {
 			$this->write_log( implode( '|', $import_files ) );
