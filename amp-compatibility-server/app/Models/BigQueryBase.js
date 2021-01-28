@@ -73,7 +73,7 @@ class BigQueryBase {
 	 * @returns {number}
 	 */
 	static get maxRowToSave() {
-		return 10000;
+		return 50000;
 	}
 
 	/**
@@ -243,6 +243,7 @@ class BigQueryBase {
 	 * @param {Object} options Save options.
 	 *                          {
 	 *                              useStream: To insert value as stream. Fast but with certain limitation. Reference - https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations
+	 *                              allowUpdate: Flag to perform update operation on record. By default true. If false. Record that already exists won't get updated.
 	 *                          }
 	 *
 	 * @returns {Promise<Array>} True on success Otherwise False.
@@ -258,18 +259,27 @@ class BigQueryBase {
 			allowUpdate: true,
 		} );
 
+		// Check for which item need to update or which need to insert.
+		const requestedCount = items.length || 0;
+		const itemsToInsert = [];
+		const itemsToUpdate = [];
+		const invalidItems = [];
+		const itemsThatIgnored = [];
+		const itemsWithoutPrimaryValue = [];
+
 		for ( let index in items ) {
+			const currentItem = _.clone( items[ index ] );
+
 			items[ index ] = await this.prepareItem( items[ index ] );
+
+			if ( false === items[ index ] ) {
+				invalidItems.push( currentItem );
+			}
+
 		}
 
 		items = this.removeDuplicate( items );
 		items = Utility.removeEmpty( items );
-
-		// Check for which item need to update or which need to insert.
-		const itemsToInsert = [];
-		const itemsToUpdate = [];
-		const itemsThatIgnored = [];
-		const itemsWithoutPrimaryValue = [];
 
 		for ( let index in items ) {
 			const item = items[ index ];
@@ -295,7 +305,7 @@ class BigQueryBase {
 		// Insert operations.
 		const response = {
 			table: this.table,
-			requestedCount: items.length,
+			requestedCount: requestedCount,
 			itemWithoutPrimaryKey: {
 				count: itemsWithoutPrimaryValue.length,
 			},
@@ -309,6 +319,11 @@ class BigQueryBase {
 				count: itemsToUpdate.length || 0,
 				allowUpdate: options.allowUpdate,
 				itemIds: _.pluck( itemsToUpdate, this.primaryKey ),
+				response: {},
+			},
+			invalid: {
+				count: invalidItems.length || 0,
+				itemIds: _.pluck( invalidItems, this.primaryKey ),
 				response: {},
 			},
 			ignored: {
@@ -547,6 +562,9 @@ class BigQueryBase {
 		const query = `DELETE FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
 
 		const deleteResponse = await BigQuery.query( query );
+
+		console.log( 'selectResponse', selectResponse );
+		console.log( 'deleteResponse', deleteResponse );
 
 		if ( ! _.isEmpty( selectResponse ) && _.isArray( selectResponse ) ) {
 
