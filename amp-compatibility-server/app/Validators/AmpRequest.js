@@ -23,10 +23,11 @@ class AmpRequest extends Base {
 			'site_info.site_title': 'string',
 			'site_info.php_version': 'version',
 			'site_info.mysql_version': 'version',
-			'site_info.wp_version': 'version',
-			'site_info.wp_language': 'string',
+			'site_info.wp_version': 'version|required',
+			'site_info.wp_language': 'string|required',
 			'site_info.wp_https_status': 'boolean',
 			'site_info.wp_multisite': 'in:subdomain,subdir,single',
+			'site_info.is_synthetic_data': 'boolean',
 
 			// Active theme
 			'site_info.wp_active_theme.name': 'string|required',
@@ -49,7 +50,7 @@ class AmpRequest extends Base {
 			'site_info.stylesheet_transient_caching': 'boolean',
 			'site_info.loopback_requests': 'string',
 			'site_info.amp_mode': 'in:standard,reader,transitional,off',
-			'site_info.amp_version': 'version',
+			'site_info.amp_version': 'version|required',
 			'site_info.amp_plugin_configured': 'boolean',
 			'site_info.amp_all_templates_supported': 'boolean',
 			'site_info.amp_supported_post_types': 'array',
@@ -100,7 +101,7 @@ class AmpRequest extends Base {
 			 */
 			'error_sources.*.error_slug': 'string|required',
 			'error_sources.*.error_source_slug': 'string|required',
-			//'error_sources.*.extension_version_slug': 'string|required',
+			'error_sources.*.extension_version_slug': 'string|required',
 			'error_sources.*.type': 'in:plugin,theme,block,core',
 			'error_sources.*.name': 'string',
 			'error_sources.*.file': 'string',
