@@ -1,0 +1,70 @@
+@layout( 'dashboard/base' )
+
+@section('page')
+
+	<div>
+		<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
+
+			@each( ( name, key ) in tabs )
+			<li class="nav-item" role="presentation">
+				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
+				   class="nav-link {{ (key === params.status) ? 'active' : '' }}"
+				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
+					{{name}}&nbsp;<span class="badge bg-secondary">{{queueHealth[key] || "0"}}</span>
+				</a>
+			</li>
+			@endeach
+
+		</ul>
+
+		@if( ! size( jobs ) )
+			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
+				<p class="lead fw-normal">There isn't any job.</p>
+			</div>
+		@else
+
+			<table class="table table-hover mt-4">
+				<thead>
+				<tr>
+					@each( ( value, key ) in jobs[0] )
+					<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+					@endeach
+				</tr>
+				</thead>
+				<tbody>
+
+				@each( job in jobs )
+
+				<tr data-jobid="{{job.id}}">
+					@each( ( value, key ) in job )
+					@if( 'plugins' === key  && size( value ) )
+						<td>
+							<ul class="mb-0">
+								@each( plugin in value )
+								<li>{{plugin.name}} {{ elIf( '($self)', plugin.version, plugin.version ) }}</li>
+								@endeach
+							</ul>
+						</td>
+					@elseif( 'theme' === key && size( value ) )
+						<td>{{value[0].name}} {{ elIf( '($self)', value[0].version, value[0].version ) }}</td>
+					@elseif( 'progress' === key )
+						<td>{{value ? value + '%' : ' - '}}</td>
+					@else
+						<td>{{value ? value : ' - '}}</td>
+					@endif
+					@endeach
+				</tr>
+				@endeach
+
+				</tbody>
+			</table>
+
+			{{{renderPagination(pagination)}}}
+
+		@endif
+	</div>
+@endsection
+
+@section('script')
+
+@endsection
