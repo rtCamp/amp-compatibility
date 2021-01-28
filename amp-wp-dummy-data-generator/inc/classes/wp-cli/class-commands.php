@@ -143,7 +143,8 @@ class Commands extends Base {
 			if ( is_dir( $maybe_data_dir ) ) {
 				$return_locations[] = $maybe_data_dir;
 			}
-			return $return_locations;
+		}
+		return $return_locations;
 	}
 
 	/**
