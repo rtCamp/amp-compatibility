@@ -57,9 +57,28 @@ function amp_send_data_check_amp_activate() {
 
 	amp_send_data_check_amp_activate();
 
-	$is_print = filter_var( get_flag_value( $assoc_args, 'print' ), FILTER_SANITIZE_STRING );
+	$is_print = filter_var( get_flag_value( $assoc_args, 'print', false ), FILTER_SANITIZE_STRING );
 
 	$data = AMP_Prepare_Data::get_data();
+
+	$relations = [];
+
+	foreach ( $data['urls'] as $url ) {
+		foreach ( $url['errors'] as $error ) {
+			foreach ( $error['sources'] as $source ) {
+				$relations[] = $url['url'] . '-' . $error['error_slug'] . '-' . $source;
+			}
+		}
+	}
+
+	$log_summery = [
+		'site_url'               => AMP_Prepare_Data::get_home_url(),
+		'plugins'                => count( $data['plugins'] ),
+		'errors'                 => count( array_values( $data['errors'] ) ),
+		'error_sources'          => count( array_values( $data['error_sources'] ) ),
+		'validated'              => count( array_values( $data['urls'] ) ),
+		'url_error_relationship' => count( array_values( $relations ) ),
+	];
 
 	if ( $is_print ) {
 		$print = strtolower( trim( $is_print ) );
@@ -188,16 +207,21 @@ class AMP_Prepare_Data {
 	}
 
 	/**
-	 * To get list of all plugin's information.
+	 * To get list of active plugin's information.
 	 *
 	 * @return array List of plugin detail.
 	 */
 	protected static function get_plugin_info() {
 
-		$all_plugins       = get_plugins();
-		$all_plugins_files = array_keys( $all_plugins );
+		$active_plugins = get_option( 'active_plugins' );
 
-		$plugin_info = array_map( 'AMP_Prepare_Data::normalize_plugin_info', $all_plugins_files );
+		if ( is_multisite() ) {
+			$network_wide_activate_plugins = get_site_option( 'active_sitewide_plugins' );
+			$active_plugins                = array_merge( $active_plugins, $network_wide_activate_plugins );
+		}
+
+		$active_plugins = array_values( array_unique( $active_plugins ) );
+		$plugin_info    = array_map( 'AMP_Prepare_Data::normalize_plugin_info', $active_plugins );
 
 		return $plugin_info;
 	}
@@ -239,13 +263,13 @@ class AMP_Prepare_Data {
 	}
 
 	/**
-	 * To get list of themes.
+	 * To get active theme info.
 	 *
 	 * @return array List of theme information.
 	 */
 	protected static function get_theme_info() {
 
-		$themes   = wp_get_themes();
+		$themes   = [ wp_get_theme() ];
 		$response = [];
 
 		foreach ( $themes as $theme ) {
@@ -612,7 +636,7 @@ class AMP_Prepare_Data {
 	 *
 	 * @return string Home URL.
 	 */
-	protected static function get_home_url() {
+	public static function get_home_url() {
 
 		$home_url = home_url();
 		$home_url = strtolower( trim( $home_url ) );
