@@ -13,23 +13,49 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
 }
 
+function amp_send_data_check_amp_activate() {
+
+	if ( ! defined( 'AMP__VERSION' ) ) {
+		throw new Exception( PHP_EOL . 'Please activate AMP plugin.' . PHP_EOL );
+	}
+}
+
+
 \WP_CLI::add_command( 'setup-amp-site', function ( $args = [], $assoc_args = [] ) {
 
+	amp_send_data_check_amp_activate();
 
-	$amp_settings = get_option( 'amp-options', [] );
-	$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
+	/**
+	 * To update amp option.
+	 * User must have manage_options capabilities.
+	 */
+	add_filter( 'user_has_cap', function ( $allCaps ) {
 
-	$amp_settings['theme_support'] = 'standard';
+		return array_merge( $allCaps, [
+			'manage_options' => true,
+		] );
+	} );
 
-	if ( class_exists( 'AMP_Post_Type_Support' ) ) {
-		$amp_settings['supported_post_types'] = AMP_Post_Type_Support::get_eligible_post_types();
+	$new_settings = [
+		AmpProject\AmpWP\Option::THEME_SUPPORT           => AMP_Theme_Support::STANDARD_MODE_SLUG,
+		AmpProject\AmpWP\Option::ALL_TEMPLATES_SUPPORTED => true,
+		AmpProject\AmpWP\Option::SUPPORTED_POST_TYPES    => AMP_Post_Type_Support::get_eligible_post_types(),
+		AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => AMP_Theme_Support::get_supportable_templates(),
+		AmpProject\AmpWP\Option::MOBILE_REDIRECT         => true,
+		AmpProject\AmpWP\Option::PLUGIN_CONFIGURED       => true,
+	];
+
+	if ( AMP_Options_Manager::update_options( $new_settings ) ) {
+		\WP_CLI::success( 'AMP options updated.' );
+	} else {
+		\WP_CLI::error( 'Fail to update AMP options.' );
 	}
-
-	update_option( 'amp-options', $amp_settings );
 
 } );
 
 \WP_CLI::add_command( 'amp-send-data', function ( $args = [], $assoc_args = [] ) {
+
+	amp_send_data_check_amp_activate();
 
 	$is_print = filter_var( get_flag_value( $assoc_args, 'print' ), FILTER_SANITIZE_STRING );
 
@@ -87,6 +113,8 @@ class AMP_Prepare_Data {
 	 */
 	public static function get_data() {
 
+		amp_send_data_check_amp_activate();
+
 		$amp_urls = static::get_amp_urls();
 
 		$request_data = [
@@ -121,13 +149,7 @@ class AMP_Prepare_Data {
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$default = [];
-
-		if ( class_exists( 'AMP_Options_Manager' ) ) {
-			$default = AMP_Options_Manager::get_options();
-		}
-
-		$amp_settings = get_option( 'amp-options', $default );
+		$amp_settings = AMP_Options_Manager::get_options();
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';
