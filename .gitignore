@@ -1,15 +1,34 @@
+# IDE #
+
+## VS Code ##
 .idea
 .vscode
 .DS_STORE
 .DS_Store
 
+## Netbeans ##
+**/nbproject/
+
+## Sublime Text ##
+*.sublime-project
+*.sublime-workspace
+
+# Language/OS Specific #
+
+## Node ##
 node_modules
 build
 coverage
 
+## Environment Files ##
 .env
 
+## Temporary files ##
 tmp
 private
 logs
 data
+
+# Exclusions #
+# We don't want to exclude data generator's data directory.
+!amp-wp-dummy-data-generator/data
