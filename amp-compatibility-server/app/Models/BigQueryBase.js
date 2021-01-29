@@ -572,9 +572,6 @@ class BigQueryBase {
 
 		const deleteResponse = await BigQuery.query( query );
 
-		console.log( 'selectResponse', selectResponse );
-		console.log( 'deleteResponse', deleteResponse );
-
 		if ( ! _.isEmpty( selectResponse ) && _.isArray( selectResponse ) ) {
 
 			const cacheKeys = _.pluck( selectResponse, this.primaryKey );
