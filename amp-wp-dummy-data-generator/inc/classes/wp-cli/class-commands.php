@@ -27,20 +27,6 @@ class Commands extends Base {
 	protected $generators = [];
 
 	/**
-	 * List of config class for active plugins.
-	 *
-	 * @var array
-	 */
-	protected $plugin_configs = [];
-
-	/**
-	 * List of config class for active themes.
-	 *
-	 * @var array
-	 */
-	protected $theme_configs = [];
-
-	/**
 	 * Construct method.
 	 */
 	public function __construct() {
@@ -64,42 +50,6 @@ class Commands extends Base {
 	 */
 	private function setup() {
 
-		/**
-		 * Plugins
-		 */
-		$active_plugins = self::get_active_plugins();
-		$active_plugins = array_keys( $active_plugins );
-
-		foreach ( $active_plugins as $active_plugin ) {
-
-			$full_class_name = '\AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs\\' . $this->get_class_name( $active_plugin );
-
-			if ( class_exists( $full_class_name ) ) {
-				$this->plugin_configs[] = new $full_class_name();
-			}
-
-		}
-
-		/**
-		 * Themes
-		 */
-		$active_theme_object = wp_get_theme();
-
-		$theme_classes   = [];
-		$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $active_theme_object->get_stylesheet() );
-
-		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
-			$parent_theme    = $active_theme_object->parent();
-			$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $parent_theme->get_stylesheet() );
-		}
-
-		foreach ( $theme_classes as $theme_class ) {
-
-			if ( class_exists( $theme_class ) ) {
-				$this->theme_configs[] = new $theme_class();
-			}
-
-		}
 	}
 
 	/**
@@ -361,22 +311,6 @@ class Commands extends Base {
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
 			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
-		}
-
-		foreach ( $this->theme_configs as $theme_config ) {
-
-			$files = $theme_config->get_import_files();
-
-			if ( empty( $theme_config->name ) || empty( $files ) || ! is_array( $files ) ) {
-				continue;
-			}
-
-			$prefix = "themes/$theme_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
-			}
-
 		}
 
 		/**
