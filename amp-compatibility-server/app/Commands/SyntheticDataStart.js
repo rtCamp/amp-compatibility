@@ -26,7 +26,8 @@ class SyntheticDataStart extends Command {
 		 { --only-themes : Fetch all the themes. }
 		 { --only-plugins : Fetch all the plugins. }
 		 { --limit=@value : Number of theme/plugin need add in queue. }
-		 { --concurrency=@value : Worker's concurrency. (This number of site will create at a time on secondary server.) ( Min= 1, Max= 120, Default= 100 ) }
+		 { --number-of-instance=@value : Number of instance need to create for synthetic data process. ( Min= 1, Max= 100, Default= 1 ) }
+		 { --concurrency=@value : Number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min= 1, Max= 120, Default= 100 ) }
 		 { --vm-name=@value : Virtual machine name. (Default: synthetic-data-generator) }
 		 { --prevent-vm-deletion : Fetch all the themes. }`;
 	}
@@ -50,11 +51,14 @@ class SyntheticDataStart extends Command {
 	parseOptions( options ) {
 
 		const concurrency = parseInt( options.concurrency ) || 100;
+		const numberOfInstance = parseInt( options.numberOfInstance ) || 1;
 
 		this.options = {
 			onlyThemes: ( true === options.onlyThemes ),
 			onlyPlugins: ( true === options.onlyPlugins ),
 			limit: ( ! isNaN( options.limit ) && 0 < parseInt( options.limit ) ) ? parseInt( options.limit ) : false,
+
+			numberOfInstance: ( numberOfInstance >= 1 && numberOfInstance <= 100 ) ? numberOfInstance : 1,
 
 			// Synthetic data worker.
 			concurrency: ( concurrency >= 1 && concurrency <= 120 ) ? concurrency : 100,
@@ -80,7 +84,7 @@ class SyntheticDataStart extends Command {
 
 		// Refill queue with new tasks.
 		this.info( 'Fetching synthetic data jobs.' );
-		await this.refillQueue();
+		//await this.refillQueue();
 
 		const queueHealth = await this.queue.checkHealth();
 		const totalJobs = parseInt( queueHealth.waiting + queueHealth.delayed );
@@ -90,26 +94,64 @@ class SyntheticDataStart extends Command {
 			exit( 1 );
 		}
 
-		this.info( `Synthetic data will be generated for ${ totalJobs } extensions (themes/plugins).` );
+		/**
+		 * Check for how many compute instance actually needed.
+		 * If there are less jobs and more compute instance then reduce the number of compute instance.
+		 */
+		const totalConcurrency = ( this.options.concurrency * this.options.numberOfInstance );
 
-		try {
-
-			// Setup secondary instance.
-			await this.getComputeEngine();
-
-			// Start synthetic data worker in secondary instance.
-			this.info( 'Starting worker for synthetic data on compute instance.' );
-			await this.computeEngine.executeCommand( `cd $HOME/amp-compatibility-server && node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis.log` );
-
-			if ( false === this.options.preventVmDeletion ) {
-				this.info( 'Deleting compute instance.' );
-				await this.computeEngine.delete();
-			}
-		} catch ( exception ) {
-			console.error( exception );
+		if ( totalConcurrency > totalJobs ) {
+			this.options.numberOfInstance = Math.floor( totalJobs / this.options.concurrency ) || 1;
 		}
 
-		exit( 1 );
+		this.info( `Total Jobs : ${ totalJobs }` );
+		this.info( `Number of compute instance  : ${ this.options.numberOfInstance }` );
+		this.info( `Concurancy on each instance : ${ this.options.concurrency }` );
+		this.info( '======================================================================' );
+
+		let numberOfTerminatedInstance = 0;
+
+		for ( let index = 1; index <= this.options.numberOfInstance; index++ ) {
+			const instanceName = `synthetic-data-generator-${ index }`;
+
+			this.getComputeInstance( instanceName ).then( ( instance ) => {
+
+				/**
+				 * Compute engine instance is ready.
+				 * Start the synthetic data worker.
+				 */
+				Logger.info( `%s : Starting synthetic data worker.`, instanceName );
+
+				instance.executeCommand(
+					`cd $HOME/amp-compatibility-server && ` +
+					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis.log`,
+				).then( async () => {
+
+					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
+
+					/**
+					 * Preserver compute engine instance only if one instance is requested
+					 * and prevent deletion flag passed as TRUE.
+					 */
+					if ( ! ( 1 === this.options.numberOfInstance && true === this.options.preventVmDeletion ) ) {
+						await instance.delete();
+					}
+
+					numberOfTerminatedInstance++;
+
+					if ( numberOfTerminatedInstance >= this.options.numberOfInstance ) {
+						Logger.info( 'Synthetic data process completed.' );
+						exit( 1 );
+					}
+
+				} );
+
+			} ).catch( ( error ) => {
+				console.error( instanceName, error );
+			} );
+
+		}
+
 	}
 
 	/**
@@ -184,27 +226,26 @@ class SyntheticDataStart extends Command {
 		return count;
 	}
 
-	async getComputeEngine() {
+	async getComputeInstance( instanceName ) {
+
+		if ( _.isEmpty( instanceName ) || ! _.isString( instanceName ) ) {
+			throw 'Please provide instance name.';
+		}
 
 		const options = {
-			name: this.options.vmName,
+			name: instanceName,
 		};
 
 		// Create compute engine instance as secondary instance.
-		this.computeEngine = new ComputeEngine( options );
-
-		const isExists = await this.computeEngine.getInstanceIfExists();
+		const instance = new ComputeEngine( options );
+		const isExists = await instance.getInstanceIfExists();
 
 		if ( false === isExists ) {
-
-			await this.computeEngine.create();
-			this.info( 'Compute instance created.' );
-
-			await this.computeEngine.setup();
-			this.info( 'Setup Completed on compute instance.' );
-
+			await instance.create();
+			await instance.setup();
 		}
 
+		return instance;
 	}
 
 }
