@@ -104,7 +104,78 @@ class RequestController extends Base {
 			response.plugins = await this.savePlugins( data.plugins );
 			job.reportProgress( 30 );
 
-			response.siteToExtension = await this.saveSiteToExtension( siteUrl, data.plugins );
+			// Site to extension.
+			const siteToExtensionItems = [];
+			const siteToExtensionExcluded = [];
+
+			// Prepare site to extension data for themes.
+			const insertedThemes = [
+				...response.themes.extensionVersions.inserted.itemIds,
+				...response.themes.extensionVersions.updated.itemIds,
+				...response.themes.extensionVersions.ignored.itemIds,
+			];
+
+			for ( const index in themes ) {
+				const item = themes[ index ];
+
+				if ( '1' !== item.is_active ) {
+					continue;
+				}
+
+				const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
+					type: 'theme',
+					slug: item.slug,
+					version: item.version.toString(),
+				} );
+
+				if ( ! insertedThemes.includes( extensionVersionSlug ) ) {
+					siteToExtensionExcluded.push( extensionVersionSlug );
+					continue;
+				}
+
+				siteToExtensionItems.push( {
+					site_url: siteUrl,
+					extension_version_slug: extensionVersionSlug,
+					amp_suppressed: '',
+				} );
+
+			}
+
+			// Prepare site to extension data for plugins.
+			const insertedPlugins = [
+				...response.plugins.extensionVersions.inserted.itemIds,
+				...response.plugins.extensionVersions.updated.itemIds,
+				...response.plugins.extensionVersions.ignored.itemIds,
+			];
+
+			for ( const index in data.plugins ) {
+				const item = data.plugins[ index ];
+
+				if ( '1' !== item.is_active ) {
+					continue;
+				}
+
+				const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
+					type: 'plugin',
+					slug: item.slug,
+					version: item.version.toString(),
+				} );
+
+				if ( ! insertedPlugins.includes( extensionVersionSlug ) ) {
+					siteToExtensionExcluded.push( extensionVersionSlug );
+					continue;
+				}
+
+				siteToExtensionItems.push( {
+					site_url: siteUrl,
+					extension_version_slug: extensionVersionSlug,
+					amp_suppressed: item.is_suppressed,
+				} );
+
+			}
+
+			response.siteToExtension = await this.saveSiteToExtension( siteUrl, siteToExtensionItems );
+			response.siteToExtension.excluded = siteToExtensionExcluded || [];
 			job.reportProgress( 40 );
 
 			response.errors = await this.saveErrors( data.errors );
@@ -278,34 +349,11 @@ class RequestController extends Base {
 	 * Add site to extensions (plugin) relationship.
 	 *
 	 * @param {String} siteUrl Site URL
-	 * @param {Array} plugins List pf plugins.
+	 * @param {Array} itemsToInsert Prepared list to insert in site to extension table.
 	 *
 	 * @returns {Promise<void>}
 	 */
-	static async saveSiteToExtension( siteUrl, plugins ) {
-
-		const itemsToInsert = [];
-
-		for ( const index in plugins ) {
-			const item = plugins[ index ];
-
-			if ( '1' !== item.is_active ) {
-				continue;
-			}
-
-			const extension_version_slug = ExtensionVersionModel.getPrimaryValue( {
-				type: 'plugin',
-				slug: item.slug,
-				version: item.version.toString(),
-			} );
-
-			itemsToInsert.push( {
-				site_url: siteUrl,
-				extension_version_slug: extension_version_slug,
-				amp_suppressed: item.is_suppressed,
-			} );
-
-		}
+	static async saveSiteToExtension( siteUrl, itemsToInsert ) {
 
 		let response = {};
 		const saveOptions = {
@@ -555,6 +603,7 @@ class RequestController extends Base {
 
 				response[ `${ key }_delete` ] = prepareLog( result[ key ].delete || {} );
 				response[ `${ key }_insert` ] = prepareLog( result[ key ].insert || {} );
+				response[ `${ key }_excluded` ] = result[ key ].excluded.length; // Foreign key check fail.
 
 			} else if ( [ 'urls' ].includes( key ) ) {
 
