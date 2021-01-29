@@ -62,7 +62,7 @@ class ComputeEngine {
 					network: 'global/networks/default',
 				},
 			],
-		}
+		};
 	}
 
 	get name() {
@@ -84,7 +84,6 @@ class ComputeEngine {
 
 		this.options = _.defaults( options, {
 			name: 'synthetic-data-generator',
-			numberOfSites: 5,
 			zoneName: Env.get( 'GCP_ZONE', 'us-central1-a' ),
 		} );
 
@@ -115,7 +114,7 @@ class ComputeEngine {
 
 				await this.getIP();
 
-				Logger.debug( 'Using existing virtual machine. IP: %s', this.ip );
+				Logger.debug( `%s : Already exists. IP: %s`, this.options.name, this.ip );
 
 				return true;
 			}
@@ -141,7 +140,8 @@ class ComputeEngine {
 
 		await this.getIP();
 
-		Logger.debug( 'Virtual machine created. IP: %s', this.ip );
+		Logger.debug( `%s : Created. (Waiting 120s for instance to be operational.) IP: %s`, this.options.name, this.ip );
+		await Utility.sleep( 120 );
 
 		return true;
 	}
@@ -153,7 +153,8 @@ class ComputeEngine {
 		}
 
 		const metadata = await this.virtualMachine.getMetadata();
-		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].networkIP;
+		//this.ip = metadata[ 0 ].networkInterfaces[ 0 ].networkIP;
+		this.ip = metadata[ 0 ].networkInterfaces[ 0 ].accessConfigs[ 0 ].natIP;
 	}
 
 	async delete() {
@@ -165,7 +166,7 @@ class ComputeEngine {
 		const [ operation ] = await this.virtualMachine.delete();
 		await operation.promise();
 
-		Logger.debug( 'Virtual machine deleted.' );
+		Logger.debug( `%s : Deleted.`, this.options.name );
 
 		return true;
 	}
@@ -176,8 +177,7 @@ class ComputeEngine {
 			throw 'Virtual machine does not exists.';
 		}
 
-		Logger.debug( 'Waiting 120s for Virtual machine to be operational.' );
-		await Utility.sleep( 90 );
+		Logger.debug( `%s : Setup started.`, this.options.name );
 
 		await Utility.executeCommand( 'touch ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts' );
 		await Utility.executeCommand( 'ssh-keygen -f ~/.ssh/known_hosts -R "' + this.ip + '"' );
@@ -185,20 +185,22 @@ class ComputeEngine {
 
 		await Utility.sleep( 30 );
 
-		Logger.debug( 'Setting up SSH keys' );
+		Logger.debug( `%s : Setting up SSH keys.`, this.options.name );
 		const sshPrivateKey = fs.readFileSync( this.deployKeyPath );
 		await this.executeCommand( "echo '" + sshPrivateKey + "' > ~/.ssh/id_rsa" );
 		await this.executeCommand( 'chmod 600 ~/.ssh/id_rsa' );
 
-		Logger.debug( 'Copying initial setup script.' );
+		Logger.debug( `%s : Copying initial setup script.`, this.options.name );
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
 		await this.executeCommand( "echo 'export GITHUB_TOKEN=" + this.githubToken + "' > ~/.bashrc" );
 
-		Logger.debug( 'Installing and setting up the server.' );
+		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility-server/' );
+
+		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}
 
 	async copyFileToRemote( localPath, remotePath ) {
@@ -224,22 +226,25 @@ class ComputeEngine {
 		}
 
 		return new Promise( ( done, failed ) => {
-			Logger.debug( 'Remote Command: %s', command );
+			Logger.debug( `%s : Running command : %s`, this.options.name, command );
 			sshExec( command, {
 				user: 'root',
 				host: this.ip,
 				key: this.deployKeyPath,
-			}, ( err, stdout, stderr ) => {
+			}, ( error, stdout, stdError ) => {
 
-				if ( err ) {
-					err.stdout = stdout;
-					err.stderr = stderr;
-					Logger.debug( 'stdout: %s, stderr: %s', stdout, stderr );
-					failed( err );
+				if ( error ) {
+					error.stdout = stdout;
+					error.stderr = stdError;
+
+					Logger.error( `%s : Stdout : %s`, this.options.name, stdout );
+					Logger.error( `%s : Std Error : %s`, this.options.name, stdError );
+					failed( error );
 					return;
 				}
-				Logger.debug( 'Stdout: %s', stdout );
-				done( { stdout, stderr } );
+
+				Logger.debug( `%s : Stdout : %s`, this.options.name, stdout );
+				done( { stdout, stdError } );
 			} );
 		} );
 
