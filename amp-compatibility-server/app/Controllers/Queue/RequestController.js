@@ -43,8 +43,6 @@ class RequestController extends Base {
 
 		Logger.level = 'debug';
 
-		console.log( await this.queue.checkHealth() );
-
 		this.onJobSucceeded = this.onJobSucceeded.bind( this );
 		this.onJobRetrying = this.onJobRetrying.bind( this );
 
@@ -53,20 +51,20 @@ class RequestController extends Base {
 		this.queue.on( 'job retrying', this.onJobRetrying );
 
 		this.queue.on( 'job progress', ( jobId, progress ) => {
-			Logger.debug( `Job: ${ jobId } reported progress: ${ progress }%` );
+			Logger.debug( `Site: ${ this.jobName } reported progress: ${ progress }%` );
 		} );
 
 	}
 
 	static onJobSucceeded( jobId, result ) {
-		Logger.info( 'Result: Job ID: %s | Site: %s', jobId, this.jobName );
+		Logger.info( 'Result: Site: %s | Job ID: %s', this.jobName, jobId );
 		const preparedLog = this.prepareLog( result );
 		console.log( preparedLog );
 	}
 
 	static onJobRetrying( jobId, error ) {
-		Logger.info( 'Retrying: Job ID: %s | Site: %s', jobId, this.jobName );
-		Logger.debug( 'Job ID: %s | Site: %s was failed with below error but is being retried!', jobId, this.jobName );
+		Logger.info( 'Retrying: Site: %s | Job ID: %s', this.jobName, jobId );
+		Logger.debug( 'Site: %s | Job ID: %s was failed with below error but is being retried!', this.jobName, jobId );
 		console.log( error );
 	}
 
@@ -74,11 +72,10 @@ class RequestController extends Base {
 	 * Handler to process the job.
 	 *
 	 * @param {Object} job Job to process.
-	 * @param {Function} done Callback function.
 	 *
 	 * @returns {*}
 	 */
-	static async processJob( job, done ) {
+	static async processJob( job ) {
 
 		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
 		let response = {};
@@ -89,7 +86,7 @@ class RequestController extends Base {
 			const siteUrl = data.site_url;
 			this.jobName = siteUrl;
 
-			Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.jobName );
+			Logger.info( ' Site: %s | Job ID: %s started.', this.jobName, job.id );
 
 			// Prepare site_info.
 			response.site = await this.saveSite( data.site_info );
@@ -154,7 +151,7 @@ class RequestController extends Base {
 		data.amp_supported_templates = data.amp_supported_templates || [];
 		data.amp_supported_templates = JSON.stringify( data.amp_supported_templates );
 
-		data.is_synthetic_data = false;
+		data.is_synthetic_data = data.is_synthetic_data || false;
 
 		return await SiteModel.saveMany( [ data ] );
 
@@ -326,7 +323,7 @@ class RequestController extends Base {
 			response.insert = ( await SiteToExtensionModel.saveMany( itemsToInsert, saveOptions ) );
 
 		} catch ( exception ) {
-			response = exception;
+			response.delete = exception;
 		}
 
 		return response;
@@ -452,7 +449,7 @@ class RequestController extends Base {
 
 		} catch ( exception ) {
 
-			response.ampValidatedUrl = exception;
+			response.ampValidatedUrl.delete = exception;
 
 		}
 
@@ -491,7 +488,7 @@ class RequestController extends Base {
 			response.urlErrorRelationship.insert = await UrlErrorRelationshipModel.saveMany( relationshipItemsToInsert, saveOptions );
 
 		} catch ( exception ) {
-			response.urlErrorRelationship = exception;
+			response.urlErrorRelationship.delete = exception;
 		}
 
 		return response;
@@ -516,9 +513,10 @@ class RequestController extends Base {
 					requestedCount: parseInt( log.requestedCount ) || 0,
 					inserted: parseInt( log.inserted.count ) || 0,
 					updated: parseInt( log.updated.count ) || 0,
+					invalid: parseInt( log.invalid.count ) || 0,
 					ignored: parseInt( log.ignored.count ) || 0,
 				};
-				preparedLog.total = ( preparedLog.inserted + preparedLog.updated + preparedLog.ignored );
+				preparedLog.total = ( preparedLog.inserted + preparedLog.updated + preparedLog.invalid + preparedLog.ignored );
 			}
 
 			return preparedLog;
@@ -533,15 +531,16 @@ class RequestController extends Base {
 
 			} else if ( [ 'siteToExtension' ].includes( key ) ) {
 
-				response[ key ] = prepareLog( result[ key ].insert );
+				response[ `${ key }_delete` ] = prepareLog( result[ key ].delete || {} );
+				response[ `${ key }_insert` ] = prepareLog( result[ key ].insert || {} );
 
 			} else if ( [ 'urls' ].includes( key ) ) {
 
-				const urls = result[ key ].ampValidatedUrl.insert || result[ key ].ampValidatedUrl;
-				const relationShip = result[ key ].urlErrorRelationship.insert || result[ key ].urlErrorRelationship;
+				response[ `${ key }_ampValidatedUrl_delete` ] = prepareLog( result[ key ].ampValidatedUrl.delete || {} );
+				response[ `${ key }_ampValidatedUrl_insert` ] = prepareLog( result[ key ].ampValidatedUrl.insert || {} );
 
-				response[ `${ key }_ampValidatedUrl` ] = prepareLog( urls );
-				response[ `${ key }_urlErrorRelationship` ] = prepareLog( relationShip );
+				response[ `${ key }_urlErrorRelationship_delete` ] = prepareLog( result[ key ].urlErrorRelationship.delete || {} );
+				response[ `${ key }_urlErrorRelationship_insert` ] = prepareLog( result[ key ].urlErrorRelationship.insert || {} );
 
 			} else {
 

@@ -62,13 +62,13 @@ class BigQueryAmpValidatedUrlsSchema extends Schema {
 					name: 'css_size_excluded',
 					type: 'FLOAT',
 					mode: 'REQUIRED',
-					description: 'Percentage of used CSS budget (75KB) => \'52.0%\'',
+					description: 'Excluded minified CSS size (0 stylesheets) => \'0 Bytes\'',
 				},
 				{
 					name: 'css_budget_percentage',
 					type: 'FLOAT',
 					mode: 'REQUIRED',
-					description: 'Excluded minified CSS size (0 stylesheets) => \'0 Bytes\'',
+					description: 'Percentage of used CSS budget (75KB) => \'52.0%\'',
 				},
 				{
 					name: 'updated_at',

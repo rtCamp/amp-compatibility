@@ -92,7 +92,7 @@ function process_site() {
 	[[ -n "${version}" ]] && version_string="--version=${version}" || version_string=""
 	wp theme install "${data[0]}" --activate $version_string
 
-	wp setup-amp-site
+	wp configure-amp-site
 
 	cd_plugins
 	bash amp-wp-dummy-data-generator/start.sh --exclude-default
@@ -103,7 +103,7 @@ function process_amp() {
 	wp rewrite flush
 	wp amp validation reset --yes
 	wp amp validation run --force
-	wp amp-send-data $amp_endpoint_flag
+	wp amp-send-data --is-synthetic $amp_endpoint_flag
 }
 
 function main() {
