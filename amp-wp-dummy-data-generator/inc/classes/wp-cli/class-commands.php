@@ -148,6 +148,33 @@ class Commands extends Base {
 	}
 
 	/**
+	 * Returns array of import files for a given plugin or theme.
+	 *
+	 * @param string $slug Name of plugin or theme.
+	 *
+	 * @param array  $import_files Array of files already listed to be imported.
+	 *
+	 * @return array Array of import files list.
+	 */
+	private function get_import_files_single( $slug, $import_files = array() ) {
+
+		$return_import_files = array();
+		$data_dirs           = $this->get_data_dirs( $active_theme );
+
+		if ( ! empty( $data_dirs ) ) {
+			foreach ( $data_dirs as $data_dir ) {
+				$import_files_glob = glob( "{$data_dir}/*.xml" );
+				if ( false !== $import_files && ! empty( $import_files ) ) {
+					array_merge( $return_import_files, $import_files_glob );
+				}
+			}
+			$return_import_files = array_merge( $import_files, $return_import_files );
+		}
+
+		return $return_import_files;
+	}
+
+	/**
 	 * To get list of command that need to execute before or after setup.
 	 *
 	 * ## OPTIONS
@@ -324,6 +351,18 @@ class Commands extends Base {
 			}
 		}
 
+		/**
+		 * Themes
+		 */
+		$active_theme_object = wp_get_theme();
+		$active_theme        = $active_theme_object->get_stylesheet();
+		$import_files        = $this->get_import_files_single( $active_theme, $import_files );
+
+		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
+			$parent_theme = $active_theme_object->parent()->get_stylesheet();
+			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
+		}
+
 		foreach ( $this->theme_configs as $theme_config ) {
 
 			$files = $theme_config->get_import_files();
@@ -347,18 +386,7 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-
-			$data_dirs = $this->get_data_dirs( $active_plugin );
-			if ( empty( $data_dirs ) ) {
-				continue;
-			}
-
-			foreach ( $data_dirs as $data_dir ) {
-				$plugin_imports = glob( "{$data_dir}/*.xml" );
-				if ( false !== $plugin_imports && ! empty( $plugin_imports ) ) {
-					array_merge( $import_files, $plugin_imports );
-				}
-			}
+			$import_files = $this->get_import_files_single( $active_plugin, $import_files );
 		}
 
 		if ( ! empty( $import_files ) ) {
