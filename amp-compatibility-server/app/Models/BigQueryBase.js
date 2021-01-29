@@ -31,10 +31,19 @@ class BigQueryBase {
 	/**
 	 * Primary key of the table.
 	 *
-	 * @returns {string} primary key name.
+	 * @returns {string} Primary key name.
 	 */
 	static get primaryKey() {
 		return '';
+	}
+
+	/**
+	 * Foreign key of the table.
+	 *
+	 * @returns {string} Foreign key name.
+	 */
+	static get foreignKey() {
+		return this.primaryKey;
 	}
 
 	/**
