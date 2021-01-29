@@ -13,29 +13,95 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
 }
 
-\WP_CLI::add_command( 'setup-amp-site', function ( $args = [], $assoc_args = [] ) {
+/**
+ * Check if AMP plugin activate or not.
+ * If not than throw exception.
+ *
+ * @throws Exception
+ */
+function amp_send_data_check_amp_activate() {
 
+	if ( ! defined( 'AMP__VERSION' ) ) {
+		throw new Exception( PHP_EOL . 'Please activate AMP plugin.' . PHP_EOL );
+	}
+}
 
-	$amp_settings = get_option( 'amp-options', [] );
-	$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
+\WP_CLI::add_command( 'configure-amp-site', 'amp_send_data_configure_amp_site' );
+\WP_CLI::add_command( 'amp-send-data', 'amp_send_data_amp_sent_data' );
 
-	$amp_settings['theme_support'] = 'standard';
+/**
+ * To configure AMP site.
+ *
+ * @throws \WP_CLI\ExitException
+ *
+ * @return void
+ */
+function amp_send_data_configure_amp_site() {
 
-	if ( class_exists( 'AMP_Post_Type_Support' ) ) {
-		$amp_settings['supported_post_types'] = AMP_Post_Type_Support::get_eligible_post_types();
+	amp_send_data_check_amp_activate();
+
+	/**
+	 * To update amp option.
+	 * User must have manage_options capabilities.
+	 */
+	add_filter( 'user_has_cap', function ( $allCaps ) {
+
+		return array_merge( $allCaps, [
+			'manage_options' => true,
+		] );
+	} );
+
+	$new_settings = [
+		AmpProject\AmpWP\Option::THEME_SUPPORT           => AMP_Theme_Support::STANDARD_MODE_SLUG,
+		AmpProject\AmpWP\Option::ALL_TEMPLATES_SUPPORTED => true,
+		AmpProject\AmpWP\Option::SUPPORTED_POST_TYPES    => AMP_Post_Type_Support::get_eligible_post_types(),
+		AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => AMP_Theme_Support::get_supportable_templates(),
+		AmpProject\AmpWP\Option::MOBILE_REDIRECT         => true,
+		AmpProject\AmpWP\Option::PLUGIN_CONFIGURED       => true,
+	];
+
+	if ( AMP_Options_Manager::update_options( $new_settings ) ) {
+		\WP_CLI::success( 'AMP options updated.' );
+	} else {
+		\WP_CLI::error( 'Fail to update AMP options.' );
 	}
 
-	update_option( 'amp-options', $amp_settings );
+}
 
-} );
 
-\WP_CLI::add_command( 'amp-send-data', function ( $args = [], $assoc_args = [] ) {
+function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 
-	$is_print = filter_var( get_flag_value( $assoc_args, 'print' ), FILTER_SANITIZE_STRING );
+	amp_send_data_check_amp_activate();
+
+	$is_print     = filter_var( get_flag_value( $assoc_args, 'print', false ), FILTER_SANITIZE_STRING );
+	$is_synthetic = filter_var( get_flag_value( $assoc_args, 'is-synthetic', false ), FILTER_SANITIZE_STRING );
+	$endpoint     = filter_var( get_flag_value( $assoc_args, 'endpoint', AMP_SEND_DATA_SERVER_ENDPOINT ), FILTER_SANITIZE_STRING );
 
 	$data = AMP_Prepare_Data::get_data();
+	$data = wp_parse_args( $data, [
+		'site_url'                   => [],
+		'site_info'                  => [],
+		'plugins'                    => [],
+		'themes'                     => [],
+		'errors'                     => [],
+		'error_sources'              => [],
+		'amp_validated_environments' => [],
+		'urls'                       => [],
+	] );
 
+	/**
+	 * Modify data for synthetic sites.
+	 */
+	if ( $is_synthetic ) {
+		$data['site_info']['is_synthetic_data'] = true;
+	}
+
+	/**
+	 * Print or send AMP data.
+	 */
 	if ( $is_print ) {
+
+		// Print the data.
 		$print = strtolower( trim( $is_print ) );
 		if ( 'json' === $print ) {
 			print_r( wp_json_encode( $data ) . PHP_EOL );
@@ -44,36 +110,68 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 		} else {
 			print_r( $data );
 		}
-
-		return;
-	}
-
-	$endpoint = AMP_SEND_DATA_SERVER_ENDPOINT;
-
-	if ( ! empty( $assoc_args['endpoint'] ) ) {
-		$endpoint = $assoc_args['endpoint'];
-	}
-
-
-	$response = wp_remote_post(
-		sprintf( '%s/api/v1/amp-wp/', $endpoint ),
-		[
-			'method'   => 'POST',
-			'timeout'  => 600,
-			'body'     => $data,
-			'compress' => true,
-		]
-	);
-
-	if ( is_wp_error( $response ) ) {
-		$error_message = $response->get_error_message();
-		WP_CLI::error( "Something went wrong: $error_message" );
 	} else {
 
-		$body = wp_remote_retrieve_body( $response );
-		WP_CLI::success( $body );
+		// Send data to server.
+
+		$response = wp_remote_post(
+			sprintf( '%s/api/v1/amp-wp/', $endpoint ),
+			[
+				'method'   => 'POST',
+				'timeout'  => 1000,
+				'body'     => $data,
+				'compress' => true,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
+			WP_CLI::warning( "Something went wrong: $error_message" );
+		} else {
+
+			$body = wp_remote_retrieve_body( $response );
+			WP_CLI::success( $body );
+		}
+
 	}
-} );
+
+	/**
+	 * Prepare summary of data.
+	 */
+	$url_error_relationship = [];
+
+	foreach ( $data['urls'] as $url ) {
+		foreach ( $url['errors'] as $error ) {
+			foreach ( $error['sources'] as $source ) {
+				$url_error_relationship[] = $url['url'] . '-' . $error['error_slug'] . '-' . $source;
+			}
+		}
+	}
+
+	$summary = [
+		'Site URL'               => AMP_Prepare_Data::get_home_url(),
+		'Plugin count'           => count( $data['plugins'] ),
+		'Themes'                 => count( $data['themes'] ),
+		'Errors'                 => count( array_values( $data['errors'] ) ),
+		'Error Sources'          => count( array_values( $data['error_sources'] ) ),
+		'Validated URL'          => count( array_values( $data['urls'] ) ),
+		'URL Error Relationship' => count( array_values( $url_error_relationship ) ),
+	];
+
+	if ( $is_synthetic ) {
+		$summary['Synthetic Data'] = 'Yes';
+	}
+
+	WP_CLI::log( sprintf( PHP_EOL . "%'=75s", '' ) );
+	WP_CLI::log( 'Summary of AMP data' );
+	WP_CLI::log( sprintf( "%'=75s", '' ) );
+	foreach ( $summary as $key => $value ) {
+		WP_CLI::log( sprintf( '%-25s : %s', $key, $value ) );
+	}
+	WP_CLI::log( sprintf( "%'=75s" . PHP_EOL, '' ) );
+
+
+}
 
 /**
  * Class AMP_Prepare_Data
@@ -86,6 +184,8 @@ class AMP_Prepare_Data {
 	 * @return array
 	 */
 	public static function get_data() {
+
+		amp_send_data_check_amp_activate();
 
 		$amp_urls = static::get_amp_urls();
 
@@ -121,13 +221,7 @@ class AMP_Prepare_Data {
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$default = [];
-
-		if ( class_exists( 'AMP_Options_Manager' ) ) {
-			$default = AMP_Options_Manager::get_options();
-		}
-
-		$amp_settings = get_option( 'amp-options', $default );
+		$amp_settings = AMP_Options_Manager::get_options();
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';
@@ -166,16 +260,21 @@ class AMP_Prepare_Data {
 	}
 
 	/**
-	 * To get list of all plugin's information.
+	 * To get list of active plugin's information.
 	 *
 	 * @return array List of plugin detail.
 	 */
 	protected static function get_plugin_info() {
 
-		$all_plugins       = get_plugins();
-		$all_plugins_files = array_keys( $all_plugins );
+		$active_plugins = get_option( 'active_plugins' );
 
-		$plugin_info = array_map( 'AMP_Prepare_Data::normalize_plugin_info', $all_plugins_files );
+		if ( is_multisite() ) {
+			$network_wide_activate_plugins = get_site_option( 'active_sitewide_plugins' );
+			$active_plugins                = array_merge( $active_plugins, $network_wide_activate_plugins );
+		}
+
+		$active_plugins = array_values( array_unique( $active_plugins ) );
+		$plugin_info    = array_map( 'AMP_Prepare_Data::normalize_plugin_info', $active_plugins );
 
 		return $plugin_info;
 	}
@@ -217,13 +316,13 @@ class AMP_Prepare_Data {
 	}
 
 	/**
-	 * To get list of themes.
+	 * To get active theme info.
 	 *
 	 * @return array List of theme information.
 	 */
 	protected static function get_theme_info() {
 
-		$themes   = wp_get_themes();
+		$themes   = [ wp_get_theme() ];
 		$response = [];
 
 		foreach ( $themes as $theme ) {
@@ -568,16 +667,17 @@ class AMP_Prepare_Data {
 			} else {
 				$excluded_final_size    += $stylesheets[ $i ]['final_size'];
 				$excluded_original_size += $stylesheets[ $i ]['original_size'];
-				$excluded_stylesheets ++;
+				$excluded_stylesheets++;
 				$stylesheets[ $i ]['status'] = $excluded_status;
 			}
 		}
 
-		$response = [
-			'css_size_before'       => ( $included_original_size + $excluded_original_size ),
-			'css_size_after'        => ( $included_final_size + $excluded_final_size ),
-			'css_size_excluded'     => $excluded_stylesheets,
-			'css_budget_percentage' => ( ( $included_final_size + $excluded_final_size ) / $style_custom_cdata_spec['max_bytes'] ) * 100,
+		$percentage_budget_used = ( ( $included_final_size + $excluded_final_size ) / $style_custom_cdata_spec['max_bytes'] ) * 100;
+		$response               = [
+			'css_size_before'       => intval( $included_original_size + $excluded_original_size ),
+			'css_size_after'        => intval( $included_final_size + $excluded_final_size ),
+			'css_size_excluded'     => intval( $excluded_stylesheets ),
+			'css_budget_percentage' => round( $percentage_budget_used, 1 ),
 		];
 
 		return $response;
@@ -590,7 +690,7 @@ class AMP_Prepare_Data {
 	 *
 	 * @return string Home URL.
 	 */
-	protected static function get_home_url() {
+	public static function get_home_url() {
 
 		$home_url = home_url();
 		$home_url = strtolower( trim( $home_url ) );
