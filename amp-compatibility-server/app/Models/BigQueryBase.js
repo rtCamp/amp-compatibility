@@ -31,10 +31,19 @@ class BigQueryBase {
 	/**
 	 * Primary key of the table.
 	 *
-	 * @returns {string} primary key name.
+	 * @returns {string} Primary key name.
 	 */
 	static get primaryKey() {
 		return '';
+	}
+
+	/**
+	 * Foreign key of the table.
+	 *
+	 * @returns {string} Foreign key name.
+	 */
+	static get foreignKey() {
+		return this.primaryKey;
 	}
 
 	/**
@@ -562,9 +571,6 @@ class BigQueryBase {
 		const query = `DELETE FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
 
 		const deleteResponse = await BigQuery.query( query );
-
-		console.log( 'selectResponse', selectResponse );
-		console.log( 'deleteResponse', deleteResponse );
 
 		if ( ! _.isEmpty( selectResponse ) && _.isArray( selectResponse ) ) {
 

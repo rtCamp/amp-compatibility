@@ -17,6 +17,7 @@ const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship'
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
+const { sanitizor } = require( 'indicative' );
 
 /**
  * Helper to manage request queue.
@@ -412,9 +413,15 @@ class RequestController extends Base {
 	 */
 	static async saveValidatedUrls( siteUrl, urls ) {
 
-		let response = {};
+		let response = {
+			ampValidatedUrl: {},
+			urlErrorRelationship: {
+				excluded: [],
+			},
+		};
 		const itemsToInsert = [];
 		const relationshipItemsToInsert = [];
+		let insertedAmpValidatedUrl = [];
 
 		const saveOptions = {
 			allowUpdate: false,
@@ -443,9 +450,14 @@ class RequestController extends Base {
 
 		try {
 
-			response.ampValidatedUrl = {};
 			response.ampValidatedUrl.delete = await AmpValidatedUrlModel.deleteRows( { site_url: siteUrl } );
 			response.ampValidatedUrl.insert = await AmpValidatedUrlModel.saveMany( itemsToInsert, saveOptions );
+
+			insertedAmpValidatedUrl = [
+				...response.ampValidatedUrl.insert.inserted.itemIds,
+				...response.ampValidatedUrl.insert.updated.itemIds,
+				...response.ampValidatedUrl.insert.ignored.itemIds,
+			];
 
 		} catch ( exception ) {
 
@@ -459,6 +471,7 @@ class RequestController extends Base {
 		for ( const pageIndex in urls ) {
 			const urlData = urls[ pageIndex ];
 			const pageUrl = urlData.url;
+			const sanitizedPageUrl = sanitizor.toUrl( pageUrl );
 			const pageErrors = urlData.errors;
 
 			for ( const errorIndex in pageErrors ) {
@@ -468,12 +481,22 @@ class RequestController extends Base {
 
 				for ( const errorSourceIndex in errorSources ) {
 
-					relationshipItemsToInsert.push( {
+					const relationshipItem = {
 						site_url: siteUrl,
 						page_url: pageUrl,
 						error_slug: errorSlug,
 						error_source_slug: errorSources[ errorSourceIndex ],
-					} );
+					};
+
+					/**
+					 * Do not insert relationship of page
+					 */
+					if ( ! insertedAmpValidatedUrl.includes( sanitizedPageUrl ) ) {
+						response.urlErrorRelationship.excluded.push( relationshipItem );
+						continue;
+					}
+
+					relationshipItemsToInsert.push( relationshipItem );
 
 				}
 
@@ -483,7 +506,6 @@ class RequestController extends Base {
 
 		try {
 
-			response.urlErrorRelationship = {};
 			response.urlErrorRelationship.delete = await UrlErrorRelationshipModel.deleteRows( { site_url: siteUrl } );
 			response.urlErrorRelationship.insert = await UrlErrorRelationshipModel.saveMany( relationshipItemsToInsert, saveOptions );
 
@@ -541,6 +563,7 @@ class RequestController extends Base {
 
 				response[ `${ key }_urlErrorRelationship_delete` ] = prepareLog( result[ key ].urlErrorRelationship.delete || {} );
 				response[ `${ key }_urlErrorRelationship_insert` ] = prepareLog( result[ key ].urlErrorRelationship.insert || {} );
+				response[ `${ key }_urlErrorRelationship_excluded` ] = result[ key ].urlErrorRelationship.excluded.length; // Foreign key check fail.
 
 			} else {
 
