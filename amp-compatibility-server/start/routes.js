@@ -41,7 +41,7 @@ Route.group( () => {
 
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
 	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
-} ).prefix( 'admin' ).middleware( 'auth' );
+} ).prefix( 'admin' )/*.middleware( 'auth' )*/;
 
 /**
  * API endpoint.
