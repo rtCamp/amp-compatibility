@@ -25,7 +25,6 @@ class AuthorRelationship extends Base {
 	 */
 	static get sanitizationRules() {
 		return {
-			hash: 'escape',
 			extension_slug: 'slug',
 			author_profile: 'to_url',
 		};

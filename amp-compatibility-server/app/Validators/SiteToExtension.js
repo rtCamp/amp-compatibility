@@ -28,7 +28,6 @@ class SiteToExtension extends Base {
 	 */
 	static get sanitizationRules() {
 		return {
-			hash: 'escape',
 			site_url: 'to_url',
 			extension_version_slug: 'slug',
 			amp_suppressed: 'version',

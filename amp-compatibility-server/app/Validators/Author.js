@@ -30,7 +30,7 @@ class Author extends Base {
 			author_profile: 'to_url',
 			user_nicename: 'slug',
 			avatar: 'to_url',
-			display_name: 'escape',
+			display_name: 'strip_tags',
 			status: 'slug',
 		};
 	}
