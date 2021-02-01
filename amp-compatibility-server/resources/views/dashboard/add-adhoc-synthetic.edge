@@ -57,25 +57,8 @@
 
 				init: function () {
 
-					this.pluginsData = [];
-					this.themeData = [];
-
-					$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-						for ( const index in data ) {
-							this.pluginsData.push( data[ index ].slug );
-						}
-
-						this.preparePluginRow();
-					} );
-
-					$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-						for ( const index in data ) {
-							this.themeData.push( data[ index ].slug );
-						}
-
-						this.themeAutocomplete()
-					} );
+					this.preparePluginRow();
+					this.themeAutocomplete();
 
 					$( '#addNewPlugin' ).on( 'click', () => {
 						var clonedItem = $( '#pluginClone' ).clone();
@@ -93,7 +76,7 @@
 
 					jQuery( '.plugin-autocomplete' ).autocomplete( {
 						minLength: 3,
-						source: this.pluginsData,
+						source: '/api/v1/list-plugins',
 					} );
 
 					jQuery( '.btn-remove-plugin' ).on( 'click', function () {
@@ -106,7 +89,7 @@
 
 					jQuery( '.theme-autocomplete' ).autocomplete( {
 						minLength: 3,
-						source: this.themeData,
+						source: '/api/v1/list-themes',
 					} );
 
 				},

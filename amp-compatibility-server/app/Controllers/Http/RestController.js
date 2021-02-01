@@ -67,7 +67,10 @@ class RestController {
 		);
 
 		pluginSlugs = pluginSlugs.filter( function( el ) {
-			return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
+			if ( typeof el !== 'undefined' && typeof query !== 'undefined' ) {
+				return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
+			}
+			return true;
 		});
 
 		return JSON.stringify( pluginSlugs );
@@ -86,7 +89,10 @@ class RestController {
 		);
 
 		themeSlugs = themeSlugs.filter( function( el ) {
-			return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
+			if ( typeof el !== 'undefined' && typeof query !== 'undefined' ) {
+				return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
+			}
+			return true;
 		});
 
 		return JSON.stringify( themeSlugs );
