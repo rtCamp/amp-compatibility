@@ -152,7 +152,7 @@ function setup_newrelic_infra_agent() {
 	apt update
 	apt install newrelic-infra -y
 
-cat <<EOF > /etc/newrelic-infra/logging.d/amp-comp.log
+cat <<EOF > /etc/newrelic-infra/logging.d/amp-comp.yml
 logs:
   - name: "synthetic-sites-data"
 	file: /var/log/sites/*.log
