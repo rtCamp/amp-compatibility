@@ -47,7 +47,7 @@ class Site extends Base {
 	static get sanitizationRules() {
 		return {
 			site_url: 'to_url',
-			site_title: 'escape',
+			site_title: 'strip_tags',
 			php_version: 'version',
 			mysql_version: 'version',
 			wp_version: 'version',
@@ -65,7 +65,7 @@ class Site extends Base {
 			amp_plugin_configured: 'to_boolean',
 			amp_all_templates_supported: 'to_boolean',
 			amp_mobile_redirect: 'to_boolean',
-			amp_reader_theme: 'escape',
+			amp_reader_theme: 'strip_tags',
 			is_synthetic_data: 'to_boolean',
 			updated_at: 'to_date',
 		};
