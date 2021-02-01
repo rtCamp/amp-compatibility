@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+if [[ -f ~/.bash_aliases ]]; then
+	. ~/.bash_aliases
+fi
 
 log_info1() {
 
@@ -122,18 +124,44 @@ function setup_repo() {
 
 function setup_local_repo() {
 
-	cd "$HOME/$1"
-	npm i
+	cd "$HOME/amp-compatibility/amp-compatibility-server"
+	npm i && npm run prod
 }
 
 function move_dummy_data_repo() {
 
 	mkdir -p /var/www/repos
-	mv "$HOME/amp-wp-dummy-data-generator" /var/www/repos
+	mv "$HOME/amp-compatibility/amp-wp-dummy-data-generator" /var/www/repos
 }
 
 function setup_base_data() {
-	bash "$base_dir/sites/base-site.sh"
+	bash "$HOME/amp-compatibility/amp-compatibility-server/sites/base-site.sh"
+}
+
+function create_log_dirs() {
+
+	mkdir -p /var/log/adonis
+	mkdir -p /var/log/sites
+}
+
+function setup_newrelic_infra_agent() {
+
+	curl -s https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg | apt-key add -
+	echo "license_key: $NEWRELIC_LICENSE" > /etc/newrelic-infra.yml
+	printf "deb [arch=amd64] https://download.newrelic.com/infrastructure_agent/linux/apt buster main" | tee -a /etc/apt/sources.list.d/newrelic-infra.list
+	apt update
+	apt install newrelic-infra -y
+
+cat <<EOF > /etc/newrelic-infra/logging.d/amp-comp.yml
+logs:
+  - name: "synthetic-sites-data"
+    file: /var/log/sites/*.log
+  - name: "adonis-logs"
+    file: /var/log/adonis/*.log
+  - name: "setup-logs"
+    file: /var/log/init.log
+EOF
+	systemctl restart newrelic-infra.service
 }
 
 function main() {
@@ -141,11 +169,12 @@ function main() {
 	bootstrap
 	install_dependencies
 	add_gh_pub_key
-	setup_repo "rtCamp/amp-compatibility-server"
-	setup_repo "rtCamp/amp-wp-dummy-data-generator"
-	setup_local_repo "amp-compatibility-server"
+	setup_repo "rtCamp/amp-compatibility"
+	setup_local_repo
 	move_dummy_data_repo
 	setup_base_data
+	create_log_dirs
+	setup_newrelic_infra_agent
 }
 
 main

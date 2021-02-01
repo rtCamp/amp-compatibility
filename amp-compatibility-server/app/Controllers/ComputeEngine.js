@@ -23,6 +23,10 @@ class ComputeEngine {
 		return Env.get( 'GITHUB_TOKEN', '' );
 	}
 
+	get newrelicLicense() {
+		return Env.get( 'NEWRELIC_LICENSE', '' );
+	}
+
 	get config() {
 
 		const sshPubKey = fs.readFileSync( this.deployKeyPath + '.pub' );
@@ -194,11 +198,12 @@ class ComputeEngine {
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
-		await this.executeCommand( "echo 'export GITHUB_TOKEN=" + this.githubToken + "' > ~/.bashrc" );
+		await this.executeCommand( "echo 'export GITHUB_TOKEN=" + this.githubToken + "' >> ~/.bash_aliases" );
+		await this.executeCommand( "echo 'export NEWRELIC_LICENSE=" + this.newrelicLicense + "' >> ~/.bash_aliases" );
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
-		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility-server/' );
+		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
 
 		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}
