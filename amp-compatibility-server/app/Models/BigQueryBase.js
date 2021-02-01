@@ -259,7 +259,11 @@ class BigQueryBase {
 	 */
 	static async saveMany( items, options = {} ) {
 
-		if ( ! _.isArray( items ) && ! _.isObject( items ) ) {
+		if ( _.isObject( items ) ) {
+			items = Object.values( items );
+		}
+
+		if ( ! _.isArray( items ) ) {
 			return [];
 		}
 
