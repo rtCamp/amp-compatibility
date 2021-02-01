@@ -203,7 +203,7 @@ class ComputeEngine {
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
-		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility-server/' );
+		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
 
 		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}

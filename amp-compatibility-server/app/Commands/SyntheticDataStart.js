@@ -123,8 +123,8 @@ class SyntheticDataStart extends Command {
 				Logger.info( `%s : Starting synthetic data worker.`, instanceName );
 
 				instance.executeCommand(
-					`cd $HOME/amp-compatibility-server && ` +
-					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis.log`,
+					`cd $HOME/amp-compatibility/amp-compatibility-server && ` +
+					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis/job.log`,
 				).then( async () => {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );

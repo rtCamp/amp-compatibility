@@ -124,18 +124,18 @@ function setup_repo() {
 
 function setup_local_repo() {
 
-	cd "$HOME/$1"
-	npm i
+	cd "$HOME/amp-compatibility/amp-compatibility-server"
+	npm i && npm run prod
 }
 
 function move_dummy_data_repo() {
 
 	mkdir -p /var/www/repos
-	mv "$HOME/amp-wp-dummy-data-generator" /var/www/repos
+	mv "$HOME/amp-compatibility/amp-wp-dummy-data-generator" /var/www/repos
 }
 
 function setup_base_data() {
-	bash "$HOME/amp-compatibility-server/sites/base-site.sh"
+	bash "$HOME/amp-compatibility/amp-compatibility-server/sites/base-site.sh"
 }
 
 function create_log_dirs() {
@@ -169,9 +169,8 @@ function main() {
 	bootstrap
 	install_dependencies
 	add_gh_pub_key
-	setup_repo "rtCamp/amp-compatibility-server"
-	setup_repo "rtCamp/amp-wp-dummy-data-generator"
-	setup_local_repo "amp-compatibility-server"
+	setup_repo "rtCamp/amp-compatibility"
+	setup_local_repo
 	move_dummy_data_repo
 	setup_base_data
 	create_log_dirs
