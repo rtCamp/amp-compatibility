@@ -631,10 +631,10 @@ class WporgScraper extends Command {
 
 		let slug = data.slug || '';
 
-		type = type.toString().toLowerCase();
+		type = type.toString().toLowerCase() + 's';
 		slug = slug.toString().toLowerCase();
 
-		const fileToSave = Helpers.appRoot() + `/data/${ type }/${ slug }/info.json`;
+		const fileToSave = Helpers.appRoot() + `/data/${ type }/${ slug }/${ slug }.json`;
 
 		return ( await FileSystem.writeFile( fileToSave, Utility.jsonPrettyPrint( data ) ) );
 	}
