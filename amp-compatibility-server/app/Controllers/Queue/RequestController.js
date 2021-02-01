@@ -422,6 +422,10 @@ class RequestController extends Base {
 
 				const errorSource = errorSources[ index ];
 
+				/**
+				 * Only include source of plugins and themes.
+				 * And don't include wp-core's code for error sources.
+				 */
 				if ( 'string' !== typeof errorSource.type || ! allowedTypes.includes( errorSource.type ) ) {
 					continue;
 				}

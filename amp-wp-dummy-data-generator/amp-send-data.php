@@ -512,6 +512,16 @@ class AMP_Prepare_Data {
 				 */
 				foreach ( $sources as $index => $source ) { // Source of each errors of the post
 
+					$allowed_types  = [ 'plugin', 'theme' ];
+					$source['type'] = strtolower( trim( $source['type'] ) );
+
+					/**
+					 * Do not include wp-core sources.
+					 */
+					if ( empty( $source['type'] ) || ! in_array( $source['type'], $allowed_types, true ) ) {
+						continue;
+					}
+
 					if ( ! empty( $source['type'] ) ) {
 
 						if ( 'plugin' === $source['type'] ) {
