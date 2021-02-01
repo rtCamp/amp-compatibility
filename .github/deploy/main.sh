@@ -167,7 +167,7 @@ function setup_deployment_files() {
 
 function deploy() {
 
-	cd "$GITHUB_WORKSPACE"
+	cd "$GITHUB_WORKSPACE/amp-compatibility-server"
 	dep deploy "$GITHUB_BRANCH"
 }
 
