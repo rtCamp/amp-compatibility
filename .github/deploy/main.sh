@@ -161,13 +161,13 @@ EOL
 
 function setup_deployment_files() {
 
-	cd "$GITHUB_WORKSPACE"
+	cd "$GITHUB_WORKSPACE/amp-compatibility-server"
 	export build_root="$(pwd)"
 }
 
 function deploy() {
 
-	cd "$GITHUB_WORKSPACE"
+	cd "$GITHUB_WORKSPACE/amp-compatibility-server"
 	dep deploy "$GITHUB_BRANCH"
 }
 
