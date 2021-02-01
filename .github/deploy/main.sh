@@ -161,7 +161,7 @@ EOL
 
 function setup_deployment_files() {
 
-	cd "$GITHUB_WORKSPACE"
+	cd "$GITHUB_WORKSPACE/amp-compatibility-server"
 	export build_root="$(pwd)"
 }
 
