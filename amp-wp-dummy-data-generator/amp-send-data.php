@@ -148,9 +148,17 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		}
 	}
 
+	$plugin_count = count( $data['plugins'] );
+
+	if ( $is_synthetic ) {
+		$plugin_count_text = ( $plugin_count - 5 ) . " - Excluding common plugins of synthetic sites. ( $plugin_count - 5 )";
+	} else {
+		$plugin_count_text = $plugin_count;
+	}
+
 	$summary = [
 		'Site URL'               => AMP_Prepare_Data::get_home_url(),
-		'Plugin count'           => count( $data['plugins'] ),
+		'Plugin count'           => $plugin_count_text,
 		'Themes'                 => count( $data['themes'] ),
 		'Errors'                 => count( array_values( $data['errors'] ) ),
 		'Error Sources'          => count( array_values( $data['error_sources'] ) ),
@@ -162,13 +170,13 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		$summary['Synthetic Data'] = 'Yes';
 	}
 
-	WP_CLI::log( sprintf( PHP_EOL . "%'=75s", '' ) );
+	WP_CLI::log( sprintf( PHP_EOL . "%'=100s", '' ) );
 	WP_CLI::log( 'Summary of AMP data' );
-	WP_CLI::log( sprintf( "%'=75s", '' ) );
+	WP_CLI::log( sprintf( "%'=100s", '' ) );
 	foreach ( $summary as $key => $value ) {
 		WP_CLI::log( sprintf( '%-25s : %s', $key, $value ) );
 	}
-	WP_CLI::log( sprintf( "%'=75s" . PHP_EOL, '' ) );
+	WP_CLI::log( sprintf( "%'=100s" . PHP_EOL, '' ) );
 
 
 }
@@ -512,13 +520,20 @@ class AMP_Prepare_Data {
 				 */
 				foreach ( $sources as $index => $source ) { // Source of each errors of the post
 
-					if ( ! empty( $source['type'] ) ) {
+					$allowed_types  = [ 'plugin', 'theme' ];
+					$source['type'] = strtolower( trim( $source['type'] ) );
 
-						if ( 'plugin' === $source['type'] ) {
-							$sources[ $index ]['version'] = $plugin_versions[ $source['name'] ];
-						} elseif ( 'theme' === $source['type'] ) {
-							$sources[ $index ]['version'] = $theme_versions[ $source['name'] ];
-						}
+					/**
+					 * Do not include wp-core sources.
+					 */
+					if ( empty( $source['type'] ) || ! in_array( $source['type'], $allowed_types, true ) ) {
+						continue;
+					}
+
+					if ( 'plugin' === $source['type'] ) {
+						$sources[ $index ]['version'] = $plugin_versions[ $source['name'] ];
+					} elseif ( 'theme' === $source['type'] ) {
+						$sources[ $index ]['version'] = $theme_versions[ $source['name'] ];
 					}
 
 					if ( ! empty( $sources[ $index ]['text'] ) ) {
