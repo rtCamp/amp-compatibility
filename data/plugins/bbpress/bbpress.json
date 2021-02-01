@@ -1,0 +1,41 @@
+{
+    "name": "bbPress",
+    "slug": "bbpress",
+    "version": "2.6.6",
+    "author": "<a href=\"https://bbpress.org\">The bbPress Contributors</a>",
+    "author_profile": "https://profiles.wordpress.org/johnjamesjacoby",
+    "requires": "5.0",
+    "tested": "5.6",
+    "requires_php": "5.6.20",
+    "rating": 80,
+    "ratings": {
+        "1": 44,
+        "2": 20,
+        "3": 24,
+        "4": 40,
+        "5": 190
+    },
+    "num_ratings": 318,
+    "support_threads": 1,
+    "support_threads_resolved": 0,
+    "active_installs": 300000,
+    "downloaded": 7170268,
+    "last_updated": "2020-11-06 1:28am GMT",
+    "added": "2010-01-13",
+    "homepage": "https://bbpress.org",
+    "short_description": "bbPress is forum software for WordPress.",
+    "description": "<p>Are you looking for a timeless, elegant, and streamlined discussion board? bbPress is easy to integrate, easy to use, and is built to scale with your growing community.</p>\n<p>bbPress is intentionally simple yet infinitely powerful forum software, built by contributors to WordPress.</p>\n",
+    "download_link": "https://downloads.wordpress.org/plugin/bbpress.2.6.6.zip",
+    "tags": {
+        "discussion": "discussion",
+        "forum": "forum",
+        "forums": "forums",
+        "support": "support"
+    },
+    "donate_link": "",
+    "icons": {
+        "1x": "https://ps.w.org/bbpress/assets/icon.svg?rev=978290",
+        "2x": "https://ps.w.org/bbpress/assets/icon-256x256.png?rev=1534011",
+        "svg": "https://ps.w.org/bbpress/assets/icon.svg?rev=978290"
+    }
+}
