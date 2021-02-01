@@ -155,11 +155,11 @@ function setup_newrelic_infra_agent() {
 cat <<EOF > /etc/newrelic-infra/logging.d/amp-comp.yml
 logs:
   - name: "synthetic-sites-data"
-	file: /var/log/sites/*.log
+    file: /var/log/sites/*.log
   - name: "adonis-logs"
-	file: /var/log/adonis/*.log
+    file: /var/log/adonis/*.log
   - name: "setup-logs"
-	file: /var/log/init.log
+    file: /var/log/init.log
 EOF
 	systemctl restart newrelic-infra.service
 }
