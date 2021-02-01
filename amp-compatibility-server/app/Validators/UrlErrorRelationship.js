@@ -28,7 +28,6 @@ class UrlErrorRelationship extends Base {
 	 */
 	static get sanitizationRules() {
 		return {
-			hash: 'escape',
 			page_url: 'to_url',
 			error_slug: 'slug',
 			error_source_slug: 'slug',
