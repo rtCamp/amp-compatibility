@@ -25,6 +25,32 @@ const { sanitizor } = require( 'indicative' );
 class RequestController extends Base {
 
 	/**
+	 * Default theme that use while generating synthetic data.
+	 *
+	 * @return {string[]}
+	 */
+	static get syntheticThemes() {
+		return [
+			'treville',
+		];
+	}
+
+	/**
+	 * List of common plugin used to generate synthetic data.
+	 *
+	 * @return {string[]}
+	 */
+	static get syntheticPlugins() {
+		return [
+			'amp',
+			'amp-wp-dummy-data-generator',
+			'wordpress-importer',
+			'block-unit-test',
+			'coblocks',
+		];
+	}
+
+	/**
 	 * Queue name.
 	 *
 	 * @returns {string} Queue name
@@ -85,18 +111,22 @@ class RequestController extends Base {
 
 			const data = _.clone( job.data );
 			const siteUrl = data.site_url;
+
 			this.jobName = siteUrl;
+			this.job = job;
+			this.isSyntheticJob = ( !! data.site_info.is_synthetic_data );
+
+			response.isSynthetic = this.isSyntheticJob;
 
 			Logger.info( ' Site: %s | Job ID: %s started.', this.jobName, job.id );
 
 			// Prepare site_info.
 			response.site = await this.saveSite( data.site_info );
+
 			job.reportProgress( 10 );
 
 			// Prepare extensions ( themes/plugins )
 			const themes = data.themes || [];
-			const activeTheme = data.site_info.wp_active_theme || {};
-			themes.push( activeTheme );
 
 			response.themes = await this.saveThemes( themes );
 			job.reportProgress( 20 );
@@ -129,6 +159,15 @@ class RequestController extends Base {
 				} );
 
 				if ( ! insertedThemes.includes( extensionVersionSlug ) ) {
+					siteToExtensionExcluded.push( extensionVersionSlug );
+					continue;
+				}
+
+				/**
+				 * Then do not include common themes that is used to generate synthetic data
+				 * while we process synthetic site.
+				 */
+				if ( this.isSyntheticJob && this.syntheticThemes.includes( item.slug ) ) {
 					siteToExtensionExcluded.push( extensionVersionSlug );
 					continue;
 				}
@@ -166,6 +205,15 @@ class RequestController extends Base {
 					continue;
 				}
 
+				/**
+				 * Then do not include common plugins that is used to generate synthetic data
+				 * while we process synthetic site.
+				 */
+				if ( this.isSyntheticJob && this.syntheticPlugins.includes( item.slug ) ) {
+					siteToExtensionExcluded.push( extensionVersionSlug );
+					continue;
+				}
+
 				siteToExtensionItems.push( {
 					site_url: siteUrl,
 					extension_version_slug: extensionVersionSlug,
@@ -182,7 +230,7 @@ class RequestController extends Base {
 			job.reportProgress( 50 );
 
 			response.errorSources = await this.saveErrorSources( data.error_sources );
-			job.reportProgress( 70 );
+			job.reportProgress( 60 );
 
 			response.urls = await this.saveValidatedUrls( siteUrl, data.urls );
 			job.reportProgress( 100 );
@@ -422,6 +470,10 @@ class RequestController extends Base {
 
 				const errorSource = errorSources[ index ];
 
+				/**
+				 * Only include source of plugins and themes.
+				 * And don't include wp-core's code for error sources.
+				 */
 				if ( 'string' !== typeof errorSource.type || ! allowedTypes.includes( errorSource.type ) ) {
 					continue;
 				}
@@ -513,6 +565,8 @@ class RequestController extends Base {
 
 		}
 
+		this.job.reportProgress( 70 );
+
 		/**
 		 * Url error relationships
 		 */
@@ -555,6 +609,8 @@ class RequestController extends Base {
 		try {
 
 			response.urlErrorRelationship.delete = await UrlErrorRelationshipModel.deleteRows( { site_url: siteUrl } );
+			this.job.reportProgress( 80 );
+
 			response.urlErrorRelationship.insert = await UrlErrorRelationshipModel.saveMany( relationshipItemsToInsert, saveOptions );
 
 		} catch ( exception ) {
@@ -594,7 +650,9 @@ class RequestController extends Base {
 
 		for ( const key in result ) {
 
-			if ( [ 'themes', 'plugins' ].includes( key ) ) {
+			if ( 'isSynthetic' === key ) {
+				response[ key ] = result[ key ];
+			} else if ( [ 'themes', 'plugins' ].includes( key ) ) {
 
 				response[ `${ key }_extensions` ] = prepareLog( result[ key ].extensions );
 				response[ `${ key }_extensionVersions` ] = prepareLog( result[ key ].extensionVersions );
