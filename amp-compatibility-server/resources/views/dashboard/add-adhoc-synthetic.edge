@@ -16,8 +16,19 @@
 		<div class="form-group row">
 			<label for="theme" class="col-sm-2 col-form-label">Theme</label>
 			<div class="col-sm-10">
-				<input id="theme" name="theme" type="text" class="form-control theme-autocomplete"
-					   placeholder="e.g. treville">
+				<div class="input-group mb-2">
+					<input id="theme" name="theme[name]" type="text" class="form-control theme-autocomplete"
+						   placeholder="e.g. treville">
+					<div class="dropdown mx-1">
+						<button name="version" class="form-control theme-version btn btn-secondary dropdown-toggle"
+								type="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Versions
+						</button>
+						<input class="hiddenThemeVersion" type="hidden" name="theme[version]">
+						<ul class="dropdown-menu theme-dropdown">
+						</ul>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -25,14 +36,34 @@
 			<label for="plugins" class="col-sm-2 col-form-label">Plugins</label>
 			<div class="col-sm-10" id="plugin-list">
 				<div id="pluginClone" class="input-group mb-2 d-none plugin-item">
-					<input type="text" name="plugins[]" class="form-control plugin-autocomplete" autocomplete="off"
+					<input id="plugin-name" type="text" name="plugins[0][name]" class="form-control plugin-autocomplete"
+						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
-					<button type="button" class="btn btn-secondary btn-remove-plugin">-</button>
+					<div class="dropdown mx-1">
+						<button class="form-control plugin-version btn btn-secondary dropdown-toggle" type="button"
+								data-bs-toggle="dropdown" aria-expanded="false">
+							Versions
+						</button>
+						<input id="plugin-version" class="hiddenPluginVersion" type="hidden" name="plugins[0][version]">
+						<ul class="dropdown-menu plugin-dropdown">
+						</ul>
+					</div>
+					<button type="button" class="btn btn-danger btn-remove-plugin">-</button>
 				</div>
 				<div class="input-group mb-2 plugin-item">
-					<input type="text" name="plugins[]" class="form-control plugin-autocomplete" autocomplete="off"
+					<input type="text" name="plugins[1][name]" class="form-control plugin-autocomplete"
+						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
-					<button type="button" class="btn btn-secondary btn-remove-plugin">-</button>
+					<div class="dropdown mx-1">
+						<button name="version" class="form-control plugin-version btn btn-secondary dropdown-toggle"
+								type="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Versions
+						</button>
+						<input class="hiddenPluginVersion" type="hidden" name="plugins[1][version]">
+						<ul class="dropdown-menu plugin-dropdown">
+						</ul>
+					</div>
+					<button type="button" class="btn btn-danger btn-remove-plugin">-</button>
 				</div>
 			</div>
 		</div>
@@ -49,70 +80,5 @@
 @section('script')
 	{{ script('js/jquery-ui') }}
 	{{ style('css/jquery-ui') }}
-
-	<script type="application/javascript">
-
-		window.addEventListener( 'DOMContentLoaded', function ( event ) {
-			var addAdhocSyntheticData = {
-
-				init: function () {
-
-					this.pluginsData = [];
-					this.themeData = [];
-
-					$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-						for ( const index in data ) {
-							this.pluginsData.push( data[ index ].slug );
-						}
-
-						this.preparePluginRow();
-					} );
-
-					$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-						for ( const index in data ) {
-							this.themeData.push( data[ index ].slug );
-						}
-
-						this.themeAutocomplete()
-					} );
-
-					$( '#addNewPlugin' ).on( 'click', () => {
-						var clonedItem = $( '#pluginClone' ).clone();
-
-						clonedItem.removeAttr( 'id' );
-						clonedItem.removeClass( 'd-none' );
-
-						$( '#plugin-list' ).append( clonedItem );
-						this.preparePluginRow();
-					} );
-
-				},
-
-				preparePluginRow: function () {
-
-					jQuery( '.plugin-autocomplete' ).autocomplete( {
-						minLength: 3,
-						source: this.pluginsData,
-					} );
-
-					jQuery( '.btn-remove-plugin' ).on( 'click', function () {
-						$( this ).parent( '.plugin-item' ).remove();
-					} );
-
-				},
-
-				themeAutocomplete: function () {
-
-					jQuery( '.theme-autocomplete' ).autocomplete( {
-						minLength: 3,
-						source: this.themeData,
-					} );
-
-				},
-
-			};
-			addAdhocSyntheticData.init();
-		} );
-	</script>
+	{{ script('js/adhoc-requests') }}
 @endsection

@@ -169,8 +169,8 @@ class DashboardController {
 
 		const data = {};
 		const theme = request.input( 'theme' );
-		const plugins = _.filter( request.input( 'plugins' ), ( value ) => {
-			return ( ! _.isEmpty( value ) );
+		let plugins = _.filter( request.input( 'plugins' ), ( value ) => {
+			return ( _.isObject( value ) && ! _.isEmpty( value.name ) );
 		} );
 
 		if ( _.isEmpty( theme ) && _.isEmpty( plugins ) ) {
@@ -181,12 +181,24 @@ class DashboardController {
 		const domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );
 		const job = {
 			domain: domain,
-			plugins: plugins.join( ',' ),
 			email: auth.user.email,
 		};
 
+		if ( ! _.isEmpty( plugins ) ) {
+			plugins = _.map( plugins, ( plugin ) => {
+				let value = '';
+				if ( ! _.isEmpty( plugin ) ) {
+					value = ( _.isEmpty( plugin.version ) ) ? plugin.name : `${ plugin.name }:${ plugin.version }`;
+				}
+
+				return value;
+			} );
+
+			job.plugins = plugins.join( ',' ).trim();
+		}
+
 		if ( ! _.isEmpty( theme ) ) {
-			job.theme = theme;
+			job.theme = ( _.isEmpty( theme.version ) ) ? theme.name : `${ theme.name }:${ theme.version }`;
 		}
 
 		await SyntheticDataQueueAdhocController.createJob( job );
@@ -197,4 +209,5 @@ class DashboardController {
 	}
 }
 
-module.exports = DashboardController
+module.exports = DashboardController;
+
