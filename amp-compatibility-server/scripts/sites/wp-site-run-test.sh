@@ -102,7 +102,7 @@ function process_amp() {
 
 	wp rewrite flush
 	wp amp validation reset --yes
-	wp amp validation run --force
+	wp amp validation run --limit=20 --force
 	wp amp-send-data --is-synthetic $amp_endpoint_flag
 }
 
