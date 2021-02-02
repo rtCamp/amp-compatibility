@@ -3,7 +3,7 @@
 const { Command } = require( '@adonisjs/ace' );
 
 // Controllers
-const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
+const AdhocSyntheticDataQueueController = use( 'App/Controllers/Queue/AdhocSyntheticDataController' );
 
 // Helpers
 const Logger = use( 'Logger' );
@@ -29,7 +29,7 @@ class SyntheticDataAdd extends Command {
 	 * @returns {*}
 	 */
 	get queue() {
-		return SyntheticDataQueueAdhocController.queue;
+		return AdhocSyntheticDataQueueController.queue;
 	}
 
 	parseOptions( options ) {
@@ -62,7 +62,7 @@ class SyntheticDataAdd extends Command {
 
 		Logger.info( 'Site: %s.local will be created to process the synthetic data.', job.domain );
 
-		await SyntheticDataQueueAdhocController.createJob( job );
+		await AdhocSyntheticDataQueueController.createJob( job );
 
 		exit( 1 );
 	}

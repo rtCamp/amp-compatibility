@@ -13,7 +13,7 @@ const _ = require( 'underscore' );
 /**
  * Helper to manage request queue.
  */
-class SyntheticDataAdhocController extends SyntheticDataController {
+class AdhocSyntheticDataController extends SyntheticDataController {
 
 	/**
 	 * Queue name.
@@ -68,4 +68,4 @@ class SyntheticDataAdhocController extends SyntheticDataController {
 	}
 }
 
-module.exports = SyntheticDataAdhocController;
+module.exports = AdhocSyntheticDataController;

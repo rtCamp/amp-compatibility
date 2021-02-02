@@ -3,7 +3,7 @@
 const { Command } = require( '@adonisjs/ace' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
-const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
+const AdhocSyntheticDataQueueController = use( 'App/Controllers/Queue/AdhocSyntheticDataController' );
 const Logger = use( 'Logger' );
 
 // Utilities
@@ -64,7 +64,7 @@ class WorkerStart extends Command {
 				await SyntheticDataQueueController.startWorker( workerOptions );
 				break;
 			case 'adhoc-synthetic-data':
-				await SyntheticDataQueueAdhocController.startWorker( workerOptions );
+				await AdhocSyntheticDataQueueController.startWorker( workerOptions );
 				break;
 		}
 
