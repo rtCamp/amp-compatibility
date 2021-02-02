@@ -17,14 +17,14 @@
 			<label for="theme" class="col-sm-2 col-form-label">Theme</label>
 			<div class="col-sm-10">
 				<div class="input-group mb-2">
-					<input id="theme" name="theme[]" type="text" class="form-control theme-autocomplete"
+					<input id="theme" name="theme[name]" type="text" class="form-control theme-autocomplete"
 						   placeholder="e.g. treville">
 					<div class="dropdown mx-1">
 						<button name="version" class="form-control theme-version btn btn-secondary dropdown-toggle"
 								type="button" data-bs-toggle="dropdown" aria-expanded="false">
 							Versions
 						</button>
-						<input class="hiddenThemeVersion" type="hidden" name="theme[]">
+						<input class="hiddenThemeVersion" type="hidden" name="theme[version]">
 						<ul class="dropdown-menu theme-dropdown">
 						</ul>
 					</div>
@@ -36,28 +36,30 @@
 			<label for="plugins" class="col-sm-2 col-form-label">Plugins</label>
 			<div class="col-sm-10" id="plugin-list">
 				<div id="pluginClone" class="input-group mb-2 d-none plugin-item">
-					<input type="text" name="plugins[]" class="form-control plugin-autocomplete" autocomplete="off"
+					<input id="plugin-name" type="text" name="plugins[0][name]" class="form-control plugin-autocomplete"
+						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
 					<div class="dropdown mx-1">
 						<button class="form-control plugin-version btn btn-secondary dropdown-toggle" type="button"
 								data-bs-toggle="dropdown" aria-expanded="false">
 							Versions
 						</button>
-						<input class="hiddenPluginVersion" type="hidden" name="plugins[]">
+						<input id="plugin-version" class="hiddenPluginVersion" type="hidden" name="plugins[0][version]">
 						<ul class="dropdown-menu plugin-dropdown">
 						</ul>
 					</div>
 					<button type="button" class="btn btn-danger btn-remove-plugin">-</button>
 				</div>
 				<div class="input-group mb-2 plugin-item">
-					<input type="text" name="plugins[]" class="form-control plugin-autocomplete" autocomplete="off"
+					<input type="text" name="plugins[1][name]" class="form-control plugin-autocomplete"
+						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
 					<div class="dropdown mx-1">
 						<button name="version" class="form-control plugin-version btn btn-secondary dropdown-toggle"
 								type="button" data-bs-toggle="dropdown" aria-expanded="false">
 							Versions
 						</button>
-						<input class="hiddenPluginVersion" type="hidden" name="plugins[]">
+						<input class="hiddenPluginVersion" type="hidden" name="plugins[1][version]">
 						<ul class="dropdown-menu plugin-dropdown">
 						</ul>
 					</div>
@@ -78,152 +80,5 @@
 @section('script')
 	{{ script('js/jquery-ui') }}
 	{{ style('css/jquery-ui') }}
-
-	<script type="application/javascript">
-
-		window.addEventListener( 'DOMContentLoaded', function ( event ) {
-			let addAdhocSyntheticData = {
-
-				init: function () {
-
-					/* makes drop down function */
-					$( document ).on( 'click', '.dropdown-item', function () {
-
-						/* updates the hidden value of verions */
-						$( this ).parents( '.dropdown' ).find( '.hiddenThemeVersion' ).val( $( this ).text() );
-						$( this ).parents( '.dropdown' ).find( '.hiddenPluginVersion' ).val( $( this ).text() );
-
-						/* updates drop down button value */
-						$( this ).parents( '.dropdown' ).find( 'button' ).text( $( this ).text() );
-					} );
-
-					this.pluginsData = [];
-					this.themeData = [];
-
-					/* fetch data for plugins autocomplete */
-					$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-						for ( const index in data ) {
-							this.pluginsData.push( data[ index ].slug );
-						}
-
-						this.preparePluginRow();
-					} );
-
-					/* fetch data for themes autocomplete */
-					$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-						for ( const index in data ) {
-							this.themeData.push( data[ index ].slug );
-						}
-
-						this.themeAutocomplete();
-					} );
-
-					/* add new plugin button */
-					$( '#addNewPlugin' ).on( 'click', () => {
-
-						/* duplicate plugin removal */
-						this.removeDuplicatePlugins();
-
-						let clonedItem = $( '#pluginClone' ).clone();
-
-						clonedItem.removeAttr( 'id' );
-						clonedItem.removeClass( 'd-none' );
-
-						$( '#plugin-list' ).append( clonedItem );
-						this.preparePluginRow();
-					} );
-
-				},
-
-				/* duplicate plugin removal code */
-				removeDuplicatePlugins: function () {
-					let nodesList = {};
-					$( '.plugin-autocomplete' ).each( function () {
-						let nodeLength = $( '.plugin-autocomplete' ).length;
-						let innerValue = $( this ).val();
-						( nodeLength > 2 && nodesList[ innerValue ] ) ?
-							$( this ).parent().remove() : nodesList[ innerValue ] = true;
-					} );
-				},
-
-				/* fetch plugin name and add remove button */
-				preparePluginRow: function () {
-					let pluginSrc = this.pluginsData;
-					jQuery( '.plugin-autocomplete' ).autocomplete( {
-						minLength: 3,
-						source: function ( request, response ) {
-							let results = $.ui.autocomplete.filter( pluginSrc, request.term );
-							response( results.slice( 0, 10 ) );
-						},
-					} );
-
-					jQuery( '.btn-remove-plugin' ).on( 'click', function () {
-						let removeButtons = $( '#plugin-list' ).find( '.btn-remove-plugin' ).length;
-						( removeButtons > 2 ) ? $( this ).parent( '.plugin-item' ).remove() : null;
-					} );
-
-				},
-
-				/* fetch theme names */
-				themeAutocomplete: function () {
-					let themeSrc = this.themeData;
-					jQuery( '.theme-autocomplete' ).autocomplete( {
-						minLength: 3,
-						source: function ( request, response ) {
-							let results = $.ui.autocomplete.filter( themeSrc, request.term );
-							response( results.slice( 0, 20 ) );
-						},
-					} );
-				},
-
-				/* fetch theme versions */
-				fetchThemeVersions: function () {
-					$( '.theme-autocomplete' ).on( 'focusout', function () {
-
-						/* update the drop down with new versions */
-						$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-							$( this ).siblings().find( '.theme-dropdown' ).html( "" );
-							for ( const index in data ) {
-								const parent = $( this ).val();
-								if ( "" !== parent && data[ index ].name === parent ) {
-									data[ index ].versions.map( ( data, index ) => {
-										$( this ).siblings().find( '.theme-dropdown' )
-												 .append( '<li><a class="dropdown-item" href="#">' + data + '</a></li>' );
-									} );
-								}
-							}
-						} );
-					} );
-				},
-
-				/* fetch plugin versions */
-				fetchPluginVersions: function () {
-					$( document ).on( 'focusout', '.plugin-autocomplete', function () {
-
-						/* update the drop down with new versions */
-						$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-							/* duplicate plugin removal */
-							addAdhocSyntheticData.removeDuplicatePlugins();
-
-							$( this ).siblings().find( '.plugin-dropdown' ).html( "" );
-							for ( const index in data ) {
-								const parent = $( this ).val();
-								if ( "" !== parent && data[ index ].name === parent ) {
-									data[ index ].versions.map( ( data, index ) => {
-										$( this ).siblings().find( '.plugin-dropdown' )
-												 .append( '<li><a class="dropdown-item" href="#">' + data + '</a></li>' );
-									} );
-								}
-							}
-						} );
-					} );
-				},
-			};
-			addAdhocSyntheticData.init();
-			addAdhocSyntheticData.fetchThemeVersions();
-			addAdhocSyntheticData.fetchPluginVersions();
-		} );
-	</script>
+	{{ script('js/adhoc-requests') }}
 @endsection
