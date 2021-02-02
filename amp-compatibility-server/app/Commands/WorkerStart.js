@@ -3,7 +3,7 @@
 const { Command } = require( '@adonisjs/ace' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
-const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
+const AdhocSyntheticDataQueueController = use( 'App/Controllers/Queue/AdhocSyntheticDataController' );
 const Logger = use( 'Logger' );
 
 // Utilities
@@ -12,7 +12,7 @@ const _ = require( 'underscore' );
 class WorkerStart extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
 		return `worker:start
@@ -21,16 +21,22 @@ class WorkerStart extends Command {
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
 		return 'To start worker to process for job queue.';
 	}
 
 	/**
-	 * Function to perform CLI task.
+	 * To handle functionality of command.
+	 * To start work for given queue.
 	 *
-	 * @return void
+	 * @param {Object} args Argument passed in command.
+	 * @param {Object} options Options passed in command.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async handle( args, options ) {
 
@@ -64,7 +70,7 @@ class WorkerStart extends Command {
 				await SyntheticDataQueueController.startWorker( workerOptions );
 				break;
 			case 'adhoc-synthetic-data':
-				await SyntheticDataQueueAdhocController.startWorker( workerOptions );
+				await AdhocSyntheticDataQueueController.startWorker( workerOptions );
 				break;
 		}
 

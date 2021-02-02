@@ -14,32 +14,37 @@ const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
+// Helpers
+const Logger = use( 'Logger' );
+
 // Utilities
 const { exit } = require( 'process' );
-const CacheHelper = use( 'App/Helpers/Cache' );
 
-class Cache extends Command {
+class CacheUpdate extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
-		return 'cache';
+		return 'cache:update';
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
-		return 'To update data cache';
+		return 'To update local redis cache data with BigQuery.';
 	}
 
 	/**
-	 * Function to perform CLI task.
+	 * To handle functionality of command.
+	 * To update local redis cache with bigquery.
 	 *
-	 * @return void
+	 * @return {Promise<void>}
 	 */
-	async handle( args, options ) {
+	async handle() {
 
 		const models = [
 			AmpValidatedUrlModel,
@@ -55,16 +60,16 @@ class Cache extends Command {
 		];
 
 		for ( let index in models ) {
-			this.info( `Updating cache for ${ models[ index ].table }` );
+			Logger.info( `- Table: %s`, models[ index ].table );
 			const count = await models[ index ].updateCache();
-			this.info( `-- Table: ${ models[ index ].table }, No of records: ${ count }` + "\n" );
+			Logger.info( `- Records: %d` + "\n", count );
 		}
 
-		this.success( 'Redis cache is up to date with BigQuery' );
+		Logger.info( 'Redis cache is up to date with BigQuery.' );
 
 		exit( 1 );
 	}
 
 }
 
-module.exports = Cache;
+module.exports = CacheUpdate;

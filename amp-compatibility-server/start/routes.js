@@ -54,7 +54,4 @@ Route.group( () => {
 	Route.get( 'amp-wp', 'RestController.index' );
 	Route.post( 'amp-wp', 'RestController.store' );
 
-	Route.get( 'list-plugins', 'RestController.listPlugins' );
-	Route.get( 'list-themes', 'RestController.listThemes' );
-
 } ).prefix( 'api/v1' );

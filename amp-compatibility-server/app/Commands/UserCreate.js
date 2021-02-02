@@ -7,36 +7,39 @@ const { exit } = require( 'process' );
 class UserCreate extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
 		return `user:create
 		 { --username=@value : Username of user. }
 		 { --email=@value : Email address of user. }
-		 { --password=@value : Password for user. }`
+		 { --password=@value : Password for user. }`;
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
-		return 'To create user for application'
+		return 'To create user for application';
 	}
 
 	/**
-	 * Function to perform CLI task.
+	 * To handle functionality of command.
+	 * To create user for dashboard.
 	 *
-	 * @param {Object} args Arguments
-	 * @param {Object} flags Flags
+	 * @param {Object} args Argument passed in command.
+	 * @param {Object} options Options passed in command.
 	 *
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
-	async handle( args, flags ) {
+	async handle( args, options ) {
 
 		const userData = {
-			username: flags.username,
-			email: flags.email,
-			password: flags.password,
+			username: options.username,
+			email: options.email,
+			password: options.password,
 		};
 
 		try {
