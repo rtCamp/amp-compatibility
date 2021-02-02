@@ -1,12 +1,13 @@
 'use strict';
 
-const _ = require( 'underscore' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
+
+// Helpers
 const Logger = use( 'Logger' );
-const Helpers = use( 'Helpers' );
-const fs = require( 'fs' );
-const path = require( 'path' );
+
+// Utilities
+const _ = require( 'underscore' );
 
 class RestController {
 
@@ -54,43 +55,6 @@ class RestController {
 		return { status: 'ok' };
 	}
 
-	/**
-	 * Depends on local data.
-	 * @see `node ace wporg:scraper --only-store-in-local`
-	 * @param string term Filters data by term.
-	 */
-	listPlugins( r ) {
-		var query = r.request.input('term');
-
-		let pluginSlugs = fs.readdirSync(
-			Helpers.appRoot() + `/data/plugin/`
-		);
-
-		pluginSlugs = pluginSlugs.filter( function( el ) {
-			return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
-		});
-
-		return JSON.stringify( pluginSlugs );
-	}
-
-	/**
-	 * Depends on local data.
-	 * @see `node ace wporg:scraper --only-store-in-local`
-	 * @param string term Filters data by term.
-	 */
-	listThemes( r ) {
-		var query = r.request.input('term');
-
-		let themeSlugs = fs.readdirSync(
-			Helpers.appRoot() + `/data/theme/`
-		);
-
-		themeSlugs = themeSlugs.filter( function( el ) {
-			return el.toLowerCase().indexOf( query.toLowerCase() ) !== -1
-		});
-
-		return JSON.stringify( themeSlugs );
-	}
 }
 
 module.exports = RestController;

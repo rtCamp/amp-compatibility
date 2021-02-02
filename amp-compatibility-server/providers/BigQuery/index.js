@@ -1,5 +1,4 @@
 const { BigQuery: BigQueryClient } = require( '@google-cloud/bigquery' );
-const Helpers = use( 'Helpers' );
 const _ = require( 'underscore' );
 
 class BigQuery {
@@ -14,8 +13,6 @@ class BigQuery {
 		if ( ! _.isObject( config ) || _.isEmpty( config.projectId ) || _.isEmpty( config.dataset ) || _.isEmpty( config.keyFilename ) ) {
 			return;
 		}
-
-		config.keyFilename = Helpers.appRoot( `private/${ config.keyFilename }` );
 
 		this.config = config;
 

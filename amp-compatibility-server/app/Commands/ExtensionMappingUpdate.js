@@ -11,35 +11,37 @@ const _ = require( 'underscore' );
 class ExtensionMappingUpdate extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
-		return 'extension:mapping:update'
+		return 'extension:mapping:update';
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
 		return 'To update mapping of extension';
 	}
 
 	/**
-	 * Function to perform CLI task.
+	 * To handle functionality of command.
+	 * To update local redis cache with bigquery.
 	 *
-	 * @return void
+	 * @return {Promise<void>}
 	 */
-	async handle( args, options ) {
+	async handle() {
 
 		const plugins = {};
 		const themes = {};
-		let count = 0;
 
 		try {
+			let currentPage = 0;
 			let nextQuery = {
 				autoPaginate: false,
 			};
-			let currentPage = 0;
 
 			do {
 				let rows = [];
@@ -103,10 +105,6 @@ class ExtensionMappingUpdate extends Command {
 		} catch ( exception ) {
 			console.log( exception );
 		}
-
-	}
-
-	prepareData( row, records ) {
 
 	}
 

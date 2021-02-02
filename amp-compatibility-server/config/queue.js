@@ -5,8 +5,6 @@ const Env = use( 'Env' );
 
 module.exports = {
 
-	name: Env.get( 'QUEUE_NAME', 'local' ),
-
 	/*
 	|--------------------------------------------------------------------------
 	| connection

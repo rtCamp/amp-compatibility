@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -39,12 +39,12 @@ class RedirectUnauthorizedUser {
 	 */
 	async handleInvalidSessionException( error, { request, response, session } ) {
 
-		const destination = request.url()
-		session.put( 'original-destination', destination )
+		const destination = request.url();
+		session.put( 'original-destination', destination );
 
 		// redirect to login
 		return response.redirect( '/login', 302 );
 	}
 }
 
-module.exports = RedirectUnauthorizedUser
+module.exports = RedirectUnauthorizedUser;

@@ -1,7 +1,8 @@
 'use strict';
 
 const { Command } = require( '@adonisjs/ace' );
-const { getPluginsList, getThemesList, getThemeInfo } = require( 'wporg-api-client' );
+
+const { getPluginsList, getThemesList } = require( 'wporg-api-client' );
 
 // Models
 const AuthorModel = use( 'App/Models/BigQueryAuthor' );
@@ -9,19 +10,21 @@ const AuthorRelationshipModel = use( 'App/Models/BigQueryAuthorRelationship' );
 const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
-// Utilities
-const { exit } = require( 'process' );
+// Helpers
 const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Stopwatch = use( 'App/Helpers/Stopwatch' );
 const Logger = use( 'Logger' );
 const Helpers = use( 'Helpers' );
+
+// Utilities
+const { exit } = require( 'process' );
 const _ = require( 'underscore' );
 
 class WporgScraper extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
 
@@ -38,7 +41,9 @@ class WporgScraper extends Command {
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
 		return 'List of command to scrap wordpress.org themes and plugins data.';

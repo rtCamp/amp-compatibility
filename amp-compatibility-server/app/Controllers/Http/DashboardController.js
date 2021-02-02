@@ -7,7 +7,7 @@
 
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
-const SyntheticDataQueueAdhocController = use( 'App/Controllers/Queue/SyntheticDataAdhocController' );
+const AdhocSyntheticDataQueueController = use( 'App/Controllers/Queue/AdhocSyntheticDataController' );
 
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -31,7 +31,7 @@ class DashboardController {
 		const queueControllers = [
 			RequestQueueController,
 			SyntheticDataQueueController,
-			SyntheticDataQueueAdhocController,
+			AdhocSyntheticDataQueueController,
 		];
 
 		for ( const index in queueControllers ) {
@@ -81,7 +81,7 @@ class DashboardController {
 				queue = SyntheticDataQueueController.queue;
 				break;
 			case 'adhoc-synthetic-queue':
-				queue = SyntheticDataQueueAdhocController.queue;
+				queue = AdhocSyntheticDataQueueController.queue;
 				break;
 			case 'request-queue':
 			default:
@@ -201,7 +201,7 @@ class DashboardController {
 			job.theme = ( _.isEmpty( theme.version ) ) ? theme.name : `${ theme.name }:${ theme.version }`;
 		}
 
-		await SyntheticDataQueueAdhocController.createJob( job );
+		await AdhocSyntheticDataQueueController.createJob( job );
 
 		data.successNotification = `Job has been added with domain "${ domain }.local"`;
 

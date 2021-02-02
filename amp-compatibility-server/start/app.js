@@ -66,10 +66,10 @@ const aliases = {};
 const commands = [
 	'App/Commands/WporgScraper',
 	'App/Commands/WorkerStart',
-	'App/Commands/Cache',
+	'App/Commands/CacheUpdate',
 	'App/Commands/UserCreate',
 	'App/Commands/SyntheticDataStart',
-	'App/Commands/SyntheticDataAdd',
+	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionMappingUpdate',
 ];
 
