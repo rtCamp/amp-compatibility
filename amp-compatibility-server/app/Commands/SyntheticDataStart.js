@@ -19,7 +19,7 @@ const _ = require( 'underscore' );
 class SyntheticDataStart extends Command {
 
 	/**
-	 * Command Name is used to run the command
+	 * Command signature.
 	 */
 	static get signature() {
 		return `synthetic-data:start
@@ -33,7 +33,9 @@ class SyntheticDataStart extends Command {
 	}
 
 	/**
-	 * Command Name is displayed in the "help" output
+	 * Description of the command.
+	 *
+	 * @return {string} command description.
 	 */
 	static get description() {
 		return 'To refill synthetic data queue with any possible jobs.';
@@ -48,6 +50,13 @@ class SyntheticDataStart extends Command {
 		return SyntheticDataQueueController.queue;
 	}
 
+	/**
+	 * To prepare options passed to the command.
+	 *
+	 * @param {Object} options Options passed to the command.
+	 *
+	 * @return void
+	 */
 	parseOptions( options ) {
 
 		const concurrency = parseInt( options.concurrency ) || 100;
@@ -72,9 +81,16 @@ class SyntheticDataStart extends Command {
 	}
 
 	/**
-	 * Function to perform CLI task.
+	 * To handle functionality of command.
+	 * - To refill synthetic-data queue.
+	 * - Create compute instance if not exists and setup.
+	 * - Run synthetic data processes in those instance.
+	 * - Terminate the compute instance.
 	 *
-	 * @return void
+	 * @param {Object} args Argument passed in command.
+	 * @param {Object} options Options passed in command.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async handle( args, options ) {
 
@@ -84,7 +100,7 @@ class SyntheticDataStart extends Command {
 
 		// Refill queue with new tasks.
 		this.info( 'Fetching synthetic data jobs.' );
-		//await this.refillQueue();
+		await this.refillQueue();
 
 		const queueHealth = await this.queue.checkHealth();
 		const totalJobs = parseInt( queueHealth.waiting + queueHealth.delayed );
@@ -152,6 +168,35 @@ class SyntheticDataStart extends Command {
 
 		}
 
+	}
+
+	/**
+	 * To create compute instance or use existing one by name and setup the instance.
+	 *
+	 * @param {String} instanceName Name of the compute instance.
+	 *
+	 * @return {ComputeEngine} Compute engine instance.
+	 */
+	async getComputeInstance( instanceName ) {
+
+		if ( _.isEmpty( instanceName ) || ! _.isString( instanceName ) ) {
+			throw 'Please provide instance name.';
+		}
+
+		const options = {
+			name: instanceName,
+		};
+
+		// Create compute engine instance as secondary instance.
+		const instance = new ComputeEngine( options );
+		const isExists = await instance.getInstanceIfExists();
+
+		if ( false === isExists ) {
+			await instance.create();
+			await instance.setup();
+		}
+
+		return instance;
 	}
 
 	/**
@@ -224,28 +269,6 @@ class SyntheticDataStart extends Command {
 		}
 
 		return count;
-	}
-
-	async getComputeInstance( instanceName ) {
-
-		if ( _.isEmpty( instanceName ) || ! _.isString( instanceName ) ) {
-			throw 'Please provide instance name.';
-		}
-
-		const options = {
-			name: instanceName,
-		};
-
-		// Create compute engine instance as secondary instance.
-		const instance = new ComputeEngine( options );
-		const isExists = await instance.getInstanceIfExists();
-
-		if ( false === isExists ) {
-			await instance.create();
-			await instance.setup();
-		}
-
-		return instance;
 	}
 
 }
