@@ -27,20 +27,6 @@ class Commands extends Base {
 	protected $generators = [];
 
 	/**
-	 * List of config class for active plugins.
-	 *
-	 * @var array
-	 */
-	protected $plugin_configs = [];
-
-	/**
-	 * List of config class for active themes.
-	 *
-	 * @var array
-	 */
-	protected $theme_configs = [];
-
-	/**
 	 * Construct method.
 	 */
 	public function __construct() {
@@ -64,42 +50,6 @@ class Commands extends Base {
 	 */
 	private function setup() {
 
-		/**
-		 * Plugins
-		 */
-		$active_plugins = self::get_active_plugins();
-		$active_plugins = array_keys( $active_plugins );
-
-		foreach ( $active_plugins as $active_plugin ) {
-
-			$full_class_name = '\AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs\\' . $this->get_class_name( $active_plugin );
-
-			if ( class_exists( $full_class_name ) ) {
-				$this->plugin_configs[] = new $full_class_name();
-			}
-
-		}
-
-		/**
-		 * Themes
-		 */
-		$active_theme_object = wp_get_theme();
-
-		$theme_classes   = [];
-		$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $active_theme_object->get_stylesheet() );
-
-		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
-			$parent_theme    = $active_theme_object->parent();
-			$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $parent_theme->get_stylesheet() );
-		}
-
-		foreach ( $theme_classes as $theme_class ) {
-
-			if ( class_exists( $theme_class ) ) {
-				$this->theme_configs[] = new $theme_class();
-			}
-
-		}
 	}
 
 	/**
@@ -120,6 +70,58 @@ class Commands extends Base {
 		}
 
 		return $class_name;
+	}
+
+	/**
+	 * To get the data directory/directories of a theme/plugin.
+	 *
+	 * @param string $slug Slug of theme/plugin.
+	 *
+	 * @return array Array of strings, containing data directory paths.
+	 */
+	private function get_data_dirs( $slug ) {
+		$return_locations = array();
+		$search_locations = array(
+			'/data/wporg/plugins/',
+			'/data/wporg/themes/',
+			'/data/premium/plugins/',
+			'/data/premium/themes/',
+		);
+		foreach ( $search_locations as $search_location ) {
+			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;
+
+			if ( is_dir( $maybe_data_dir ) ) {
+				$return_locations[] = $maybe_data_dir;
+			}
+		}
+		return $return_locations;
+	}
+
+	/**
+	 * Returns array of import files for a given plugin or theme.
+	 *
+	 * @param string $slug Name of plugin or theme.
+	 *
+	 * @param array  $import_files Array of files already listed to be imported.
+	 *
+	 * @return array Array of import files list.
+	 */
+	private function get_import_files_single( $slug, $import_files = array() ) {
+
+		$return_import_files = array();
+		$data_dirs           = $this->get_data_dirs( $active_theme );
+
+		if ( ! empty( $data_dirs ) ) {
+			foreach ( $data_dirs as $data_dir ) {
+				$import_files_glob = glob( "{$data_dir}/*.xml" );
+				if ( false !== $import_files && ! empty( $import_files ) ) {
+					array_merge( $return_import_files, $import_files_glob );
+				}
+			}
+			$return_import_files = array_merge( $import_files, $return_import_files );
+		}
+
+		return $return_import_files;
 	}
 
 	/**
@@ -299,40 +301,27 @@ class Commands extends Base {
 			}
 		}
 
-		foreach ( $this->theme_configs as $theme_config ) {
+		/**
+		 * Themes
+		 */
+		$active_theme_object = wp_get_theme();
+		$active_theme        = $active_theme_object->get_stylesheet();
+		$import_files        = $this->get_import_files_single( $active_theme, $import_files );
 
-			$files = $theme_config->get_import_files();
-
-			if ( empty( $theme_config->name ) || empty( $files ) || ! is_array( $files ) ) {
-				continue;
-			}
-
-			$prefix = "themes/$theme_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
-			}
-
+		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
+			$parent_theme = $active_theme_object->parent()->get_stylesheet();
+			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
 		}
 
-		foreach ( $this->plugin_configs as $plugin_config ) {
+		/**
+		 * Plugins
+		 */
+		$active_plugins = self::get_active_plugins();
+		$active_plugins = array_keys( $active_plugins );
 
-			$files = $plugin_config->get_import_files();
-
-			if ( empty( $plugin_config->name ) || empty( $files ) || ! is_array( $files ) ) {
-				continue;
-			}
-
-			$prefix = "plugins/$plugin_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
-			}
-
+		foreach ( $active_plugins as $active_plugin ) {
+			$import_files = $this->get_import_files_single( $active_plugin, $import_files );
 		}
-
-		$import_files = array_keys( $import_files );
-		$import_files = array_unique( $import_files );
 
 		if ( ! empty( $import_files ) ) {
 			$this->write_log( implode( '|', $import_files ) );
