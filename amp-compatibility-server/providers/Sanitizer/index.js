@@ -2,6 +2,7 @@
 
 const { sanitizor } = require( 'indicative' );
 const _ = require( 'underscore' );
+const he = require('he');
 
 class Sanitizer {
 
@@ -17,6 +18,7 @@ class Sanitizer {
 		sanitizor.toUrl = this.toUrl;
 		sanitizor.toDate = this.toDate;
 		sanitizor.toJson = this.toJson;
+		sanitizor.sanitizeText = this.sanitizeText;
 	}
 
 	slug( value ) {
@@ -131,6 +133,18 @@ class Sanitizer {
 		if ( _.isObject( value ) || _.isArray( value ) ) {
 			value = JSON.stringify( value );
 		}
+
+		return value;
+	}
+
+	sanitizeText( value ) {
+
+		if ( ! _.isString( value ) ) {
+			value = '';
+		}
+
+		value = sanitizor.stripTags( value );
+		value = he.decode(value);
 
 		return value;
 	}

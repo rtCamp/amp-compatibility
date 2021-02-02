@@ -47,7 +47,7 @@ class Site extends Base {
 	static get sanitizationRules() {
 		return {
 			site_url: 'to_url',
-			site_title: 'strip_tags',
+			site_title: 'sanitize_text',
 			php_version: 'version',
 			mysql_version: 'version',
 			wp_version: 'version',
