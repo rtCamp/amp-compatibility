@@ -69,7 +69,7 @@ const commands = [
 	'App/Commands/Cache',
 	'App/Commands/UserCreate',
 	'App/Commands/SyntheticDataStart',
-	'App/Commands/SyntheticDataAdd',
+	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionMappingUpdate',
 ];
 
