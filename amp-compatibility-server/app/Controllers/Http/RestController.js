@@ -1,12 +1,13 @@
 'use strict';
 
-const _ = require( 'underscore' );
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
+
+// Helpers
 const Logger = use( 'Logger' );
-const Helpers = use( 'Helpers' );
-const fs = require( 'fs' );
-const path = require( 'path' );
+
+// Utilities
+const _ = require( 'underscore' );
 
 class RestController {
 
