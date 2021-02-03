@@ -60,7 +60,7 @@ import_data() {
 	IFS='|' read -ra import_files_array <<< "$import_files"
 
 	for import_file in "${import_files_array[@]}"; do
-		wp import --authors=create $plugin_dir/data/$import_file
+		wp import --authors=create $import_file
 	done
 
 	# Generate custom content.
