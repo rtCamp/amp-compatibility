@@ -329,16 +329,16 @@ class Commands extends Base {
 
 		$this->extract_args( $assoc_args );
 
-		$import_files = [];
+		$import_files = array();
 
 		if ( empty( $this->exclude_default ) ) {
 			/**
 			 * WordPress default sample data.
 			 */
-			$import_files['themeunittestdata.wordpress.xml'] = 'https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml';
+			$import_files = $this->get_import_files_single( 'core', $import_files );
 
 			if ( self::is_gutenberg_active() ) {
-				$import_files['gutenberg-test-data.xml'] = 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/gutenberg-test-data.xml';
+				$import_files = $this->get_import_files_single( 'gutenberg', $import_files );
 			}
 		}
 
