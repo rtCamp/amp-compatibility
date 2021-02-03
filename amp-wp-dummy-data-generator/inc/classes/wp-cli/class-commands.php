@@ -146,7 +146,34 @@ class Commands extends Base {
 	}
 
 	/**
-	 * To get list of command that need to execute before or after setup.
+	 * Returns path for pre or post import scripts for a given plugin or theme.
+	 *
+	 * @param string $slug Name of plugin or theme.
+	 *
+	 * @param array  $script_files Array of scripts already listed to be executed.
+	 *
+	 * @return array Array of script files list.
+	 */
+	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
+
+		$return_path = array();
+		$data_dirs	 = $this->get_data_dirs( $slug );
+
+		if ( ! empty( $data_dirs ) ) {
+			foreach ( $data_dirs as $data_dir ) {
+				$pre_post_glob = glob( "{$data_dir}/{$pre_post}.sh" );
+				if ( ! empty( $pre_post_glob ) ) {
+					$return_path = $pre_post_glob;
+				}
+			}
+		}
+		$return_path = array_merge( $script_files, $return_path );
+
+		return $return_path;
+	}
+
+	/**
+	 * To get list of scripts that need to execute before or after setup.
 	 *
 	 * ## OPTIONS
 	 * [--exclude-default]
