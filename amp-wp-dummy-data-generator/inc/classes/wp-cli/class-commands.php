@@ -98,6 +98,21 @@ class Commands extends Base {
 	}
 
 	/**
+	 * To get the data directory/directories of WordPress Core.
+	 * Adding this function in case we might want to include some other directories later.
+	 *
+	 * @return array Array of strings, containing data directory paths.
+	 */
+	private function get_data_dir_core( ) {
+		$return_locations = array();
+		$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
+		if ( is_dir( $maybe_data_dir ) ) {
+			$return_locations[] = $maybe_data_dir;
+		}
+		return $return_locations;
+	}
+
+	/**
 	 * Returns array of import files for a given plugin or theme.
 	 *
 	 * @param string $slug Name of plugin or theme.
