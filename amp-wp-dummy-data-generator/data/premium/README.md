@@ -1,0 +1,1 @@
+This directory is for plugins/themes which are not available on WordPress.org.
