@@ -8,10 +8,14 @@ require 'recipe/common.php';
 set( 'ssh_type', 'native' );
 set( 'ssh_multiplexing', true );
 
-set( 'shared_dirs', [ 'private' ] );
+set( 'shared_dirs', [
+	'private',
+	'logs',
+	] );
 
 set( 'writable_dirs', [
 	'private',
+	'logs',
 ] );
 
 if ( file_exists( 'vendor/deployer/recipes/recipe/rsync.php' ) ) {
