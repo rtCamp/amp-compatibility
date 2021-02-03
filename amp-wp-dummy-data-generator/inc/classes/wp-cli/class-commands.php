@@ -124,17 +124,23 @@ class Commands extends Base {
 	private function get_import_files_single( $slug, $import_files = array() ) {
 
 		$return_import_files = array();
-		$data_dirs           = $this->get_data_dirs( $active_theme );
+
+		if('core'===$slug){
+			$data_dirs = $this->get_data_dir_core();
+		} else {
+			$data_dirs = $this->get_data_dirs( $slug );
+		}
 
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
-				$import_files_glob = glob( "{$data_dir}/*.xml" );
-				if ( false !== $import_files && ! empty( $import_files ) ) {
-					array_merge( $return_import_files, $import_files_glob );
+				$import_files_glob = glob( "{$data_dir}/*.{xml,XML,wxr,WXR}", GLOB_BRACE );
+				if ( false !== $import_files ) {
+					$return_import_files = array_merge( $return_import_files, $import_files_glob );
 				}
 			}
-			$return_import_files = array_merge( $import_files, $return_import_files );
 		}
+
+		$return_import_files = array_merge( $import_files, $return_import_files );
 
 		return $return_import_files;
 	}
