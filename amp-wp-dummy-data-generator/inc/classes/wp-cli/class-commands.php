@@ -27,20 +27,6 @@ class Commands extends Base {
 	protected $generators = [];
 
 	/**
-	 * List of config class for active plugins.
-	 *
-	 * @var array
-	 */
-	protected $plugin_configs = [];
-
-	/**
-	 * List of config class for active themes.
-	 *
-	 * @var array
-	 */
-	protected $theme_configs = [];
-
-	/**
 	 * Construct method.
 	 */
 	public function __construct() {
@@ -64,42 +50,6 @@ class Commands extends Base {
 	 */
 	private function setup() {
 
-		/**
-		 * Plugins
-		 */
-		$active_plugins = self::get_active_plugins();
-		$active_plugins = array_keys( $active_plugins );
-
-		foreach ( $active_plugins as $active_plugin ) {
-
-			$full_class_name = '\AMP_WP_Dummy_Data_Generator\Inc\Plugin_Configs\\' . $this->get_class_name( $active_plugin );
-
-			if ( class_exists( $full_class_name ) ) {
-				$this->plugin_configs[] = new $full_class_name();
-			}
-
-		}
-
-		/**
-		 * Themes
-		 */
-		$active_theme_object = wp_get_theme();
-
-		$theme_classes   = [];
-		$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $active_theme_object->get_stylesheet() );
-
-		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
-			$parent_theme    = $active_theme_object->parent();
-			$theme_classes[] = '\AMP_WP_Dummy_Data_Generator\Inc\Theme_Configs\\' . $this->get_class_name( $parent_theme->get_stylesheet() );
-		}
-
-		foreach ( $theme_classes as $theme_class ) {
-
-			if ( class_exists( $theme_class ) ) {
-				$this->theme_configs[] = new $theme_class();
-			}
-
-		}
 	}
 
 	/**
@@ -123,7 +73,107 @@ class Commands extends Base {
 	}
 
 	/**
-	 * To get list of command that need to execute before or after setup.
+	 * To get the data directory/directories of a theme/plugin.
+	 *
+	 * @param string $slug Slug of theme/plugin.
+	 *
+	 * @return array Array of strings, containing data directory paths.
+	 */
+	private function get_data_dirs( $slug ) {
+		$return_locations = array();
+		$search_locations = array(
+			'/data/wporg/plugins/',
+			'/data/wporg/themes/',
+			'/data/premium/plugins/',
+			'/data/premium/themes/',
+		);
+		foreach ( $search_locations as $search_location ) {
+			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;
+
+			if ( is_dir( $maybe_data_dir ) ) {
+				$return_locations[] = $maybe_data_dir;
+			}
+		}
+		return $return_locations;
+	}
+
+	/**
+	 * To get the data directory/directories of WordPress Core.
+	 * Adding this function in case we might want to include some other directories later.
+	 *
+	 * @return array Array of strings, containing data directory paths.
+	 */
+	private function get_data_dir_core( ) {
+		$return_locations = array();
+		$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
+		if ( is_dir( $maybe_data_dir ) ) {
+			$return_locations[] = $maybe_data_dir;
+		}
+		return $return_locations;
+	}
+
+	/**
+	 * Returns array of import files for a given plugin or theme.
+	 *
+	 * @param string $slug Name of plugin or theme.
+	 *
+	 * @param array  $import_files Array of files already listed to be imported.
+	 *
+	 * @return array Array of import files list.
+	 */
+	private function get_import_files_single( $slug, $import_files = array() ) {
+
+		$return_import_files = array();
+
+		if('core'===$slug){
+			$data_dirs = $this->get_data_dir_core();
+		} else {
+			$data_dirs = $this->get_data_dirs( $slug );
+		}
+
+		if ( ! empty( $data_dirs ) ) {
+			foreach ( $data_dirs as $data_dir ) {
+				$import_files_glob = glob( "{$data_dir}/*.{xml,XML,wxr,WXR}", GLOB_BRACE );
+				if ( false !== $import_files ) {
+					$return_import_files = array_merge( $return_import_files, $import_files_glob );
+				}
+			}
+		}
+
+		$return_import_files = array_merge( $import_files, $return_import_files );
+
+		return $return_import_files;
+	}
+
+	/**
+	 * Returns path for pre or post import scripts for a given plugin or theme.
+	 *
+	 * @param string $slug Name of plugin or theme.
+	 *
+	 * @param array  $script_files Array of scripts already listed to be executed.
+	 *
+	 * @return array Array of script files list.
+	 */
+	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
+
+		$return_path = array();
+		$data_dirs	 = $this->get_data_dirs( $slug );
+
+		if ( ! empty( $data_dirs ) ) {
+			foreach ( $data_dirs as $data_dir ) {
+				$pre_post_glob = glob( "{$data_dir}/{$pre_post}.sh" );
+				if ( ! empty( $pre_post_glob ) ) {
+					$return_path = $pre_post_glob;
+				}
+			}
+		}
+		$return_path = array_merge( $script_files, $return_path );
+
+		return $return_path;
+	}
+
+	/**
+	 * To get list of scripts that need to execute before or after setup.
 	 *
 	 * ## OPTIONS
 	 * [--exclude-default]
@@ -144,9 +194,9 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-dummy-data-generator get_commands
+	 *      wp amp-wp-dummy-data-generator get_scripts
 	 *
-	 * @subcommand get_commands
+	 * @subcommand get_scripts
 	 *
 	 * @param array $args       Store all the positional arguments.
 	 * @param array $assoc_args Store all the associative arguments.
@@ -155,47 +205,40 @@ class Commands extends Base {
 	 *
 	 * @return void
 	 */
-	public function get_commands( $args, $assoc_args ) {
+	public function get_scripts( $args, $assoc_args ) {
 
 		$this->extract_args( $assoc_args );
 
 		$type = ( ! empty( $assoc_args['type'] ) ) ? strtolower( trim( $assoc_args['type'] ) ) : 'before';
 
-		$commands = [];
+		$filename = 'before'===$type ? 'pre': 'post';
 
-		foreach ( $this->theme_configs as $theme_config ) {
+		$script_files = array();
 
-			if ( 'before' === $type ) {
-				$theme_commands = $theme_config->get_before_cli_commands();
-			} else {
-				$theme_commands = $theme_config->get_after_cli_commands();
-			}
+		/**
+		 * Themes
+		 */
+		$active_theme_object = wp_get_theme();
+		$active_theme        = $active_theme_object->get_stylesheet();
+		$script_files        = $this->get_pre_post_script( $active_theme, $script_files, $filename );
 
-			if ( ! empty( $theme_commands ) && is_array( $theme_commands ) ) {
-				$commands = array_merge( $commands, $theme_commands );
-			}
-
+		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
+			$parent_theme = $active_theme_object->parent()->get_stylesheet();
+			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename );
 		}
 
-		foreach ( $this->plugin_configs as $plugin_config ) {
+		/**
+		 * Plugins
+		 */
+		$active_plugins = self::get_active_plugins();
+		$active_plugins = array_keys( $active_plugins );
 
-			if ( 'before' === $type ) {
-				$plugin_commands = $plugin_config->get_before_cli_commands();
-			} else {
-				$plugin_commands = $plugin_config->get_after_cli_commands();
-			}
-
-			if ( ! empty( $plugin_commands ) && is_array( $plugin_commands ) ) {
-				$commands = array_merge( $commands, $plugin_commands );
-			}
-
+		foreach ( $active_plugins as $active_plugin ) {
+			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename );
 		}
 
-		$commands = array_unique( $commands );
-		$commands = array_filter( $commands );
-
-		if ( ! empty( $commands ) ) {
-			$this->write_log( implode( '|', $commands ) );
+		if ( ! empty( $script_files ) ) {
+			$this->write_log( implode( '|', $script_files ) );
 		}
 
 	}
@@ -286,53 +329,40 @@ class Commands extends Base {
 
 		$this->extract_args( $assoc_args );
 
-		$import_files = [];
+		$import_files = array();
 
 		if ( empty( $this->exclude_default ) ) {
 			/**
 			 * WordPress default sample data.
 			 */
-			$import_files['themeunittestdata.wordpress.xml'] = 'https://raw.githubusercontent.com/WPTRT/theme-unit-test/master/themeunittestdata.wordpress.xml';
+			$import_files = $this->get_import_files_single( 'core', $import_files );
 
 			if ( self::is_gutenberg_active() ) {
-				$import_files['gutenberg-test-data.xml'] = 'https://raw.githubusercontent.com/Automattic/theme-tools/master/gutenberg-test-data/gutenberg-test-data.xml';
+				$import_files = $this->get_import_files_single( 'gutenberg', $import_files );
 			}
 		}
 
-		foreach ( $this->theme_configs as $theme_config ) {
+		/**
+		 * Themes
+		 */
+		$active_theme_object = wp_get_theme();
+		$active_theme        = $active_theme_object->get_stylesheet();
+		$import_files        = $this->get_import_files_single( $active_theme, $import_files );
 
-			$files = $theme_config->get_import_files();
-
-			if ( empty( $theme_config->name ) || empty( $files ) || ! is_array( $files ) ) {
-				continue;
-			}
-
-			$prefix = "themes/$theme_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
-			}
-
+		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
+			$parent_theme = $active_theme_object->parent()->get_stylesheet();
+			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
 		}
 
-		foreach ( $this->plugin_configs as $plugin_config ) {
+		/**
+		 * Plugins
+		 */
+		$active_plugins = self::get_active_plugins();
+		$active_plugins = array_keys( $active_plugins );
 
-			$files = $plugin_config->get_import_files();
-
-			if ( empty( $plugin_config->name ) || empty( $files ) || ! is_array( $files ) ) {
-				continue;
-			}
-
-			$prefix = "plugins/$plugin_config->name";
-
-			foreach ( $files as $filename => $fileUrl ) {
-				$import_files["$prefix/$filename"] = $fileUrl;
-			}
-
+		foreach ( $active_plugins as $active_plugin ) {
+			$import_files = $this->get_import_files_single( $active_plugin, $import_files );
 		}
-
-		$import_files = array_keys( $import_files );
-		$import_files = array_unique( $import_files );
 
 		if ( ! empty( $import_files ) ) {
 			$this->write_log( implode( '|', $import_files ) );

@@ -1,0 +1,1 @@
+Plugins and themes that are available on WordPress.org will go in this directory.
