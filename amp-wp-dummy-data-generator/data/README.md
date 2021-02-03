@@ -51,6 +51,6 @@ This file will be executed before the data files are imported.
 
 This file will be executed after the data files are imported.
 
-### Files `*.xml` ###
+### Files `*.xml` and `*.wxr` ###
 
 All `.xml` and `.wxr` files within the **individual plugin/theme directory** will get imported, when that plugin is active.
