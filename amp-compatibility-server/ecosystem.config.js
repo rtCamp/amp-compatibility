@@ -1,9 +1,12 @@
 // https://pm2.io/docs/runtime/reference/ecosystem-file/
+
+// This is needed for getting proper current working directory in case of symlinked release directory.
+const cwd = __dirname;
 module.exports = {
 	apps: [
 		{
 			name: 'AMP-WP-Dashboard',
-			cwd: '/opt/workspace/amp-compatibility-server/current',
+			cwd: cwd,
 			script: 'server.js',
 			instances: 1,
 			log_date_format: "YYYY-MM-DD HH:mm Z",
@@ -15,7 +18,7 @@ module.exports = {
 		},
 		{
 			name: 'request-queue-worker',
-			cwd: '/opt/workspace/amp-compatibility-server/current',
+			cwd: cwd,
 			script: 'node ace worker:start --name=request --concurrency=10',
 			instances: 1,
 			log_date_format: "YYYY-MM-DD HH:mm Z",
@@ -27,7 +30,7 @@ module.exports = {
 		},
 		{
 			name: 'adhoc-queue-worker',
-			cwd: '/opt/workspace/amp-compatibility-server/current',
+			cwd: cwd,
 			script: 'node ace worker:start --name=adhoc-synthetic-data --concurrency=1',
 			instances: 1,
 			log_date_format: "YYYY-MM-DD HH:mm Z",
