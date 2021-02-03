@@ -2,7 +2,7 @@
 
 This directory contains the dummy data files to be imported for different plugins and themes.
 
-_All `.xml` files in the directory `data/wporg/core/` will get imported unless `--exclude-default` is passed._
+_All `.xml` and `.wxr` files in the directory `data/wporg/core/` will get imported unless `--exclude-default` is passed._
 
 ## Directory Structure: ##
 
@@ -30,7 +30,7 @@ Contains dummy data files for plugins and themes available on WordPress.org
 ### Directory `premium` ###
 Contains dummy data files for premium plugins and themes
 
-_ The slug of the plugin/theme name must match the directory name here_ 
+*The slug of the plugin/theme name must match the directory name here*
 
 ## Files within a plugin/theme directory ##
 
@@ -38,7 +38,7 @@ _ The slug of the plugin/theme name must match the directory name here_
 buddypress-media
 ├── import.xml
 ├── any-name.xml
-├── some-more-import.xml
+├── some-more-import.wxr
 ├── post.sh
 └── pre.sh
 ```
@@ -53,4 +53,4 @@ This file will be executed after the data files are imported.
 
 ### Files `*.xml` ###
 
-All `.xml` files within the **individual plugin/theme directory** will get imported, when that plugin is active.
+All `.xml` and `.wxr` files within the **individual plugin/theme directory** will get imported, when that plugin is active.
