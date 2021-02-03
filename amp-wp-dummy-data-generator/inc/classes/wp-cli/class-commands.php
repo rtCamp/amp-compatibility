@@ -194,9 +194,9 @@ class Commands extends Base {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *      wp amp-wp-dummy-data-generator get_commands
+	 *      wp amp-wp-dummy-data-generator get_scripts
 	 *
-	 * @subcommand get_commands
+	 * @subcommand get_scripts
 	 *
 	 * @param array $args       Store all the positional arguments.
 	 * @param array $assoc_args Store all the associative arguments.
@@ -205,47 +205,40 @@ class Commands extends Base {
 	 *
 	 * @return void
 	 */
-	public function get_commands( $args, $assoc_args ) {
+	public function get_scripts( $args, $assoc_args ) {
 
 		$this->extract_args( $assoc_args );
 
 		$type = ( ! empty( $assoc_args['type'] ) ) ? strtolower( trim( $assoc_args['type'] ) ) : 'before';
 
-		$commands = [];
+		$filename = 'before'===$type ? 'pre': 'post';
 
-		foreach ( $this->theme_configs as $theme_config ) {
+		$script_files = array();
 
-			if ( 'before' === $type ) {
-				$theme_commands = $theme_config->get_before_cli_commands();
-			} else {
-				$theme_commands = $theme_config->get_after_cli_commands();
-			}
+		/**
+		 * Themes
+		 */
+		$active_theme_object = wp_get_theme();
+		$active_theme        = $active_theme_object->get_stylesheet();
+		$script_files        = $this->get_pre_post_script( $active_theme, $script_files, $filename );
 
-			if ( ! empty( $theme_commands ) && is_array( $theme_commands ) ) {
-				$commands = array_merge( $commands, $theme_commands );
-			}
-
+		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
+			$parent_theme = $active_theme_object->parent()->get_stylesheet();
+			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename );
 		}
 
-		foreach ( $this->plugin_configs as $plugin_config ) {
+		/**
+		 * Plugins
+		 */
+		$active_plugins = self::get_active_plugins();
+		$active_plugins = array_keys( $active_plugins );
 
-			if ( 'before' === $type ) {
-				$plugin_commands = $plugin_config->get_before_cli_commands();
-			} else {
-				$plugin_commands = $plugin_config->get_after_cli_commands();
-			}
-
-			if ( ! empty( $plugin_commands ) && is_array( $plugin_commands ) ) {
-				$commands = array_merge( $commands, $plugin_commands );
-			}
-
+		foreach ( $active_plugins as $active_plugin ) {
+			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename );
 		}
 
-		$commands = array_unique( $commands );
-		$commands = array_filter( $commands );
-
-		if ( ! empty( $commands ) ) {
-			$this->write_log( implode( '|', $commands ) );
+		if ( ! empty( $script_files ) ) {
+			$this->write_log( implode( '|', $script_files ) );
 		}
 
 	}
