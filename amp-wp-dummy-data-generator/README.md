@@ -17,6 +17,10 @@ wp amp-send-data
 
 ## Directory/File Info
 
+### [./data/]
+Contains custom data to be imported/generated for various plugins as well as
+pre and post import scripts to be executed before and after import.
+
 ### [./inc/classes/generator/](./inc/classes/generator/)
 Contains all content generator classes.
 
