@@ -38,19 +38,16 @@ setup_site() {
 	wp plugin activate amp-wp-dummy-data-generator
 }
 
-### Actions before importing data.
+### Scripts to execute before importing data.
 actions_before_importing() {
 
 	# CLI commands.
-	commands=$(wp amp-wp-dummy-data-generator get_commands --type=before $exclude_default_flag)
-	IFS='|' read -ra command_array <<< "$commands"
+	scripts=$(wp amp-wp-dummy-data-generator get_scripts --type=before $exclude_default_flag)
+	IFS='|' read -ra scripts_array <<< "$scripts"
 
-	for command in "${command_array[@]}"; do
-		$command
+	for script in "${scripts_array[@]}"; do
+		bash $script
 	done
-
-	# Custom actions.
-	wp amp-wp-dummy-data-generator run_custom --type=before $exclude_default_flag
 
 }
 
@@ -75,15 +72,12 @@ import_data() {
 actions_after_importing() {
 
 	# CLI commands
-	commands=$(wp amp-wp-dummy-data-generator get_commands --type=after $exclude_default_flag)
-	IFS='|' read -ra command_array <<< "$commands"
+	scripts=$(wp amp-wp-dummy-data-generator get_scripts --type=after $exclude_default_flag)
+	IFS='|' read -ra scripts_array <<< "$scripts"
 
-	for command in "${command_array[@]}"; do
-	$command
+	for script in "${scripts_array[@]}"; do
+		bash $script
 	done
-
-	# Custom actions.
-	wp amp-wp-dummy-data-generator run_custom --type=after $exclude_default_flag
 
 }
 
