@@ -9,7 +9,7 @@ The AMP compatibility server is a Node JS application based on the [AdonisJS] fr
 ### 1. Rest API Listener
 
 This module will listen to any request coming from WordPress plugin related to AMP data,
-And store request data into Cloud memory store which is remote Redis cache storage. (In the local environment it will store in the local Redis cache.)
+And store request data into cloud memory store which is remote Redis cache storage. (In the local environment it will store in the local Redis cache.)
 
 **Command to start node server to listen for any request.**
 ```bash
@@ -41,7 +41,7 @@ node ace wporg:scraper
 
 ### 3. Request worker
 
-This module is worker which will run continually in background, And process all the request that is stored in cloud memory store.
+This module is worker which will run continually in background, and process all the request that is stored in cloud memory store.
 
 **Command**
 ```bash
@@ -51,9 +51,9 @@ node ace worker:start --name=request --concurrency=10
 ### 4. Synthetic data generator
 
 This module is responsible for generating synthetic data for extensions (theme/plugins). It will perform the following tasks.
-- First, It will check for which extensions (themes/plugins) need to generate synthetic data, And add those extensions list into `synthetic_data_queue`.
-- Then It will create one or multiple Compute engine instances (based on param value we pass and number of jobs) Or use the existing one, And setup those compute instances to run the synthetic data generation process.
-- After setting up compute instances, It will start worker for generating synthetic data with the concurrency passed in command.
+- First, It will check for which extensions (themes/plugins) need to generate synthetic data, and add those extensions list into `synthetic_data_queue`.
+- Then It will create one or multiple compute engine instances (based on param value we pass and number of jobs) or use the existing one, and setup those compute instances to run the synthetic data generation process.
+- After setting up compute instances, it will start worker for generating synthetic data with the concurrency passed in command.
 
 **Command**
 ```bash
@@ -133,7 +133,7 @@ cp .env.example .env
 
 ### 3. Setup local database and BiqQuery dataset. 
 
-To setup local MySQL database and dataset in bigquery run below command. It will create all necessary table in MySQL as well as in BigQuery dataset.
+To setup local MySQL database and dataset in BigQuery run below command. It will create all necessary table in MySQL as well as in BigQuery dataset.
 ```bash
 node ace migration:run
 ```
@@ -141,7 +141,7 @@ node ace migration:run
 ### 4. Starting up server
 
 - To start only node server (To start dashboard) for development purpose. Use `adonis serve --dev`. It will automatically reload the server on any file changes.
-- However, On production environment. We use process management tool pm2 to start Dashboard, Request worker and adhoc synthetic worker. It will start all three process in background.
+- However, on production environment, we use process management tool pm2 to start Dashboard, request worker, and adhoc synthetic worker. It will start all three process in background.
 Command: `pm2 start ecosystem.config.js`
 
 ---
@@ -198,7 +198,7 @@ node ace adhoc-synthetic-data:add --plugins=woocommerce:4.9.2,woo-gutenberg-prod
 | Option    | Description                                                                                                                                                                                                                              |
 |:----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | --theme   | (Optional) Name of the theme which will be validated along with other plugins. e.g. astra:3.0.2                                                                                                                                          |
-| --plugins | (Optional) List of plugins along with its version which will be validated along with theme (if passed) and other plugins. Multiple plugins need to pass as command separated values. e.g. woocommerce:4.9.2,woo-gutenberg-products-block |
+| --plugins | (Optional) List of plugins along with its version which will be validated along with theme (if passed) and other plugins. Multiple plugins need to pass as comma separated values. e.g. woocommerce:4.9.2,woo-gutenberg-products-block |
 
 
 ### 6. To create user for the dashboard.
