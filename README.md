@@ -41,8 +41,8 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 ## Local environment setup.
 
 ### Required software
-- [Node JS](https://nodejs.org/) (v14.15.3)
-- [Npm JS](https://www.npmjs.com/)
+- [Node JS](https://nodejs.org/) v14.15.3
+- [Npm JS](https://www.npmjs.com/) >= 3.0.0
 - [Adonis CLI](https://adonisjs.com/) ( `npm i -g @adonisjs/cli` )
 - [Redis](https://redis.io/)
 - For Ubuntu
