@@ -17,6 +17,8 @@ wp amp-send-data
 
 ## Directory/File Info
 
+### See [data/README.md](./data/README.md)
+
 ### [./inc/classes/generator/](./inc/classes/generator/)
 Contains all content generator classes.
 
