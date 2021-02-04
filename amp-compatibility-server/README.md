@@ -2,9 +2,11 @@
 
 The AMP compatibility server is a Node JS application based on the [AdonisJS] framework.
 
+---
+
 ## Modules
 
-### Rest API Listener
+### 1. Rest API Listener
 
 This module will listen to any request coming from WordPress plugin related to AMP data,
 And store request data into Cloud memory store which is remote Redis cache storage. (In the local environment it will store in the local Redis cache.)
@@ -14,7 +16,7 @@ And store request data into Cloud memory store which is remote Redis cache stora
 node server.js
 ```
 
-### WordPress Org Scraper
+### 2. WordPress Org Scraper
 
 This module is a CLI command to fetch plugins and themes from [WordPress.org] and store them to the BigQuery dataset in respective tables.
 If a record already exists for any theme and plugin then it will update with the latest data.
@@ -37,7 +39,7 @@ node ace wporg:scraper
 | --use-stream          | Use stream method to if possible. Fast but with certain limitation. [BigQuery DML reference] | node ace wporg:scraper --use-stream            |
 | --only-store-in-local | It will only store data in local directory, And won't import in BigQuery.                    | node ace wporg:scraper --only-store-in-local   |
 
-### Request worker
+### 3. Request worker
 
 This module is worker which will run continually in background, And process all the request that is stored in cloud memory store.
 
@@ -46,7 +48,7 @@ This module is worker which will run continually in background, And process all 
 node ace worker:start --name=request --concurrency=10
 ```
 
-### Synthetic data generator
+### 4. Synthetic data generator
 
 This module is responsible for generating synthetic data for extensions (theme/plugins). It will perform the following tasks.
 - First, It will check for which extensions (themes/plugins) need to generate synthetic data, And add those extensions list into `synthetic_data_queue`.
@@ -70,33 +72,141 @@ node ace synthetic-data:start
 | --vm-name             | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine" |
 | --prevent-vm-deletion | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion       |
 
+### 5. Dashboard
+
+The Basic dashboard where admin user can see current status of all the queues, And it's jobs related information.
+Also, user can add adhoc synthetic data generation request. For run test on combination of plugins and theme.
+
+---
 
 ## Setup
 
-### Setting up repo
+### 1. Setting up repo
 ```bash
-$ git clone git@github.com:rtCamp/amp-compatibility.git
+git clone git@github.com:rtCamp/amp-compatibility.git
 cd amp-compatibility-server
 npm install 
 ```
 
-### Configure environment variables.
+### 2. Configure environment variables.
 
-- Create environment config file.
+- Create environment config file from example.env file.
 ```bash
 cp .env.example .env
 ```
 
+- Update environment variables.
 
-### Starting up server
+| Name                           | Default                | Description                                                    |
+|:-------------------------------|:-----------------------|:---------------------------------------------------------------|
+| NODE_ENV                       | -                      | Application environment.                                       |
+| HOST                           | -                      | Application IP address.                                        |
+| PORT                           | -                      | Port for the application                                       |
+| APP_NAME                       | -                      | Node application name.                                         |
+| APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                          |
+| APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key |
+| SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis      |
+| CACHE_VIEWS                    | false                  | To enable/disable view caching.                                |
+| HASH_DRIVER                    | bcrypt                 | Driver for hashing user data. e.g. bcrypt, argon               |
+| DB_CONNECTION                  | sqlite                 | Database driver for the application. e.g. mysql, sqlite        |
+| DB_HOST                        | 127.0.0.1              | Database host.                                                 |
+| DB_PORT                        | 3306                   | Database port.                                                 |
+| DB_USER                        | root                   | Database user name.                                            |
+| DB_PASSWORD                    | -                      | Password for data.                                             |
+| DB_DATABASE                    | -                      | Database name.                                                 |
+| QUEUE_REDIS_HOST               | 127.0.0.1              | IP Address of GCP Cloud memory store.                          |
+| REDIS_CONNECTION               | local                  | Name of redis configuration.                                   |
+| REDIS_HOST                     | 127.0.0.1              | Redis host name for local object caching.                      |
+| REDIS_PORT                     | 6379                   | Redis port for local object caching.                           |
+| REDIS_PASSWORD                 | -                      | Redis password for local object caching.                       |
+| REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                    |
+| GOOGLE_CLOUD_PROJECT           | -                      | Name of Google cloud project.                                  |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                        |
+| DEPLOY_KEY_PATH                | -                      | SSH key path. which will use by secondary compute instance.    |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.             |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                         |
+| GCP_ZONE                       | us-central1-a          | GCP zone where we secondary instances will created.            |
+| GCP_INSTANCE_TYPE              | c2-standard-4          | GCP instance type for secondary compute instances.             |
+| GITHUB_TOKEN                   | -                      | GitHub Token for cloning repos in secondary instance.          |
+| NEWRELIC_LICENSE               | -                      | New Relic License                                              |
 
 
-**Important Notes**
-- In production environment WordPress.org scraper, Request worker and Dashboard will run on primary compute instance.
-    To start all service at once in background we use `pm2 start ecosystem.config.js`
+### 3. Setup local database and BiqQuery dataset. 
 
+To setup local MySQL database and dataset in bigquery run below command. It will create all necessary table in MySQL as well as in BigQuery dataset.
+```bash
+node ace migration:run
+```
+
+### 4. Starting up server
+
+- To start only node server (To start dashboard) for development purpose. Use `adonis serve --dev`. It will automatically reload the server on any file changes.
+- However, On production environment. We use process management tool pm2 to start Dashboard, Request worker and adhoc synthetic worker. It will start all three process in background.
+Command: `pm2 start ecosystem.config.js`
+
+---
 
 ## CLI Commands
+
+### 1. WordPress Org scraper
+Please check [WordPress Org Scraper](#wordpress-org-scraper) module for detail.
+
+
+### 2. Update local Redis cache with BigQuery dataset. 
+
+**Example**
+```bash
+node ace cache:update
+```
+
+**Uses**
+This command is used to update the local Redis cache with the BigQuery dataset.
+It will fetch all the data from BigQuery and store key and encrypted values in the local Redis cache (Not in the cloud memory store).
+This will helpful, when we working with an existing dataset or when `APP_KEY` is changed.
+Note that the time the command takes to execute will depend on the size of the dataset.
+
+
+### 3. To start any queue worker.
+
+**Example**
+
+**Usage**
+
+**Options**
+
+### 4. To start synthetic data process.
+
+**Example**
+
+**Usage**
+
+**Options**
+
+### 5. To Add custom request for synthetic data. (Add job in adhoc synthetic data)
+
+**Example**
+
+**Usage**
+
+**Options**
+
+### 6. To create user for the dashboard.
+
+**Example**
+
+**Usage**
+
+**Options**
+
+### 7. To update extensions, and it's version mapping json file. 
+
+**Example**
+
+**Usage**
+
+**Options**
+
+---
 
 ### Add request of generating synthetic data for specified theme and plugin(s):
 ```
