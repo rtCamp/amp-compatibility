@@ -24,11 +24,5 @@ pre and post import scripts to be executed before and after import.
 ### [./inc/classes/generator/](./inc/classes/generator/)
 Contains all content generator classes.
 
-### [./inc/classes/plugin-configs/](./inc/classes/plugin-configs/)
-Contains class for individual plugin. each class contain following information. 
-- Information regarding file path and URL for unit test case data for that plugin. 
-- List CLI command that need to run in order to generate setup site.
-- Custom function that will run after content creation. 
-
 ### [./inc/classes/wp-cli/class-commands.php](./inc/classes/wp-cli/class-commands.php)
 Define all helper WP CLI command for [bash script](./start.sh)
