@@ -15,8 +15,8 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
     The AMP compatibility server is a Node JS application based on the [AdonisJS] framework. Which is responsible for following actions.
 
     - Collecting data sent from AMP sites and store that into the BigQuery dataset.
-    - Fetch and store plugins and themes from [wordpress.org] to BigQuery dataset, And keep dataset up to date with [wordpress.org].
-    - Generate a synthetic site for an individual plugin and theme from [wordpress.org] and store AMP errors information in BigQuery.
+    - Fetch and store plugins and themes from [WordPress.org] to BigQuery dataset, And keep dataset up to date with [WordPress.org].
+    - Generate a synthetic site for an individual plugin and theme from [WordPress.org] and store AMP errors information in BigQuery.
     - Provide a dashboard to admin user to add adhoc request to generate synthetic data of combination of plugins and theme.
 
     Please check more information [here](./amp-compatibility-server/README.md).
@@ -67,4 +67,4 @@ Please check [here](./amp-wp-dummy-data-generator#setup) to set up AMP WP dummy 
 [Gagan Deep Singh]: https://github.com/gagan0123
 [Dhaval Parekh]: https://github.com/dhaval-parekh
 [AdonisJS]: https://adonisjs.com/
-[wordpress.org]: https://wordpress.org/
+[WordPress.org]: https://wordpress.org/
