@@ -47,9 +47,24 @@ buddypress-media
 
 This file will be executed before the data files are imported.
 
+This can include install commands for recommended plugins to be installed in conjunction
+with this plugin, eg. an extension plugin for WooCommerce would require WooCommerce to be
+installed and activated, in which case, we can add
+
+`wp plugin install woocommerce --activate`
+
+in `pre.sh` file for that extension.
+
 ### File `post.sh` ###
 
 This file will be executed after the data files are imported.
+
+This can be helpful if we want to run certain commands after data is imported, eg. SEO Yoast
+plugin might require to reindex the data after import in which case we can add
+
+`wp yoast index`
+
+in `post.sh` file.
 
 ### Files `*.xml` and `*.wxr` ###
 
