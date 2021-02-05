@@ -35,7 +35,7 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
 ## Infrastructure
 
-![GCP Infrastructure](.images/GCP-Infrastructure.png)
+![GCP Infrastructure](https://user-images.githubusercontent.com/25586785/106999402-23f18a00-67ac-11eb-940e-7117e5fde5c5.png)
 
 
 ## Local environment setup.
@@ -43,7 +43,7 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 ### Required software
 - [Node JS](https://nodejs.org/) v14.15.3
 - [Npm JS](https://www.npmjs.com/) >= 3.0.0
-- [Adonis CLI](https://adonisjs.com/docs/3.2/overview) ( `npm i -g @adonisjs/cli` )
+- [Adonis CLI](https://adonisjs.com/docs/4.1/about) ( `npm i -g @adonisjs/cli` )
 - [Redis](https://redis.io/)
 - For Ubuntu
     - [WordOps](https://wordops.net/)
@@ -66,5 +66,5 @@ Please check [./amp-wp-dummy-data-generator#setup](./amp-wp-dummy-data-generator
 [Riddhesh Sanghvi]: https://github.com/mrrobot47
 [Gagan Deep Singh]: https://github.com/gagan0123
 [Dhaval Parekh]: https://github.com/dhaval-parekh
-[AdonisJS]: https://adonisjs.com/docs/3.2/overview
+[AdonisJS]: https://adonisjs.com/docs/4.1/about
 [WordPress.org]: https://wordpress.org/
