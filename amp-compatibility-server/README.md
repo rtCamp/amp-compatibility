@@ -4,6 +4,24 @@ The AMP compatibility server is a Node JS application based on the [AdonisJS] fr
 
 ---
 
+## Setup
+
+**Setting up repo**
+
+```bash
+git clone git@github.com:rtCamp/amp-compatibility.git
+cd amp-compatibility-server
+npm install
+```
+
+**Notes:**
+- Please check module section to setup individual module.
+- For "WordPress Org Scraper", "Request worker", "Synthetic data generator" and "Dashboard" module.
+  Please make sure tables in BigQuery dataset is exist.
+  To create tables, run `node ace migration:run` from dashboard.
+
+---
+
 ## Modules
 
 ### 1. Rest API Listener
@@ -11,7 +29,29 @@ The AMP compatibility server is a Node JS application based on the [AdonisJS] fr
 This module will listen to any request coming from WordPress plugin related to AMP data,
 And store request data into cloud memory store which is remote Redis cache storage. (In the local environment it will store in the local Redis cache.)
 
+**Environment variables to setup module**
+
+| Name                           | Default                | Description                                                    |
+|:-------------------------------|:-----------------------|:---------------------------------------------------------------|
+| NODE_ENV                       | -                      | Application environment.                                       |
+| HOST                           | -                      | Application IP address.                                        |
+| PORT                           | -                      | Port for the application                                       |
+| APP_NAME                       | -                      | Node application name.                                         |
+| APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                          |
+| APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key |
+| SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis      |
+| CACHE_VIEWS                    | false                  | To enable/disable view caching.                                |
+| HASH_DRIVER                    | bcrypt                 | Driver for hashing user data. e.g. bcrypt, argon               |
+| QUEUE_REDIS_HOST               | 127.0.0.1              | IP Address of GCP Cloud memory store.                          |
+| REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                    |
+
 **Command to start node server to listen for any request.**
+- Development environment. (This will watch any change made in code and reload the server.)
+```bash
+adonis serve --dev
+```
+
+- Production environment.
 ```bash
 node server.js
 ```
@@ -20,6 +60,28 @@ node server.js
 
 This module is a CLI command to fetch plugins and themes from [WordPress.org] and store them to the BigQuery dataset in respective tables.
 If a record already exists for any theme and plugin then it will update with the latest data.
+
+**Environment variables to setup module**
+
+| Name                           | Default                | Description                                                    |
+|:-------------------------------|:-----------------------|:---------------------------------------------------------------|
+| NODE_ENV                       | -                      | Application environment.                                       |
+| HOST                           | -                      | Application IP address.                                        |
+| PORT                           | -                      | Port for the application                                       |
+| APP_NAME                       | -                      | Node application name.                                         |
+| APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                          |
+| APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key |
+| SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis      |
+| CACHE_VIEWS                    | false                  | To enable/disable view caching.                                |
+| HASH_DRIVER                    | bcrypt                 | Driver for hashing user data. e.g. bcrypt, argon               |
+| REDIS_CONNECTION               | local                  | Name of redis configuration.                                   |
+| REDIS_HOST                     | 127.0.0.1              | Redis host name for local object caching.                      |
+| REDIS_PORT                     | 6379                   | Redis port for local object caching.                           |
+| REDIS_PASSWORD                 | -                      | Redis password for local object caching.                       |
+| REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                    |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                        |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.             |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                         |
 
 **Command**
 ```bash
@@ -39,9 +101,33 @@ node ace wporg:scraper
 | --use-stream          | Use stream method to if possible. Fast but with certain limitation. [BigQuery DML reference] | node ace wporg:scraper --use-stream            |
 | --only-store-in-local | It will only store data in local directory, And won't import in BigQuery.                    | node ace wporg:scraper --only-store-in-local   |
 
+
 ### 3. Request worker
 
 This module is worker which will run continually in background, and process all the request that is stored in cloud memory store.
+
+**Environment variables to setup module**
+
+| Name                           | Default                | Description                                                    |
+|:-------------------------------|:-----------------------|:---------------------------------------------------------------|
+| NODE_ENV                       | -                      | Application environment.                                       |
+| HOST                           | -                      | Application IP address.                                        |
+| PORT                           | -                      | Port for the application                                       |
+| APP_NAME                       | -                      | Node application name.                                         |
+| APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                          |
+| APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key |
+| SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis      |
+| CACHE_VIEWS                    | false                  | To enable/disable view caching.                                |
+| HASH_DRIVER                    | bcrypt                 | Driver for hashing user data. e.g. bcrypt, argon               |
+| QUEUE_REDIS_HOST               | 127.0.0.1              | IP Address of GCP Cloud memory store.                          |
+| REDIS_CONNECTION               | local                  | Name of redis configuration.                                   |
+| REDIS_HOST                     | 127.0.0.1              | Redis host name for local object caching.                      |
+| REDIS_PORT                     | 6379                   | Redis port for local object caching.                           |
+| REDIS_PASSWORD                 | -                      | Redis password for local object caching.                       |
+| REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                    |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                        |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.             |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                         |
 
 **Command**
 ```bash
@@ -54,6 +140,30 @@ This module is responsible for generating synthetic data for extensions (theme/p
 - First, It will check for which extensions (themes/plugins) need to generate synthetic data, and add those extensions list into `synthetic_data_queue`.
 - Then It will create one or multiple compute engine instances (based on param value we pass and number of jobs) or use the existing one, and setup those compute instances to run the synthetic data generation process.
 - After setting up compute instances, it will start worker for generating synthetic data with the concurrency passed in command.
+
+**Environment variables to setup module**
+
+| Name                           | Default                | Description                                                    |
+|:-------------------------------|:-----------------------|:---------------------------------------------------------------|
+| NODE_ENV                       | -                      | Application environment.                                       |
+| HOST                           | -                      | Application IP address.                                        |
+| PORT                           | -                      | Port for the application                                       |
+| APP_NAME                       | -                      | Node application name.                                         |
+| APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                          |
+| APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key |
+| SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis      |
+| CACHE_VIEWS                    | false                  | To enable/disable view caching.                                |
+| HASH_DRIVER                    | bcrypt                 | Driver for hashing user data. e.g. bcrypt, argon               |
+| QUEUE_REDIS_HOST               | 127.0.0.1              | IP Address of GCP Cloud memory store.                          |
+| GOOGLE_CLOUD_PROJECT           | -                      | Name of Google cloud project.                                  |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                        |
+| DEPLOY_KEY_PATH                | -                      | SSH key path. which will use by secondary compute instance.    |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.             |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                         |
+| GCP_ZONE                       | us-central1-a          | GCP zone where we secondary instances will created.            |
+| GCP_INSTANCE_TYPE              | c2-standard-4          | GCP instance type for secondary compute instances.             |
+| GITHUB_TOKEN                   | -                      | GitHub Token for cloning repos in secondary instance.          |
+| NEWRELIC_LICENSE               | -                      | New Relic License                                              |
 
 **Command**
 ```bash
@@ -77,25 +187,7 @@ node ace synthetic-data:start
 The Basic dashboard where admin user can see current status of all the queues, And it's jobs related information.
 Also, user can add adhoc synthetic data generation request. For run test on combination of plugins and theme.
 
----
-
-## Setup
-
-### 1. Setting up repo
-```bash
-git clone git@github.com:rtCamp/amp-compatibility.git
-cd amp-compatibility-server
-npm install 
-```
-
-### 2. Configure environment variables.
-
-- Create environment config file from example.env file.
-```bash
-cp .env.example .env
-```
-
-- Update environment variables.
+**Environment variables to setup module**
 
 | Name                           | Default                | Description                                                    |
 |:-------------------------------|:-----------------------|:---------------------------------------------------------------|
@@ -115,34 +207,23 @@ cp .env.example .env
 | DB_PASSWORD                    | -                      | Password for data.                                             |
 | DB_DATABASE                    | -                      | Database name.                                                 |
 | QUEUE_REDIS_HOST               | 127.0.0.1              | IP Address of GCP Cloud memory store.                          |
-| REDIS_CONNECTION               | local                  | Name of redis configuration.                                   |
-| REDIS_HOST                     | 127.0.0.1              | Redis host name for local object caching.                      |
-| REDIS_PORT                     | 6379                   | Redis port for local object caching.                           |
-| REDIS_PASSWORD                 | -                      | Redis password for local object caching.                       |
-| REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                    |
-| GOOGLE_CLOUD_PROJECT           | -                      | Name of Google cloud project.                                  |
-| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                        |
-| DEPLOY_KEY_PATH                | -                      | SSH key path. which will use by secondary compute instance.    |
-| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.             |
-| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                         |
-| GCP_ZONE                       | us-central1-a          | GCP zone where we secondary instances will created.            |
-| GCP_INSTANCE_TYPE              | c2-standard-4          | GCP instance type for secondary compute instances.             |
-| GITHUB_TOKEN                   | -                      | GitHub Token for cloning repos in secondary instance.          |
-| NEWRELIC_LICENSE               | -                      | New Relic License                                              |
 
-
-### 3. Setup local database and BiqQuery dataset. 
 
 To setup local MySQL database and dataset in BigQuery run below command. It will create all necessary table in MySQL as well as in BigQuery dataset.
 ```bash
 node ace migration:run
 ```
 
-### 4. Starting up server
+**Command to start node server.**
+- Development environment. (This will watch any change made in code and reload the server.)
+```bash
+adonis serve --dev
+```
 
-- To start only node server (To start dashboard) for development purpose. Use `adonis serve --dev`. It will automatically reload the server on any file changes.
-- However, on production environment, we use process management tool pm2 to start Dashboard, request worker, and adhoc synthetic worker. It will start all three process in background.
-Command: `pm2 start ecosystem.config.js`
+- Production environment.
+```bash
+pm2 start ecosystem.config.js
+```
 
 ---
 
