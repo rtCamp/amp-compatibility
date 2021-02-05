@@ -154,7 +154,7 @@ Please check [WordPress Org Scraper](#2-wordpress-org-scraper) module for detail
 
 ### 2. Update local Redis cache with BigQuery dataset. 
 
-This command is used to update the local Redis cache with the BigQuery dataset.
+This command is used to update the local Redis cache with the BigQuery dataset for all the modules.
 It will fetch all the data from BigQuery and store key and encrypted values in the local Redis cache (Not in the cloud memory store).
 This will helpful, when we working with an existing dataset or when `APP_KEY` is changed.
 Note that the time the command takes to execute will depend on the size of the dataset.
