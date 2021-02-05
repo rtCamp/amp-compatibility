@@ -23,13 +23,13 @@ class SyntheticDataStart extends Command {
 	 */
 	static get signature() {
 		return `synthetic-data:start
-		 { --only-themes : Fetch all the themes. }
-		 { --only-plugins : Fetch all the plugins. }
-		 { --limit=@value : Number of theme/plugin need add in queue. }
-		 { --number-of-instance=@value : Number of instance need to create for synthetic data process. ( Min= 1, Max= 100, Default= 1 ) }
-		 { --concurrency=@value : Number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min= 1, Max= 120, Default= 100 ) }
-		 { --vm-name=@value : Virtual machine name. (Default: synthetic-data-generator) }
-		 { --prevent-vm-deletion : Fetch all the themes. }`;
+		 { --only-themes : To generate synthetic data only for themes.. }
+		 { --only-plugins : To generate synthetic data only for plugins.. }
+		 { --limit=@value : The number of themes/plugins need to add to the queue and process.. }
+		 { --number-of-instance=@value : The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 ) }
+		 { --concurrency=@value : The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) }
+		 { --vm-name=@value : Virtual machine name. ( Default=synthetic-data-generator ) }
+		 { --prevent-vm-deletion : To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.. }`;
 	}
 
 	/**
@@ -38,7 +38,7 @@ class SyntheticDataStart extends Command {
 	 * @return {string} command description.
 	 */
 	static get description() {
-		return 'To refill synthetic data queue with any possible jobs.';
+		return 'To refill synthetic data queue with any possible jobs and start process for synthetic data.';
 	}
 
 	/**
