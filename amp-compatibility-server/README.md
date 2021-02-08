@@ -109,7 +109,7 @@ node ace wporg:scraper
 | --per-page            | Number of theme/plugin need to fetch per API call ( Min=2, Max=100, Default=100 ).           | node ace wporg:scraper --per-page=50           |
 | --theme-start-from    | From which page we need to start importing themes. Default 1                                 | node ace wporg:scraper --theme-start-from=55   |
 | --plugin-start-from   | From which page we need to start importing plugins. Default 1                                | node ace wporg:scraper --plugin-start-from=250 |
-| --browse              | Predefined query ordering. Possible values are popular,featured,updated and new.             | node ace wporg:scraper --browse=updated        |
+| --browse              | Predefined query ordering. Possible values are popular, featured, updated and new.           | node ace wporg:scraper --browse=updated        |
 | --use-stream          | Use stream method to if possible. Fast but with certain limitation. [BigQuery DML reference] | node ace wporg:scraper --use-stream            |
 | --only-store-in-local | It will only store data in local directory, And won't import in BigQuery.                    | node ace wporg:scraper --only-store-in-local   |
 
