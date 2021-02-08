@@ -18,7 +18,7 @@ npm install
 - Please check module section to setup individual module.
 - For "WordPress Org Scraper", "Request worker", "Synthetic data generator" and "Dashboard" module.
   Please make sure tables in BigQuery dataset is exist.
-  To create tables, run `node ace migration:run` from dashboard.
+  To create tables, please use `node ace migration:run` command.
 
 ---
 
