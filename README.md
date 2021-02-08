@@ -74,7 +74,7 @@ Please check [./amp-wp-dummy-data-generator#setup](./amp-wp-dummy-data-generator
 [AMP WP Dummy data generator]: ./amp-wp-dummy-data-generator/README.md
 [Google]: https://profiles.wordpress.org/google
 [rtCamp]: https://github.com/rtCamp/
-[Alberto Medina]: https://profiles.wordpress.org/albertomedina/
+[Alberto Medina]: https://github.com/amedina
 [Rahul Bansal]: https://github.com/rahul286
 [Weston Ruter]: https://github.com/westonruter
 [Felix Arntz]: https://github.com/felixarntz
