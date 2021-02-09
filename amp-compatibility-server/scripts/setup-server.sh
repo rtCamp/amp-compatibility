@@ -89,6 +89,31 @@ testing@amp-comp.com" > answers.txt
 	# Install basic nginx and mysql
 	wo stack install --nginx --mysql --php73 --wpcli
 	rm /etc/nginx/conf.d/stub_status.conf /etc/nginx/sites-enabled/22222
+
+cat <<EOF > /etc/php/7.3/fpm/pool.d/www.conf
+[www-php73]
+user = www-data
+group = www-data
+listen = php73-fpm.sock
+listen.owner = root
+listen.group = www-data
+pm = ondemand
+pm.max_children = 5000
+pm.start_servers = 2500
+pm.min_spare_servers = 1500
+pm.max_spare_servers = 3500
+ping.path = /ping
+pm.status_path = /status
+pm.max_requests = 1500
+request_terminate_timeout = 300
+chdir = /
+prefix = /var/run/php
+listen.mode = 0660
+listen.backlog = 32768
+catch_workers_output = yes
+EOF
+
+	wo stack restart --php
 }
 
 function setup_node() {
