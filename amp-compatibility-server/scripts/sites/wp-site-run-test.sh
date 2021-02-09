@@ -48,6 +48,7 @@ function setup_site() {
 
 	ln -sn "$sites_root/repos/treville" "$(get_site_path)/wp-content/themes/treville"
 
+	wp plugin deactivate nginx-helper
 	wp plugin delete nginx-helper
 
 	tmp_path="$(get_site_path)/tmp"

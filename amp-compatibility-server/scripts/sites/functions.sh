@@ -101,6 +101,7 @@ function setup_base_site() {
 	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
 
 	## Activate deactivate plugins.
+	wp plugin deactivate nginx-helper
 	wp plugin delete nginx-helper
 	wp plugin install --activate amp
 	wp plugin activate amp-wp-dummy-data-generator
