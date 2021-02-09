@@ -51,11 +51,14 @@ function amp_send_data_configure_amp_site() {
 		] );
 	} );
 
+	$supportable_templates = AMP_Theme_Support::get_supportable_templates();
+	$supportable_templates = ( ! empty( $supportable_templates ) && is_array( $supportable_templates ) ) ? array_keys( $supportable_templates ) : [];
+
 	$new_settings = [
 		AmpProject\AmpWP\Option::THEME_SUPPORT           => AMP_Theme_Support::STANDARD_MODE_SLUG,
 		AmpProject\AmpWP\Option::ALL_TEMPLATES_SUPPORTED => true,
 		AmpProject\AmpWP\Option::SUPPORTED_POST_TYPES    => AMP_Post_Type_Support::get_eligible_post_types(),
-		AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => AMP_Theme_Support::get_supportable_templates(),
+		AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => $supportable_templates,
 		AmpProject\AmpWP\Option::MOBILE_REDIRECT         => true,
 		AmpProject\AmpWP\Option::PLUGIN_CONFIGURED       => true,
 	];
