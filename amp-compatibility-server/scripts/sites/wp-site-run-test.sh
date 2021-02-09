@@ -54,6 +54,7 @@ function setup_site() {
 	tmp_path="$(get_site_path)/tmp"
 	mkdir -p "$tmp_path"
 	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
+	wp option set blogname "$site_domain"
 
 	wp cache flush
 	wp rewrite flush
