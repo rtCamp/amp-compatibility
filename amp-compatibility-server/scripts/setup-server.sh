@@ -135,7 +135,7 @@ function move_dummy_data_repo() {
 }
 
 function setup_base_data() {
-	bash "$HOME/amp-compatibility/amp-compatibility-server/sites/base-site.sh"
+	bash "$HOME/amp-compatibility/amp-compatibility-server/scripts/sites/base-site.sh"
 }
 
 function create_log_dirs() {
