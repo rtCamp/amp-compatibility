@@ -14,6 +14,7 @@ function setup_base_data() {
 
 	## Export base site data.
 	rm -f "$sites_root/repos/base-site.sql"
+	wp search-replace 'http://base-site.local' 'https://base-site.local' --all-tables
 	wp db export "$sites_root/repos/base-site.sql"
 
 	## Move uploads

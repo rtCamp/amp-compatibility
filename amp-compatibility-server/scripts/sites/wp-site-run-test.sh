@@ -66,6 +66,8 @@ function process_site() {
 	cd_site
 
 	wp db import "$sites_root/repos/base-site.sql"
+	wp search-replace "base-site.local" "$site_domain" --all-tables
+
 	uploads_path="$(get_site_path)/wp-content/uploads"
 	rm -rf "$uploads_path"
 	ln -sn "$sites_root/repos/uploads" "$uploads_path"
