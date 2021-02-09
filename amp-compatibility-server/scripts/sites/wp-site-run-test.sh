@@ -63,7 +63,7 @@ function process_site() {
 
 	cd_site
 
-	wp db import "$sites_root/repos/base-site.mysql"
+	wp db import "$sites_root/repos/base-site.sql"
 	uploads_path="$(get_site_path)/wp-content/uploads"
 	rm -rf "$uploads_path"
 	ln -sn "$sites_root/repos/uploads" "$uploads_path"

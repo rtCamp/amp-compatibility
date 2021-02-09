@@ -13,8 +13,8 @@ function setup_base_data() {
 	bash "$(get_plugins_path)/amp-wp-dummy-data-generator/start.sh"
 
 	## Export base site data.
-	rm -f "$sites_root/repos/base-site.mysql"
-	wp db export "$sites_root/repos/base-site.mysql"
+	rm -f "$sites_root/repos/base-site.sql"
+	wp db export "$sites_root/repos/base-site.sql"
 
 	## Move uploads
 	rm -rf "$sites_root/repos/uploads"
