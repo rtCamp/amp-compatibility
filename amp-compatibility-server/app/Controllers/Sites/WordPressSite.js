@@ -22,6 +22,8 @@ class WordPressSite {
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
 
+		let logFileName = '';
+
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
 		if ( args.domain.startsWith( 'adhoc-synthetic-data' ) ) {
