@@ -2,7 +2,18 @@
 
 AMP compatibility project to make WordPress ecosystem AMP compatible.
 
-**Contributors:** [Google], [rtCamp], [Alberto Medina], [Rahul Bansal], [Weston Ruter], [Paul Clark], [Riddhesh Sanghvi], [Gagan Deep Singh], [Dhaval Parekh]
+**Repo Access Available To**
+
+| Google Team | rtCamp Team |
+| ------- | ------- |
+| [Alberto Medina] | [Rahul Bansal] |
+| [Weston Ruter] | [Dhaval Parekh] |
+| [Felix Arntz] | [Paul Clark] |
+| [Alain Schlesser] | [Riddhesh Sanghvi] |
+| [James G] | [Gagan Deep Singh] |
+| - | [Pradeep Sonawane] |
+| - | [Milind More] |
+| - | [Maitreyie Chavan] |
 
 ---
 
@@ -63,13 +74,19 @@ Please check [./amp-wp-dummy-data-generator#setup](./amp-wp-dummy-data-generator
 [AMP WP Dummy data generator]: ./amp-wp-dummy-data-generator/README.md
 [Google]: https://profiles.wordpress.org/google
 [rtCamp]: https://github.com/rtCamp/
-[Alberto Medina]: https://profiles.wordpress.org/albertomedina/
+[Alberto Medina]: https://github.com/amedina
 [Rahul Bansal]: https://github.com/rahul286
 [Weston Ruter]: https://github.com/westonruter
+[Felix Arntz]: https://github.com/felixarntz
+[Alain Schlesser]: https://github.com/schlessera
+[James G]: https://github.com/jamesozzie
 [Paul Clark]: https://github.com/pdclark
 [Riddhesh Sanghvi]: https://github.com/mrrobot47
 [Gagan Deep Singh]: https://github.com/gagan0123
 [Dhaval Parekh]: https://github.com/dhaval-parekh
+[Maitreyie Chavan]: https://github.com/maitreyie-chavan
+[Milind More]: https://github.com/milindmore22
+[Pradeep Sonawane]: https://github.com/pradeep910
 [AdonisJS]: https://adonisjs.com/docs/4.1/about
 [WordPress.org]: https://wordpress.org/
 [Reporting dashboard]: https://datastudio.google.com/reporting/33e24fa4-a3e3-49ff-b2e1-8ba235a7424f/page/eCjyB
