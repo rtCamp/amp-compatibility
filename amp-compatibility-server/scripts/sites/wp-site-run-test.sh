@@ -22,12 +22,12 @@ for i in "$@"; do
 	esac
 done
 
+source "$base_dir/functions.sh"
+
 if [[ "prod" != "$environment" ]]; then
 	amp_endpoint="http://127.0.0.1:3333";
 	amp_endpoint_flag="--endpoint=$amp_endpoint"
 fi
-
-source "$base_dir/functions.sh"
 
 function setup_site() {
 
