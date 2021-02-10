@@ -27,7 +27,7 @@ jobs:
         node-version: '14'
 
     - name: Configure deployment files
-      run: echo "$ENV" | base64 -d > .env && echo "$APP_YAML" | base64 -d > app.yaml
+      run: echo "$ENV" | base64 -d > .env
       env:
         ENV: ${{ secrets.ENV }}
         APP_YAML: ${{ secrets.APP_YAML }}
@@ -38,21 +38,13 @@ jobs:
     - name: Deploy to App Engine
       run: gcloud app deploy --promote -q
 
-    - name: Remove extra files
-      run: rm .env /tmp/creds app.yaml
-
-    - name: Deploy to Compute Engine
-      uses: rtCamp/action-deploy-wordpress@master
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@master
       env:
         SLACK_CHANNEL: bots-amp-comp-db
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_TITLE: "App Engine Instance"
-        SLACK_MESSAGE: "Deployed Server to https://test-amp-comp-db.uc.r.appspot.com/ :rocket:\n\n*Compute Instance*\nDeployed Worker to `root@worker.rt.gw`\n\n*Message*\n${{ github.event.head_commit.message }}"
+        SLACK_MESSAGE: "Deployed to https://rich-torus-221321.ue.r.appspot.com/ :rocket:\n\n*Message*\n${{ github.event.head_commit.message }}"
 
     - name: Cleanup
       if: ${{ always() }}
