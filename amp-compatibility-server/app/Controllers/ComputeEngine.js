@@ -19,14 +19,6 @@ class ComputeEngine {
 		return Env.get( 'DEPLOY_KEY_PATH', '~/.ssh/id_rsa_gcloud' );
 	}
 
-	get githubToken() {
-		return Env.get( 'GITHUB_TOKEN', '' );
-	}
-
-	get newrelicLicense() {
-		return Env.get( 'NEWRELIC_LICENSE', '' );
-	}
-
 	get config() {
 
 		const sshPubKey = fs.readFileSync( this.deployKeyPath + '.pub' );
@@ -198,8 +190,6 @@ class ComputeEngine {
 		let projectRoot = Helpers.appRoot();
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
-		await this.executeCommand( "echo 'export GITHUB_TOKEN=" + this.githubToken + "' >> ~/.bash_aliases" );
-		await this.executeCommand( "echo 'export NEWRELIC_LICENSE=" + this.newrelicLicense + "' >> ~/.bash_aliases" );
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
