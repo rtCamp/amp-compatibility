@@ -90,11 +90,10 @@ class SyntheticDataController extends Base {
 	 * Handler to process the job.
 	 *
 	 * @param {Object} job Job to process.
-	 * @param {Function} done Callback function.
 	 *
 	 * @returns {*}
 	 */
-	static async processJob( job, done ) {
+	static async processJob( job ) {
 		this.site = job.data.domain || '';
 		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
 
@@ -103,7 +102,10 @@ class SyntheticDataController extends Base {
 		let result = {};
 		let response = {};
 		try {
+			job.reportProgress( 10 );
 			result = await siteInstance.runTest( job.data ) || {};
+
+			job.reportProgress( 90 );
 
 			if ( ! _.isEmpty( this.site ) ) {
 				const item = {
@@ -113,8 +115,7 @@ class SyntheticDataController extends Base {
 
 				try {
 					const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
-					await BigQuery.query( updateQuery );
-					response = { status: 'ok' };
+					response = await BigQuery.query( updateQuery );
 				} catch ( exception ) {
 					response = { status: 'fail' };
 				}
@@ -125,6 +126,7 @@ class SyntheticDataController extends Base {
 			console.error( exception );
 		}
 
+		job.reportProgress( 100 );
 		return { status: 'ok', data: { result: result, response: response } };
 	}
 }
