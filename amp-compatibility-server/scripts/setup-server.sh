@@ -141,8 +141,7 @@ function setup_repo() {
 	repo_data=(${GITHUB_REPOSITORY//\// })
 	cd "$HOME"
 	if [[ ! -d "${repo_data[1]}" ]]; then
-		GITHUB_ACTOR="rtBot"
-		REMOTE_REPO="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
+		REMOTE_REPO="git@github.com:$GITHUB_REPOSITORY.git"
 		git clone "$REMOTE_REPO"
 	fi
 }
