@@ -130,6 +130,7 @@ class SyntheticDataController extends Base {
 			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
 			response = await BigQuery.query( updateQuery );
 		} catch ( exception ) {
+			console.log(exception);
 			throw `Try ${currentTry} : Fail to update BigQuery record.`;
 		}
 
