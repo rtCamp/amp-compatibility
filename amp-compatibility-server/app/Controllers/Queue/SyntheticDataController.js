@@ -30,6 +30,15 @@ class SyntheticDataController extends Base {
 	}
 
 	/**
+	 * How many times the job should be automatically retried in case of failure.
+	 *
+	 * @returns {number}
+	 */
+	static get retries() {
+		return 0;
+	}
+
+	/**
 	 * Action before starting worker.
 	 *
 	 * @param {Object} options Options pass in startWorker.
@@ -59,7 +68,7 @@ class SyntheticDataController extends Base {
 		let concurrency = parseInt( options.concurrency || this.concurrency );
 
 		if ( ! _.isNumber( concurrency ) || concurrency > this.concurrency ) {
-			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency,  concurrency );
+			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency, concurrency );
 			concurrency = this.concurrency;
 		}
 
@@ -95,38 +104,44 @@ class SyntheticDataController extends Base {
 	 */
 	static async processJob( job ) {
 		this.site = job.data.domain || '';
-		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
+		Logger.info( ' Site: %s | Job ID: %s started.', this.site, job.id );
 
+		const currentTry = ( this.retries - job.options.retries ) + 1;
 		const siteInstance = new WordPressSite();
-
-		let result = {};
+		let result = '';
 		let response = {};
+
+		job.reportProgress( 10 );
+
 		try {
-			job.reportProgress( 10 );
 			result = await siteInstance.runTest( job.data ) || {};
-
-			job.reportProgress( 90 );
-
-			if ( ! _.isEmpty( this.site ) ) {
-				const item = {
-					extension_version_slug: this.site,
-					has_synthetic_data: true,
-				};
-
-				try {
-					const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
-					response = await BigQuery.query( updateQuery );
-				} catch ( exception ) {
-					response = { status: 'fail' };
-				}
-
-			}
-
+			result = result.stdout || '';
 		} catch ( exception ) {
 			console.error( exception );
+			throw `Try ${ currentTry } : Error during running the test.`;
+		}
+
+		job.reportProgress( 90 );
+
+		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+			throw `Try ${ currentTry } : Fail to send AMP data.`;
+		}
+
+		const item = {
+			extension_version_slug: this.site,
+			has_synthetic_data: true,
+		};
+
+		try {
+			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
+			response = await BigQuery.query( updateQuery );
+		} catch ( exception ) {
+			console.error( exception );
+			throw `Try ${ currentTry } : Fail to update BigQuery record.`;
 		}
 
 		job.reportProgress( 100 );
+		Logger.info( ' Site: %s | Job ID: %s completed.', this.site, job.id );
 		return { status: 'ok', data: { result: result, response: response } };
 	}
 }

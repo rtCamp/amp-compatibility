@@ -1,10 +1,11 @@
 'use strict';
 
 const Helpers = use( 'Helpers' );
-const Logger = use( 'Logger' );
+const Storage = use( 'Storage' );
 
 // Utilities
 const Utility = use( 'App/Helpers/Utility' );
+const FileSystem = use( 'App/Helpers/FileSystem' );
 const _ = require( 'underscore' );
 
 class WordPressSite {
@@ -19,32 +20,38 @@ class WordPressSite {
 	async runTest( args ) {
 
 		let projectRoot = Helpers.appRoot();
+		let logFilePath = Utility.logPath();
+
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
-
-		let logFileName = '';
 
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
 		if ( args.domain.startsWith( 'adhoc-synthetic-data' ) ) {
-			logFileName = args.domain;
+			logFilePath = `${ logFilePath }/adhoc-synthetic-data/${ args.domain }.log`;
 		} else {
-			const date = Utility.getCurrentDateTime().replace( / |:/g, '-' );
-			logFileName = args.domain + '-' + date;
+			const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+			logFilePath = `${ logFilePath }/synthetic-data/${ date }/${ args.domain }.log`;
 		}
-		const command = `bash -x ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } 2>&1 | tee -a /var/log/sites/${ logFileName }.log`;
 
+		await FileSystem.assureDirectoryExists( logFilePath );
+		const command = `bash ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } 2>&1 | tee -a ${ logFilePath }`;
+
+		let response = {};
 		try {
-			await this.executeCommand( command );
-			// TODO: Sync ${ logFileName } to GCP bucket.
+			response = await this.executeCommand( command );
+			// TODO: Sync ${ logFilePath } to GCP bucket.
 		} catch ( exception ) {
 			console.error( exception );
 		}
 
+		await Storage.uploadFile( logFilePath );
+
+		return response;
 	}
 
 	async executeCommand( command ) {
-		await Utility.executeCommand( command );
+		return await Utility.executeCommand( command );
 	}
 
 }

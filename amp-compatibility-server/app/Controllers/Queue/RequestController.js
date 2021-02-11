@@ -235,11 +235,11 @@ class RequestController extends Base {
 			response.urls = await this.saveValidatedUrls( siteUrl, data.urls );
 			job.reportProgress( 100 );
 
-			Logger.info( 'Job ID: %s | Site: %s completed.', job.id, this.jobName );
+			Logger.info( ' Site: %s | Job ID: %s completed.', this.jobName, job.id );
 
 		} catch ( exception ) {
 
-			Logger.error( 'Job ID: %s | Site: %s failed.', job.id, this.jobName );
+			Logger.error( 'Site: %s | Job ID: %s failed.', this.jobName, job.id );
 			console.error( exception );
 
 			throw exception;

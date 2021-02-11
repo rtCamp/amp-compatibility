@@ -49,6 +49,14 @@
 						<td>{{value[0].name}} {{ elIf( '($self)', value[0].version, value[0].version ) }}</td>
 					@elseif( 'progress' === key )
 						<td>{{value ? value + '%' : ' - '}}</td>
+					@elseif( 'reason' === key )
+						<td>
+							<ul class="mb-0">
+								@each( reason in value )
+								<li>{{reason}}</li>
+								@endeach
+							</ul>
+						</td>
 					@else
 						<td>{{value ? value : ' - '}}</td>
 					@endif

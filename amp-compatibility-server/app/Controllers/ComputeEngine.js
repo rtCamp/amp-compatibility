@@ -4,6 +4,7 @@ const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const Env = use( 'Env' );
 const Helpers = use( 'Helpers' );
+const Storage = use( 'Storage' );
 
 // Google Cloud
 const Compute = require( '@google-cloud/compute' );
@@ -173,6 +174,9 @@ class ComputeEngine {
 			throw 'Virtual machine does not exists.';
 		}
 
+		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+		let logFilePath = Utility.logPath() + `/secondary-server/${ date }/${ this.options.name }-server-setup.log`;
+
 		Logger.debug( `%s : Setup started.`, this.options.name );
 
 		await Utility.executeCommand( 'touch ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts' );
@@ -192,8 +196,10 @@ class ComputeEngine {
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
-		await this.executeCommand( 'bash -x /root/setup-server.sh > /var/log/init.log 2>&1' );
+		await this.executeCommand( `bash -x /root/setup-server.sh > ${ logFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
+
+		await Storage.uploadFile( logFilePath );
 
 		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}

@@ -50,18 +50,27 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 	 */
 	static async processJob( job, done ) {
 		this.site = job.data.extension_version_slug || '';
-		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
+		Logger.info( ' Site: %s | Job ID: %s started.', this.site, job.id );
 
+		const currentTry = ( this.retries - job.options.retries ) + 1;
 		const siteInstance = new WordPressSite();
-
-		let result = {};
+		let result = '';
 		let response = {};
+
+		result = await siteInstance.runTest( job.data ) || {};
+
 		try {
 			result = await siteInstance.runTest( job.data ) || {};
-			
-			// @TODO: send email
+			result = result.stdout || '';
 		} catch ( exception ) {
 			console.error( exception );
+			throw `Try ${ currentTry } : Error during running the test.`;
+		}
+
+		job.reportProgress( 90 );
+
+		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+			throw `Try ${ currentTry } : Fail to send AMP data.`;
 		}
 
 		return { status: 'ok', data: { result: result, response: response } };

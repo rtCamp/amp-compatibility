@@ -26,6 +26,7 @@ const providers = [
 	path.join( __dirname, '..', 'providers', 'Sanitizer/Provider' ),
 	path.join( __dirname, '..', 'providers', 'Validator/Provider' ),
 	path.join( __dirname, '..', 'providers', 'Queue/Provider' ),
+	path.join( __dirname, '..', 'providers', 'Storage/Provider' ),
 ];
 
 /*
