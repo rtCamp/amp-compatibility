@@ -90,7 +90,7 @@ class DashboardController {
 		}
 
 		const queueHealth = await queue.checkHealth();
-		const queueJobs = await queue.getJobs( params.status, page );
+		const queueJobs = await queue.getJobs( params.status, page ) || [];
 
 		for ( const index in queueJobs ) {
 			const queueJob = queueJobs[ index ];
@@ -114,6 +114,10 @@ class DashboardController {
 
 			if ( 'active' === params.status ) {
 				job.progress = queueJob.progress.toString();
+			}
+
+			if ( 'failed' === params.status ) {
+				job.reason = queueJob.options.stacktraces || [];
 			}
 
 			jobs.push( job );

@@ -14,6 +14,7 @@ const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 const Logger = use( 'Logger' );
 const BigQuery = use( 'App/BigQuery' );
 const Utility = use( 'App/Helpers/Utility' );
+const FileSystem = use( 'App/Helpers/FileSystem' );
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
 
@@ -127,14 +128,17 @@ class SyntheticDataStart extends Command {
 		this.info( '======================================================================' );
 
 		let numberOfTerminatedInstance = 0;
+		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+		let logDirPath = Utility.logPath() + `/secondary-server/${ date }`;
+
+		await FileSystem.assureDirectoryExists( logDirPath );
 
 		for ( let index = 1; index <= this.options.numberOfInstance; index++ ) {
 			const instanceName = `synthetic-data-generator-${ index }`;
 
 			this.getComputeInstance( instanceName ).then( ( instance ) => {
 
-				const date = Utility.getCurrentDate().replace( / |:/g, '-' );
-				let logFilePath = Utility.logPath() + `/secondary-server/${ date }/${ instanceName }-jobs.log`;
+				let logFilePath = `${ logDirPath }/${ instanceName }-jobs.log`;
 
 				/**
 				 * Compute engine instance is ready.
