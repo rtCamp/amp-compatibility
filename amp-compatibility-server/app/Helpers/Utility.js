@@ -1,5 +1,6 @@
 'use strict';
 
+const Helpers = use( 'Helpers' );
 const Logger = use( 'Logger' );
 
 const _ = require( 'underscore' );
@@ -22,7 +23,7 @@ class Utility {
 		try {
 			response = JSON.parse( string );
 		} catch ( e ) {
-			response = string
+			response = string;
 		}
 
 		return response;
@@ -48,7 +49,7 @@ class Utility {
 	 */
 	static jsonPrettyPrint( data ) {
 		if ( ! _.isEmpty( data ) ) {
-			return JSON.stringify( data, null, 4 )
+			return JSON.stringify( data, null, 4 );
 		}
 
 		return 'Empty Object';
@@ -198,6 +199,23 @@ class Utility {
 
 	}
 
+	/**
+	 * To get current date.
+	 *
+	 * @returns {string} Current date.
+	 */
+	static getCurrentDate() {
+		let date_ob = new Date();
+		// current date
+		// adjust 0 before single digit date
+		let date = ( '0' + date_ob.getDate() ).slice( -2 );
+		let month = ( '0' + ( date_ob.getMonth() + 1 ) ).slice( -2 );
+		let year = date_ob.getFullYear();
+
+		return `${ year }-${ month }-${ date }`;
+
+	}
+
 	static async executeCommand( command ) {
 
 		return new Promise( ( done, failed ) => {
@@ -254,6 +272,15 @@ class Utility {
 
 		return extensions;
 
+	}
+
+	/**
+	 * To get log file directory.
+	 *
+	 * @return {String|*}
+	 */
+	static logPath() {
+		return Helpers.appRoot( '/logs' );
 	}
 }
 

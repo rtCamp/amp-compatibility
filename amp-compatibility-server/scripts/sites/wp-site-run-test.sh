@@ -129,11 +129,16 @@ function main() {
 
 	end=$(date +%s)
 
+	echo "";
+	echo "====================================================================================================";
 	echo "Setup site   : $(expr $setup_site_time - $start) seconds."
 	echo "Process site : $(expr $process_site_time - $setup_site_time) seconds."
 	echo "AMP process  : $(expr $process_amp_time - $process_site_time) seconds."
 	echo "Destroy site : $(expr $destroy_site_time - $process_amp_time) seconds."
 	echo "Total        : $(expr $end - $start) seconds."
+	echo "====================================================================================================";
+	echo "";
+	echo "";
 }
 
 main

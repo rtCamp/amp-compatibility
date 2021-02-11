@@ -12,7 +12,10 @@ const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 
 // Helpers
 const Logger = use( 'Logger' );
+const Storage = use( 'Storage' );
 const BigQuery = use( 'App/BigQuery' );
+const Utility = use( 'App/Helpers/Utility' );
+const FileSystem = use( 'App/Helpers/FileSystem' );
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
 
@@ -126,11 +129,17 @@ class SyntheticDataStart extends Command {
 		this.info( '======================================================================' );
 
 		let numberOfTerminatedInstance = 0;
+		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+		let logDirPath = Utility.logPath() + `/secondary-server/${ date }`;
+
+		await FileSystem.assureDirectoryExists( logDirPath );
 
 		for ( let index = 1; index <= this.options.numberOfInstance; index++ ) {
 			const instanceName = `synthetic-data-generator-${ index }`;
 
 			this.getComputeInstance( instanceName ).then( ( instance ) => {
+
+				let logFilePath = `${ logDirPath }/${ instanceName }-jobs.log`;
 
 				/**
 				 * Compute engine instance is ready.
@@ -140,10 +149,12 @@ class SyntheticDataStart extends Command {
 
 				instance.executeCommand(
 					`cd $HOME/amp-compatibility/amp-compatibility-server && ` +
-					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis/job.log`,
+					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a ${ logFilePath }`,
 				).then( async () => {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
+
+					await Storage.uploadFile( logFilePath );
 
 					/**
 					 * Preserver compute engine instance only if one instance is requested
@@ -220,13 +231,13 @@ class SyntheticDataStart extends Command {
 
 		if ( true === this.options.onlyThemes ) {
 			extensionClause.push(
-				"extensions.type = 'theme'",
+				'extensions.type = \'theme\'',
 			);
 		}
 
 		if ( true === this.options.onlyPlugins ) {
 			extensionClause.push(
-				"extensions.type = 'plugin'",
+				'extensions.type = \'plugin\'',
 			);
 		}
 
