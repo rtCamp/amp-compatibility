@@ -137,10 +137,14 @@ class SyntheticDataStart extends Command {
 		for ( let index = 1; index <= this.options.numberOfInstance; index++ ) {
 			const instanceName = `synthetic-data-generator-${ index }`;
 
-			this.getComputeInstance( instanceName ).then( ( instance ) => {
+			this.getComputeInstance( instanceName ).then( async ( instance ) => {
 
-				const logDirPath = `/root/amp-compatibility/amp-compatibility-server/logs/secondary-server/${ date }`;
-				const logFilePath = `${ logDirPath }/${ instanceName }-jobs.log`;
+				const logFilename = `${ instanceName }-jobs.log`;
+
+				const primaryInstanceLogFilePath = `${ Utility.logPath() }/secondary-server/${ date }/${ logFilename }-jobs.log`;
+				const secondaryInstanceLogFilePath = `/tmp/${ logFilename }`;
+
+				await FileSystem.assureDirectoryExists(primaryInstanceLogFilePath);
 
 				/**
 				 * Compute engine instance is ready.
@@ -156,7 +160,15 @@ class SyntheticDataStart extends Command {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
 
-					await Storage.uploadFile( logFilePath );
+					/**
+					 * Copy log file from remote server (secondary instance) to primary instance.
+					 */
+					await instance.copyFileFromRemote( secondaryInstanceLogFilePath, primaryInstanceLogFilePath );
+
+					/**
+					 * Upload log file to GCP storage.
+					 */
+					await Storage.uploadFile( primaryInstanceLogFilePath );
 
 					/**
 					 * Preserver compute engine instance only if one instance is requested
