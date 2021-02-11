@@ -68,7 +68,7 @@ class SyntheticDataController extends Base {
 		let concurrency = parseInt( options.concurrency || this.concurrency );
 
 		if ( ! _.isNumber( concurrency ) || concurrency > this.concurrency ) {
-			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency,  concurrency );
+			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency, concurrency );
 			concurrency = this.concurrency;
 		}
 
@@ -104,7 +104,7 @@ class SyntheticDataController extends Base {
 	 */
 	static async processJob( job ) {
 		this.site = job.data.domain || '';
-		Logger.info( 'Job ID: %s | Site: %s started.', job.id, this.site );
+		Logger.info( ' Site: %s | Job ID: %s started.', this.site, job.id );
 
 		const currentTry = ( this.retries - job.options.retries ) + 1;
 		const siteInstance = new WordPressSite();
@@ -112,13 +112,19 @@ class SyntheticDataController extends Base {
 		let response = {};
 
 		job.reportProgress( 10 );
-		result = await siteInstance.runTest( job.data ) || {};
-		result = result.stdout || '';
+
+		try {
+			result = await siteInstance.runTest( job.data ) || {};
+			result = result.stdout || '';
+		} catch ( exception ) {
+			console.error( exception );
+			throw `Try ${ currentTry } : Error during running the test.`;
+		}
 
 		job.reportProgress( 90 );
 
 		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
-			throw `Try ${currentTry} : Fail to send AMP data.`;
+			throw `Try ${ currentTry } : Fail to send AMP data.`;
 		}
 
 		const item = {
@@ -130,11 +136,12 @@ class SyntheticDataController extends Base {
 			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
 			response = await BigQuery.query( updateQuery );
 		} catch ( exception ) {
-			console.log(exception);
-			throw `Try ${currentTry} : Fail to update BigQuery record.`;
+			console.error( exception );
+			throw `Try ${ currentTry } : Fail to update BigQuery record.`;
 		}
 
 		job.reportProgress( 100 );
+		Logger.info( ' Site: %s | Job ID: %s completed.', this.site, job.id );
 		return { status: 'ok', data: { result: result, response: response } };
 	}
 }
