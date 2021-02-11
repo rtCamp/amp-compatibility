@@ -13,6 +13,7 @@ const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 // Helpers
 const Logger = use( 'Logger' );
 const BigQuery = use( 'App/BigQuery' );
+const Utility = use( 'App/Helpers/Utility' );
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
 
@@ -132,6 +133,9 @@ class SyntheticDataStart extends Command {
 
 			this.getComputeInstance( instanceName ).then( ( instance ) => {
 
+				const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+				let logFilePath = Utility.logPath() + `/secondary-server/${ date }/${ instanceName }-jobs.log`;
+
 				/**
 				 * Compute engine instance is ready.
 				 * Start the synthetic data worker.
@@ -140,7 +144,7 @@ class SyntheticDataStart extends Command {
 
 				instance.executeCommand(
 					`cd $HOME/amp-compatibility/amp-compatibility-server && ` +
-					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a /var/log/adonis/job.log`,
+					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a ${ logFilePath }`,
 				).then( async () => {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
@@ -220,13 +224,13 @@ class SyntheticDataStart extends Command {
 
 		if ( true === this.options.onlyThemes ) {
 			extensionClause.push(
-				"extensions.type = 'theme'",
+				'extensions.type = \'theme\'',
 			);
 		}
 
 		if ( true === this.options.onlyPlugins ) {
 			extensionClause.push(
-				"extensions.type = 'plugin'",
+				'extensions.type = \'plugin\'',
 			);
 		}
 

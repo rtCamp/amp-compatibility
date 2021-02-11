@@ -19,24 +19,27 @@ class WordPressSite {
 	async runTest( args ) {
 
 		let projectRoot = Helpers.appRoot();
+		let logFilePath = Utility.logPath() + '/sites';
+
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
 
-		let logFileName = '';
 
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
 		if ( args.domain.startsWith( 'adhoc-synthetic-data' ) ) {
-			logFileName = args.domain;
+			logFilePath = `${logFilePath}/adhoc-synthetic-data/${args.domain}.log`;
 		} else {
-			const date = Utility.getCurrentDateTime().replace( / |:/g, '-' );
-			logFileName = args.domain + '-' + date;
+			const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+			logFilePath = `${ logFilePath }/synthetic-data/${ date }/${ args.domain }.log`;
 		}
-		const command = `bash -x ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } 2>&1 | tee -a /var/log/sites/${ logFileName }.log`;
+
+		const command = `bash ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } 2>&1 | tee -a ${ logFilePath }`;
 
 		try {
 			await this.executeCommand( command );
-			// TODO: Sync ${ logFileName } to GCP bucket.
+
+			// TODO: Sync ${ logFilePath } to GCP bucket.
 		} catch ( exception ) {
 			console.error( exception );
 		}
