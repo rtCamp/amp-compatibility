@@ -201,6 +201,8 @@ class ComputeEngine {
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( `bash -x /root/setup-server.sh > ${ secondaryInstanceLogFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
+		await this.executeCommand( `mkdir -p /opt/workspace/amp-compatibility-server` );
+		await this.copyFileToRemote( Env.get( 'GOOGLE_APPLICATION_CREDENTIALS', '' ), '/opt/workspace/amp-compatibility-server' );
 
 		/**
 		 * Copy log file from remote server (secondary instance) to primary instance.
