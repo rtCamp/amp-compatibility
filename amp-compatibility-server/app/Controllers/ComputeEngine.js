@@ -176,8 +176,9 @@ class ComputeEngine {
 
 		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
 
-		const logDirPath = `/root/amp-compatibility/amp-compatibility-server/logs/secondary-server/${ date }`;
-		let logFilePath = `${ logDirPath }/${ this.options.name }-server-setup.log`;
+		const logFilename = `${ this.options.name }-server-setup.log`;
+		const primaryInstanceLogFilePath = `${ Utility.logPath() }/secondary-server/${ date }/${ logFilename }`;
+		const secondaryInstanceLogFilePath = `/tmp/${ logFilename }`;
 
 		Logger.debug( `%s : Setup started.`, this.options.name );
 
@@ -198,11 +199,18 @@ class ComputeEngine {
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
-		await this.executeCommand( `mkdir -p ${ logDirPath }` );
-		await this.executeCommand( `bash -x /root/setup-server.sh > ${ logFilePath } 2>&1` );
+		await this.executeCommand( `bash -x /root/setup-server.sh > ${ secondaryInstanceLogFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
 
-		await Storage.uploadFile( logFilePath );
+		/**
+		 * Copy log file from remote server (secondary instance) to primary instance.
+		 */
+		await this.copyFileFromRemote( secondaryInstanceLogFilePath, primaryInstanceLogFilePath );
+
+		/**
+		 * Upload log file to GCP storage.
+		 */
+		await Storage.uploadFile( primaryInstanceLogFilePath );
 
 		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}
@@ -221,6 +229,22 @@ class ComputeEngine {
 		// Local command.
 		await Utility.executeCommand( 'command -v rsync || apt install -y rsync' );
 		await Utility.executeCommand( 'rsync -avzhPL ' + localPath + ' root@' + ip + ':' + remotePath );
+	}
+
+	async copyFileFromRemote( remotePath, localPath  ) {
+
+		if ( ! this.isVMExists ) {
+			throw 'Virtual machine does not exists.';
+		}
+
+		const ip = this.ip;
+
+		// Remote command.
+		await this.executeCommand( 'command -v rsync || apt update && apt install -y rsync' );
+
+		// Local command.
+		await Utility.executeCommand( 'command -v rsync || apt install -y rsync' );
+		await Utility.executeCommand( 'rsync -avzhPL root@' + ip + ':' + remotePath + ' ' + localPath );
 	}
 
 	async executeCommand( command ) {
