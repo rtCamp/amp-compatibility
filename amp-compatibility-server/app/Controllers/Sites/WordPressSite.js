@@ -1,7 +1,7 @@
 'use strict';
 
 const Helpers = use( 'Helpers' );
-const Logger = use( 'Logger' );
+const Storage = use( 'Storage' );
 
 // Utilities
 const Utility = use( 'App/Helpers/Utility' );
@@ -44,6 +44,8 @@ class WordPressSite {
 		} catch ( exception ) {
 			console.error( exception );
 		}
+
+		await Storage.uploadFile( logFilePath );
 
 		return response;
 	}

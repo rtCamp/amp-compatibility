@@ -12,6 +12,7 @@ const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 
 // Helpers
 const Logger = use( 'Logger' );
+const Storage = use( 'Storage' );
 const BigQuery = use( 'App/BigQuery' );
 const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
@@ -152,6 +153,8 @@ class SyntheticDataStart extends Command {
 				).then( async () => {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
+
+					await Storage.uploadFile( logFilePath );
 
 					/**
 					 * Preserver compute engine instance only if one instance is requested

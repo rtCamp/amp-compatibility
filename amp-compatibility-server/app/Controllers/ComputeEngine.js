@@ -4,6 +4,7 @@ const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const Env = use( 'Env' );
 const Helpers = use( 'Helpers' );
+const Storage = use( 'Storage' );
 
 // Google Cloud
 const Compute = require( '@google-cloud/compute' );
@@ -197,6 +198,8 @@ class ComputeEngine {
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
 		await this.executeCommand( `bash -x /root/setup-server.sh > ${ logFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
+
+		await Storage.uploadFile( logFilePath );
 
 		Logger.debug( `%s : Setup completed.`, this.options.name );
 	}
