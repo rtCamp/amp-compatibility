@@ -175,7 +175,9 @@ class ComputeEngine {
 		}
 
 		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
-		let logFilePath = Utility.logPath() + `/secondary-server/${ date }/${ this.options.name }-server-setup.log`;
+
+		const logDirPath = `/root/amp-compatibility/amp-compatibility-server/logs/secondary-server/${ date }`;
+		let logFilePath = `${ logDirPath }/${ this.options.name }-server-setup.log`;
 
 		Logger.debug( `%s : Setup started.`, this.options.name );
 
@@ -196,6 +198,7 @@ class ComputeEngine {
 		await this.copyFileToRemote( projectRoot + 'scripts/setup-server.sh', '/root/setup-server.sh' );
 
 		Logger.debug( `%s : Installing and setting up the server.`, this.options.name );
+		await this.executeCommand( `mkdir -p ${ logDirPath }` );
 		await this.executeCommand( `bash -x /root/setup-server.sh > ${ logFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
 
