@@ -53,6 +53,19 @@ jobs:
         SLACK_TITLE: "App Engine Instance"
         SLACK_MESSAGE: "Deployed to https://rich-torus-221321.ue.r.appspot.com/ :rocket:\n\n*Message*\n${{ github.event.head_commit.message }}"
 
+    - name: Remove older versions of App Engine
+      run: |
+          OLD_VERSIONS=$(
+            gcloud app versions list \
+            --service default \
+            --sort-by '~version' \
+            --format 'value(VERSION.ID)' \
+             | sed 1,5d
+          )
+          [[ -n "$OLD_VERSIONS" ]] \
+            && gcloud app versions delete --quiet "$OLD_VERSIONS" \
+            || echo 'No old versions to delete. Less than 5 latest versions present.'
+
     - name: Cleanup
       if: ${{ always() }}
       uses: rtCamp/action-cleanup@master
