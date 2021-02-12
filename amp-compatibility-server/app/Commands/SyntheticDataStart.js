@@ -141,7 +141,7 @@ class SyntheticDataStart extends Command {
 
 				const logFilename = `${ instanceName }-jobs.log`;
 
-				const primaryInstanceLogFilePath = `${ Utility.logPath() }/secondary-server/${ date }/${ logFilename }-jobs.log`;
+				const primaryInstanceLogFilePath = `${ Utility.logPath() }/secondary-server/${ date }/${ logFilename }`;
 				const secondaryInstanceLogFilePath = `/tmp/${ logFilename }`;
 
 				await FileSystem.assureDirectoryExists(primaryInstanceLogFilePath);
