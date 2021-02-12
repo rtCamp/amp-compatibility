@@ -26,11 +26,18 @@ jobs:
       with:
         node-version: '14'
 
-    - name: Configure deployment files
-      run: echo "$ENV" | base64 -d > .env
+    - name: Configure env files from secrets
+      run: |
+          echo "$ENV" | base64 -d > .env
+          mkdir -p private
+          echo "$SERVER_CA"  | base64 -d > private/server-ca.pem
+          echo "$CLIENT_CRT" | base64 -d > private/client-cert.pem
+          echo "$CLIENT_KEY" | base64 -d > private/client-key.pem
       env:
         ENV: ${{ secrets.ENV }}
-        APP_YAML: ${{ secrets.APP_YAML }}
+        SERVER_CA: ${{ secrets.SERVER_CA }}
+        CLIENT_CRT: ${{ secrets.CLIENT_CRT }}
+        CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
 
     - name: Install modules and asset build
       run: npm i && npm run prod

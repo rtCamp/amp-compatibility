@@ -6,7 +6,10 @@ const Env = use( 'Env' );
 /** @type {import('@adonisjs/ignitor/src/Helpers')} */
 const Helpers = use( 'Helpers' );
 
-module.exports = {
+const fs = require( 'fs' );
+
+const config = {
+
 	/*
 	|--------------------------------------------------------------------------
 	| Default Connection
@@ -82,3 +85,14 @@ module.exports = {
 		debug: Env.get( 'DB_DEBUG', false ),
 	},
 };
+
+if ( Env.get( 'NODE_ENV' ) === 'production' ) {
+	let projectRoot = Helpers.appRoot();
+	config.mysql.connection.ssl = {
+		ca: fs.readFileSync( projectRoot + '/private/server-ca.pem' ),
+		key: fs.readFileSync( projectRoot + '/private/client-key.pem' ),
+		cert: fs.readFileSync( projectRoot + '/private/client-cert.pem' ),
+	};
+}
+
+module.exports = config;
