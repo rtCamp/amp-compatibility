@@ -37,7 +37,11 @@ function setup_site() {
 		echo "$machine_ip $site_domain" >>/etc/hosts
 	fi
 
-	create_site
+	setup="false";
+	while [[ "$setup" != "true" ]]; do
+		create_site
+		setup=$(health_check)
+	done
 
 	cd_site
 

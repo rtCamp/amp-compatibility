@@ -80,6 +80,19 @@ function destroy_site() {
 	fi
 }
 
+function health_check() {
+
+	status_code=$(curl -Ls -w %{http_code} -o /dev/null "$site_domain")
+	if [[ "$status_code" -ne 200 ]]; then
+		# Delete site if status code is not 200
+		# There are chances of failed site creation while creating multiple sites.
+		destroy_site
+		echo "false"
+	else
+		echo "true"
+	fi
+}
+
 
 function setup_base_site() {
 
