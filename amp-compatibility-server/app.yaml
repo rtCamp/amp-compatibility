@@ -1,3 +1,9 @@
 runtime: nodejs14
 vpc_access_connector:
     name: projects/rich-torus-221321/locations/us-east1/connectors/defaultappconnector
+
+handlers:
+- url: /.*
+  script: auto
+  secure: always
+  redirect_http_response_code: 301
