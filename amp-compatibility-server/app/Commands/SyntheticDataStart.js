@@ -208,7 +208,7 @@ class SyntheticDataStart extends Command {
 		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
 		const queueHealth = await this.queue.checkHealth();
 		const successJobCount = parseInt( queueHealth.succeeded );
-		const queueJobs = this.queue.getJobs( 'succeeded', { size: successJobCount } ) || [];
+		const queueJobs = await this.queue.getJobs( 'succeeded', { size: successJobCount } ) || [];
 		let extensions = [];
 
 		for ( const index in queueJobs ) {
