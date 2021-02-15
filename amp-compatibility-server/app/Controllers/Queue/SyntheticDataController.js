@@ -137,7 +137,6 @@ class SyntheticDataController extends Base {
 			response = await BigQuery.query( updateQuery );
 		} catch ( exception ) {
 			console.error( exception );
-			throw `Try ${ currentTry } : Fail to update BigQuery record.`;
 		}
 
 		job.reportProgress( 100 );

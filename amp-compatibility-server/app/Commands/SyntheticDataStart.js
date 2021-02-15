@@ -144,7 +144,7 @@ class SyntheticDataStart extends Command {
 				const primaryInstanceLogFilePath = `${ Utility.logPath() }/secondary-server/${ date }/${ logFilename }`;
 				const secondaryInstanceLogFilePath = `/tmp/${ logFilename }`;
 
-				await FileSystem.assureDirectoryExists(primaryInstanceLogFilePath);
+				await FileSystem.assureDirectoryExists( primaryInstanceLogFilePath );
 
 				/**
 				 * Compute engine instance is ready.
@@ -182,6 +182,9 @@ class SyntheticDataStart extends Command {
 
 					if ( numberOfTerminatedInstance >= this.options.numberOfInstance ) {
 						Logger.info( 'Synthetic data process completed.' );
+						Logger.info( 'Updating flag for synthetic data.' );
+						await this.updateSuccessJobs();
+
 						exit( 1 );
 					}
 
@@ -191,6 +194,40 @@ class SyntheticDataStart extends Command {
 				console.error( instanceName, error );
 			} );
 
+		}
+
+	}
+
+	/**
+	 * To update "has_synthetic_data" flag in extension version table.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async updateSuccessJobs() {
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
+		const queueHealth = await this.queue.checkHealth();
+		const successJobCount = parseInt( queueHealth.succeeded );
+		const queueJobs = this.queue.getJobs( 'succeeded', { size: successJobCount } ) || [];
+		let extensions = [];
+
+		for ( const index in queueJobs ) {
+			extensions.push( queueJobs[ index ].data.domain );
+		}
+
+		extensions = _.map( extensions, ExtensionVersionModel._prepareValueForDB );
+		const extensionChunks = _.chunk( extensions, 200 );
+
+		for ( const index in extensionChunks ) {
+			const chunk = extensionChunks[ index ];
+			const updateQuery = `UPDATE ${ table } SET has_synthetic_data = true WHERE ${ ExtensionVersionModel.primaryKey } IN ( ${ chunk.join( ', ' ) } );`;
+
+			try {
+				const response = await BigQuery.query( updateQuery );
+				console.log( response );
+			} catch ( exception ) {
+				console.error( exception );
+			}
 		}
 
 	}
