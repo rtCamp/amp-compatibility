@@ -90,6 +90,14 @@ testing@amp-comp.com" > answers.txt
 	wo stack install --nginx --mysql --php73 --wpcli
 	rm /etc/nginx/conf.d/stub_status.conf /etc/nginx/sites-enabled/22222
 
+# Return 403 for default server block.
+cat <<EOF > /etc/nginx/sites-enabled/default
+server {
+	server_name _;
+	return 403;
+}
+EOF
+
 cat <<EOF > /etc/php/7.3/fpm/pool.d/www.conf
 [www-php73]
 user = www-data
