@@ -17,7 +17,7 @@ for i in "$@"; do
 		theme="${i#*=}"
 		shift
 		;;
-	-ps* | --preserve-site*)
+	--preserve-site)
 		preserve_site="true"
 		shift
 		;;
