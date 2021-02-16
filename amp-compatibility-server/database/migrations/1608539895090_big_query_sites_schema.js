@@ -55,7 +55,7 @@ class BigQuerySitesSchema extends Schema {
 				{
 					name: 'wp_language',
 					type: 'STRING',
-					mode: 'REQUIRED',
+					mode: 'NULLABLE',
 					description: 'Site local. e.g. en_US',
 				},
 				{

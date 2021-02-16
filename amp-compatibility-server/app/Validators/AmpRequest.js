@@ -24,7 +24,7 @@ class AmpRequest extends Base {
 			'site_info.php_version': 'version',
 			'site_info.mysql_version': 'version',
 			'site_info.wp_version': 'version|required',
-			'site_info.wp_language': 'string|required',
+			'site_info.wp_language': 'string',
 			'site_info.wp_https_status': 'boolean',
 			'site_info.wp_multisite': 'in:subdomain,subdir,single',
 			'site_info.is_synthetic_data': 'boolean',
@@ -66,7 +66,7 @@ class AmpRequest extends Base {
 			'plugins.*.plugin_url': 'url',
 			'plugins.*.version': 'version|required',
 			'plugins.*.author': 'string',
-			'plugins.*.author_url': 'url',
+			'plugins.*.author_url': 'string',
 			'plugins.*.requires_wp': 'version',
 			'plugins.*.requires_php': 'version',
 			'plugins.*.is_active': 'boolean',
@@ -86,7 +86,7 @@ class AmpRequest extends Base {
 			'themes.*.requires_php': 'version',
 			'themes.*.theme_url': 'url',
 			'themes.*.author': 'string',
-			'themes.*.author_url': 'url',
+			'themes.*.author_url': 'string',
 			'themes.*.is_active': 'boolean',
 			'themes.*.parent_theme': 'string',
 
@@ -101,7 +101,7 @@ class AmpRequest extends Base {
 			 */
 			'error_sources.*.error_slug': 'string|required',
 			'error_sources.*.error_source_slug': 'string|required',
-			//'error_sources.*.extension_version_slug': 'string|required',
+			// 'error_sources.*.extension_version_slug': 'string|required',
 			'error_sources.*.type': 'in:plugin,theme,block,core',
 			'error_sources.*.name': 'string',
 			'error_sources.*.file': 'string',
@@ -114,9 +114,9 @@ class AmpRequest extends Base {
 			/**
 			 * URLs
 			 */
-			// 'urls.*.url': 'url|required',
-			// 'urls.*.errors.*.error_slug': 'string|required',
-			// 'urls.*.errors.*.sources.*': 'string|required',
+			'urls.*.url': 'url|required',
+			'urls.*.errors.*.error_slug': 'string|required',
+			'urls.*.errors.*.sources.*': 'string|required',
 		};
 	}
 
