@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+preserve_site="false"
 
 for i in "$@"; do
 	case $i in
@@ -14,6 +15,10 @@ for i in "$@"; do
 		;;
 	-t=* | --theme=*)
 		theme="${i#*=}"
+		shift
+		;;
+	-ps* | --preserve-site*)
+		preserve_site="true"
 		shift
 		;;
 	*)
@@ -118,7 +123,7 @@ function process_amp() {
 	wp rewrite flush
 	wp amp validation reset --yes
 	wp amp validation run --limit=20 --force
-	wp amp-send-data --is-synthetic $amp_endpoint_flag
+	[[ "$preserve_site" = "false" ]] && wp amp-send-data --is-synthetic $amp_endpoint_flag
 }
 
 function main() {
@@ -135,8 +140,10 @@ function main() {
 	process_amp
 	process_amp_time=$(date +%s)
 
-	destroy_site
-	destroy_site_time=$(date +%s)
+	if [[ "$preserve_site" = "false" ]]; then
+		destroy_site
+		destroy_site_time=$(date +%s)
+	fi
 
 	end=$(date +%s)
 
@@ -145,7 +152,7 @@ function main() {
 	echo "Setup site   : $(expr $setup_site_time - $start) seconds."
 	echo "Process site : $(expr $process_site_time - $setup_site_time) seconds."
 	echo "AMP process  : $(expr $process_amp_time - $process_site_time) seconds."
-	echo "Destroy site : $(expr $destroy_site_time - $process_amp_time) seconds."
+	[[ "$preserve_site" = "false" ]] && echo "Destroy site : $(expr $destroy_site_time - $process_amp_time) seconds."
 	echo "Total        : $(expr $end - $start) seconds."
 	echo "====================================================================================================";
 	echo "";
