@@ -166,11 +166,11 @@ class ValidatorExtended {
 
 		/**
 		 * Regex to validate URL.
-		 * Reference: https://regex101.com/r/fZnSxB/5
+		 * Reference: https://regex101.com/r/l5Jiq4/1
 		 *
 		 * @type {RegExp} Regular expression
 		 */
-		const urlRegex = /^(http(s)?:\/\/|\/[\/]?)?(?:((www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10})|(?:[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}))\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=;!$^*()×]*)$/mig;
+		const urlRegex = /^(http(s)?:\/\/|\/[\/]?)?(?:((www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,10})|(?:[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}))\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=;!$^*()×]*)$/mig;
 
 		if ( false !== urlRegex.test( value ) ) {
 			return;
@@ -205,7 +205,7 @@ class ValidatorExtended {
 			return;
 		}
 
-		if ( _.isArray( value ) ) {
+		if ( _.isArray( value ) || _.isObject( value ) ) {
 			return;
 		}
 
