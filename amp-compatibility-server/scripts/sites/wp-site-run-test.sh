@@ -38,9 +38,16 @@ function setup_site() {
 	fi
 
 	setup="false";
+	retries=0;
 	while [[ "$setup" != "true" ]]; do
 		create_site
 		setup=$(health_check)
+		retries=$((retries+1))
+		if [[ $retries -ge 5 ]]; then
+			echo "Site creation failed after 5 consecutive retries for $site_domain."
+			echo "Exiting without error."
+			exit 0
+		fi
 	done
 
 	cd_site
