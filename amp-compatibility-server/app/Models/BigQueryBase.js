@@ -135,7 +135,7 @@ class BigQueryBase {
 
 				if ( _.isObject( rows ) ) {
 					count = count + rows.length;
-					this.setCache( rows );
+					await this.setCache( rows );
 				}
 
 			} while ( _.isObject( nextQuery ) );
