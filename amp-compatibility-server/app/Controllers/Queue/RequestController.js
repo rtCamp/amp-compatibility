@@ -289,10 +289,6 @@ class RequestController extends Base {
 		const preparedItems = [];
 		const preparedItemVersions = [];
 		let response = {};
-		const saveOptions = {
-			allowUpdate: false,
-			useStream: true,
-		};
 
 		for ( const index in themes ) {
 			const item = themes[ index ];
@@ -325,8 +321,13 @@ class RequestController extends Base {
 			// @Todo: Save author detail.
 
 			response = {
-				extensions: ( await ExtensionModel.saveMany( preparedItems, saveOptions ) ),
-				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, saveOptions ) ),
+				extensions: ( await ExtensionModel.saveMany( preparedItems, {
+					allowUpdate: false,
+					useStream: true,
+				} ) ),
+				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
+					allowUpdate: false,
+				} ) ),
 			};
 		} catch ( exception ) {
 			response = exception;
@@ -348,10 +349,6 @@ class RequestController extends Base {
 		const preparedItems = [];
 		const preparedItemVersions = [];
 		let response = {};
-		const saveOptions = {
-			allowUpdate: false,
-			useStream: true,
-		};
 
 		for ( const index in plugins ) {
 			const item = plugins[ index ];
@@ -383,8 +380,13 @@ class RequestController extends Base {
 			// @Todo: Save author detail.
 
 			response = {
-				extensions: ( await ExtensionModel.saveMany( preparedItems, saveOptions ) ),
-				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, saveOptions ) ),
+				extensions: ( await ExtensionModel.saveMany( preparedItems, {
+					allowUpdate: false,
+					useStream: true,
+				} ) ),
+				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
+					allowUpdate: false,
+				} ) ),
 			};
 		} catch ( exception ) {
 			response = exception;
