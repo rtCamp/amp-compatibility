@@ -70,7 +70,12 @@ class BigQueryExtensionVersionsSchema extends Schema {
 					mode: 'NULLABLE',
 					description: 'Determine if we have synthetic data or not. Default false',
 				},
-
+				{
+					name: 'is_verified',
+					type: 'BOOL',
+					mode: 'NULLABLE',
+					description: 'Determine if synthetic data is verified or not. Default false',
+				},
 			],
 		};
 	}
