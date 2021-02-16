@@ -79,6 +79,7 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 	$is_print     = filter_var( get_flag_value( $assoc_args, 'print', false ), FILTER_SANITIZE_STRING );
 	$is_synthetic = filter_var( get_flag_value( $assoc_args, 'is-synthetic', false ), FILTER_SANITIZE_STRING );
 	$endpoint     = filter_var( get_flag_value( $assoc_args, 'endpoint', AMP_SEND_DATA_SERVER_ENDPOINT ), FILTER_SANITIZE_STRING );
+	$endpoint     = untrailingslashit( $endpoint );
 
 	$data = AMP_Prepare_Data::get_data();
 	$data = wp_parse_args( $data, [
