@@ -35,7 +35,7 @@ class SyntheticDataController extends Base {
 	 * @returns {number}
 	 */
 	static get retries() {
-		return 10;
+		return 5;
 	}
 
 	/**
