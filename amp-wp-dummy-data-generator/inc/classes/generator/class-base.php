@@ -12,12 +12,52 @@ namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
  */
 class Base {
 
+	const GENERATED_FLAG = '_amp_wp_compatibility_suite_generated';
+
+	const KEY_URL = 'url';
+
+	const KEY_OBJECT_TYPE = 'object_type';
+
+	const KEY_OBJECT_SUBTYPE = 'object_subtype';
+
+	const KEY_ID = 'id';
+
 	/**
-	 * Generator function.
+	 * Generates new content for the current WordPress context.
 	 *
-	 * @return void
+	 * @return array List of generated content results.
+	 * @since 1.0.0
+	 *
 	 */
-	public function generate() {
+	public function generate(): array {
+
+		return [];
+	}
+
+	/**
+	 * Deletes all generated content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function clear() {
+
+	}
+
+	/**
+	 * Returns the available fields within a result.
+	 *
+	 * @return array List of field identifiers.
+	 * @since 1.0.0
+	 *
+	 */
+	public function get_fields(): array {
+
+		return array(
+			static::KEY_URL,
+			static::KEY_OBJECT_TYPE,
+			static::KEY_OBJECT_SUBTYPE,
+			static::KEY_ID,
+		);
 	}
 
 	/**

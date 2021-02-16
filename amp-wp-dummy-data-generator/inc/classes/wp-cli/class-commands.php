@@ -80,6 +80,7 @@ class Commands extends Base {
 	 * @return array Array of strings, containing data directory paths.
 	 */
 	private function get_data_dirs( $slug ) {
+
 		$return_locations = array();
 		$search_locations = array(
 			'/data/wporg/plugins/',
@@ -94,6 +95,7 @@ class Commands extends Base {
 				$return_locations[] = $maybe_data_dir;
 			}
 		}
+
 		return $return_locations;
 	}
 
@@ -103,19 +105,21 @@ class Commands extends Base {
 	 *
 	 * @return array Array of strings, containing data directory paths.
 	 */
-	private function get_data_dir_core( ) {
+	private function get_data_dir_core() {
+
 		$return_locations = array();
-		$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
+		$maybe_data_dir   = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
 		if ( is_dir( $maybe_data_dir ) ) {
 			$return_locations[] = $maybe_data_dir;
 		}
+
 		return $return_locations;
 	}
 
 	/**
 	 * Returns array of import files for a given plugin or theme.
 	 *
-	 * @param string $slug Name of plugin or theme.
+	 * @param string $slug         Name of plugin or theme.
 	 *
 	 * @param array  $import_files Array of files already listed to be imported.
 	 *
@@ -125,7 +129,7 @@ class Commands extends Base {
 
 		$return_import_files = array();
 
-		if('core'===$slug){
+		if ( 'core' === $slug ) {
 			$data_dirs = $this->get_data_dir_core();
 		} else {
 			$data_dirs = $this->get_data_dirs( $slug );
@@ -148,7 +152,7 @@ class Commands extends Base {
 	/**
 	 * Returns path for pre or post import scripts for a given plugin or theme.
 	 *
-	 * @param string $slug Name of plugin or theme.
+	 * @param string $slug         Name of plugin or theme.
 	 *
 	 * @param array  $script_files Array of scripts already listed to be executed.
 	 *
@@ -157,7 +161,7 @@ class Commands extends Base {
 	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
 
 		$return_path = array();
-		$data_dirs	 = $this->get_data_dirs( $slug );
+		$data_dirs   = $this->get_data_dirs( $slug );
 
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
@@ -211,7 +215,7 @@ class Commands extends Base {
 
 		$type = ( ! empty( $assoc_args['type'] ) ) ? strtolower( trim( $assoc_args['type'] ) ) : 'before';
 
-		$filename = 'before'===$type ? 'pre': 'post';
+		$filename = 'before' === $type ? 'pre' : 'post';
 
 		$script_files = array();
 
@@ -398,6 +402,10 @@ class Commands extends Base {
 	public function generate( $args, $assoc_args ) {
 
 		$this->extract_args( $assoc_args );
+
+		foreach ( $this->generators as $generator ) {
+			$generator->clear();
+		}
 
 		foreach ( $this->generators as $generator ) {
 			$generator->generate();

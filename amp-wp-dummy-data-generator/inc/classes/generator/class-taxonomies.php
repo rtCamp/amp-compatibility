@@ -15,9 +15,11 @@ class Taxonomies extends Base {
 	/**
 	 * Generator function.
 	 *
-	 * @return void
+	 * @return array
 	 */
-	public function generate() {
+	public function generate(): array {
+
+		return [];
 	}
 
 }
