@@ -33,8 +33,8 @@ class BigQueryExtensionVersion extends BigQueryBase {
 	static getPrimaryValue( data ) {
 
 		if ( ! _.has( data, 'type' ) ||
-		     ! _.has( data, 'slug' ) ||
-		     ! _.has( data, 'version' )
+			 ! _.has( data, 'slug' ) ||
+			 ! _.has( data, 'version' )
 		) {
 			return '';
 		}
@@ -57,6 +57,19 @@ class BigQueryExtensionVersion extends BigQueryBase {
 	 */
 	static get validator() {
 		return ExtensionVersionValidator;
+	}
+
+	/**
+	 * Default values for each field.
+	 *
+	 * @returns {{}} default values.
+	 */
+	static get defaults() {
+		return {
+			error_count: 0,
+			has_synthetic_data: false,
+			is_verified: false,
+		};
 	}
 
 	/**
