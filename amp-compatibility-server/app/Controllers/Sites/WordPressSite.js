@@ -21,17 +21,22 @@ class WordPressSite {
 
 		let projectRoot = Helpers.appRoot();
 		let logFilePath = Utility.logPath();
+		let logFileSuffix = '';
 
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
 
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
+		if ( this.options.currentTry !== 1 ) {
+			logFileSuffix = '-retry-' + this.options.currentTry;
+		}
+
 		if ( args.domain.startsWith( 'adhoc-synthetic-data' ) ) {
-			logFilePath = `${ logFilePath }/adhoc-synthetic-data/${ args.domain }.log`;
+			logFilePath = `${ logFilePath }/adhoc-synthetic-data/${ args.domain }${ logFileSuffix }.log`;
 		} else {
 			const date = Utility.getCurrentDate().replace( / |:/g, '-' );
-			logFilePath = `${ logFilePath }/synthetic-data/${ date }/${ args.domain }.log`;
+			logFilePath = `${ logFilePath }/synthetic-data/${ date }/${ args.domain }${ logFileSuffix }.log`;
 		}
 
 		await FileSystem.assureDirectoryExists( logFilePath );
