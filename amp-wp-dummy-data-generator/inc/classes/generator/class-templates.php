@@ -15,12 +15,13 @@ class Templates extends Base {
 	/**
 	 * Generator function.
 	 *
-	 * @return void
+	 * @return array
 	 */
-	public function generate() {
+	public function generate(): array {
 
 		$post_types   = get_post_types( [ 'public' => true ] );
 		$theme_object = wp_get_theme();
+		$post_ids     = [];
 
 		$default_post_args = [
 			'post_title'   => '',
@@ -56,7 +57,7 @@ class Templates extends Base {
 					$post_id = self::create_and_get_post( $post_args );
 
 					if ( ! empty( $post_id ) && ! is_wp_error( $post_id ) && 0 < intval( $post_id ) ) {
-						\WP_CLI::success( "Post type: $post_type | Template: $template | Post ID: $post_id" );
+						$post_ids[] = $post_id;
 					} else {
 						\WP_CLI::warning( "Post type: $post_type | Template: $template | Failed to create widget page." );
 					}
@@ -67,6 +68,7 @@ class Templates extends Base {
 
 		}
 
+		return $post_ids;
 	}
 
 }

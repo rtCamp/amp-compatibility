@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 plugin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 function wp() {
@@ -34,7 +32,7 @@ for taxonomy in "${taxonomy_array[@]}"; do # access each element of array
 done
 
 wp widget reset --all
-wp user delete $(wp user list --field=ID)
+wp user delete $(wp user list --field=ID) --yes
 wp transient delete --all
 
 upload_dir=$(wp eval 'echo wp_get_upload_dir()["basedir"];')
