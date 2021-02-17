@@ -19,3 +19,4 @@ node_modules/
 # include .env and private directory
 !private
 !.env
+!public/data/
