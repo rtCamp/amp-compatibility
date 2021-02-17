@@ -53,7 +53,7 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 		Logger.info( ' Site: %s | Job ID: %s started.', this.site, job.id );
 
 		const currentTry = ( this.retries - job.options.retries ) + 1;
-		const siteInstance = new WordPressSite();
+		const siteInstance = new WordPressSite( { currentTry: currentTry } );
 		let result = '';
 		let response = {};
 
