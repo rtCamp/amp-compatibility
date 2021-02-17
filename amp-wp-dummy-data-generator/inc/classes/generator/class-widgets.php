@@ -12,6 +12,8 @@ namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
  */
 class Widgets extends Base {
 
+	const PAGE_SLUG = 'amp-wp-dummy-data-generator-widgets';
+
 	/**
 	 * Generator function.
 	 *
@@ -19,35 +21,16 @@ class Widgets extends Base {
 	 */
 	public function generate(): array {
 
-		$post_ids = [];
-		$posts    = get_posts(
-			[
-				'name'      => 'amp-wp-compatibility-widgets',
-				'post_type' => 'page',
-				'fields'    => 'ids',
-			]
-		);
+		$items     = [];
+		$page_args = [
+			'post_type'  => 'page',
+			'post_title' => 'AMP WP Dummy data: Widgets',
+			'post_name'  => self::PAGE_SLUG,
+		];
 
-		if ( empty( $posts ) ) {
-			$page_args = [
-				'post_type'  => 'page',
-				'post_title' => 'AMP WP Compatibility Widgets',
-				'post_name'  => 'amp-wp-compatibility-widgets',
-			];
+		$items[] = $this->generate_post( $page_args );
 
-			$post_id = self::create_and_get_post( $page_args );
-		} else {
-			$post_id = $posts[0];
-		}
-
-
-		if ( ! empty( $post_id ) && ! is_wp_error( $post_id ) && 0 < intval( $post_id ) ) {
-			$post_ids[] = $post_id;
-		} else {
-			\WP_CLI::warning( 'Failed to create widget page: ' );
-		}
-
-		return $post_ids;
+		return $items;
 	}
 
 }
