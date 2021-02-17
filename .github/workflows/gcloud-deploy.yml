@@ -42,6 +42,14 @@ jobs:
     - name: Install modules and asset build
       run: npm i && npm run prod
 
+    # TODO: Move extension mapping to redis cache
+    # This is a temp fix.
+    - name: Update extension mapping
+      run: |
+          mkdir -p /opt/workspace/amp-compatibility-server/
+          ln -sn /tmp/creds /opt/workspace/amp-compatibility-server/gcp.json
+          node ace extension:mapping:update
+
     - name: Deploy to App Engine
       run: gcloud app deploy --promote -q
 
