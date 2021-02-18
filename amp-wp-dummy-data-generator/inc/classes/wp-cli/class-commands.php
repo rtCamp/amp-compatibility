@@ -33,11 +33,11 @@ class Commands extends Base {
 
 		$this->generators = [
 			new Widgets(),
-			new ShortCodes(),
+//			new ShortCodes(),
 			new Taxonomies(),
-			new PostTypes(),
-			new Templates(),
-			new Blocks(),
+//			new PostTypes(),
+//			new Templates(),
+//			new Blocks(),
 		];
 
 		$this->setup();

@@ -12,7 +12,7 @@ namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
  */
 class Base {
 
-	const GENERATED_FLAG = '_amp_wp_compatibility_suite_generated';
+	const GENERATED_FLAG = '_amp_wp_dummy_data';
 
 	const KEY_URL = 'url';
 
@@ -25,22 +25,9 @@ class Base {
 	/**
 	 * Generates new content for the current WordPress context.
 	 *
-	 * @return array List of generated content results.
-	 * @since 1.0.0
-	 *
+	 * @return void
 	 */
-	public function generate(): array {
-
-		return [];
-	}
-
-	/**
-	 * Deletes all generated content.
-	 *
-	 * @since 1.0.0
-	 */
-	public function clear() {
-
+	public function generate() {
 	}
 
 	/**
@@ -74,41 +61,37 @@ class Base {
 	 *                                user or administrator.
 	 * }
 	 * @throws \Exception Thrown when creating post failed.
-	 * @return array Associative item array. See {@see Object_Generator::get_fields()}
+	 * @return int Associative item array. See {@see Object_Generator::get_fields()}
 	 *               for available fields.
 	 *
 	 * @since 1.0.0
 	 *
 	 */
-	protected function generate_post( array $args ): array {
+	protected function generate_post( array $args ) {
 
-		$args = array_merge(
-			array(
-				'post_type'    => 'post',
-				'post_status'  => 'publish',
-				'post_title'   => 'AMP Test Post',
-				'post_content' => '',
-				'post_author'  => $this->get_author_user()->ID,
-				'meta_input'   => array(
-					self::GENERATED_FLAG => 'true',
-				),
-			),
-			$args
-		);
+		$defaults = [
+			'post_type'    => 'post',
+			'post_status'  => 'publish',
+			'post_title'   => 'AMP Test Post',
+			'post_content' => '',
+			'post_author'  => $this->get_author_user()->ID,
+			'meta_input'   => [
+				self::GENERATED_FLAG => 'true',
+			],
+		];
 
+		$args    = wp_parse_args( $args, $defaults );
 		$post_id = wp_insert_post( wp_slash( $args ), true );
-		if ( is_wp_error( $post_id ) ) {
-			throw new \Exception( $post_id->get_error_message() );
-		}
 
-		$post = get_post( $post_id );
+		return ( ! empty( $post_id ) && ! is_wp_error( $post_id ) && 0 < intval( $post_id ) ) ? intval( $post_id ) : 0;
+	}
 
-		return array(
-			static::KEY_URL            => get_permalink( $post ),
-			static::KEY_OBJECT_TYPE    => 'post',
-			static::KEY_OBJECT_SUBTYPE => $post->post_type,
-			static::KEY_ID             => $post->ID,
-		);
+	/**
+	 * Deletes all generated content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function clear() {
 	}
 
 	/**
@@ -141,32 +124,6 @@ class Base {
 		);
 
 		return new \WP_User();
-	}
-
-	/**
-	 * Helper function to create single post.
-	 *
-	 * @param array $post_args Args for create post.
-	 *
-	 * @return int Post ID on success, otherwise 0.
-	 */
-	protected static function create_and_get_post( $post_args ) {
-
-		if ( empty( $post_args ) || ! is_array( $post_args ) ) {
-			return 0;
-		}
-
-		$post_args['meta_input'] = ( ! empty( $post_args['meta_input'] ) && is_array( $post_args['meta_input'] ) ) ? $post_args['meta_input'] : [];
-		$post_args['meta_input'] = wp_parse_args(
-			$post_args['meta_input'],
-			[
-				'amp-wp-compatibility-page' => 'yes',
-			]
-		);
-
-		$post_id = wp_insert_post( $post_args, true );
-
-		return ( ! empty( $post_id ) && ! is_wp_error( $post_id ) && 0 < intval( $post_id ) ) ? intval( $post_id ) : 0;
 	}
 
 }
