@@ -16,6 +16,8 @@ class Widgets {
 
 	use Singleton;
 
+	const SIDEBAR_ID = 'amp-wp-dummy-data-generator';
+
 	/**
 	 * Construct method.
 	 */
@@ -69,8 +71,8 @@ class Widgets {
 		}
 
 		get_header();
-		if ( is_active_sidebar( 'amp-wp-comp-sidebar' ) ) {
-			dynamic_sidebar( 'amp-wp-comp-sidebar' );
+		if ( is_active_sidebar( self::SIDEBAR_ID ) ) {
+			dynamic_sidebar( self::SIDEBAR_ID );
 		}
 		get_footer();
 	}
@@ -85,7 +87,7 @@ class Widgets {
 		register_sidebar(
 			[
 				'name'          => 'AMP WP Comp Sidebar',
-				'id'            => 'amp-wp-comp-sidebar',
+				'id'            => self::SIDEBAR_ID,
 				'before_widget' => '<div id="%1$s" class="widget %2$s">',
 				'after_widget'  => '</div>',
 				'before_title'  => '<h2 class="widgettitle">',
@@ -103,7 +105,9 @@ class Widgets {
 	 */
 	public function add_widgets( $sidebars_widgets ) {
 
-		if ( ! did_action( 'template_redirect' ) ) {
+		static $is_set = false;
+
+		if ( ! did_action( 'template_redirect' ) || true === $is_set ) {
 			return $sidebars_widgets;
 		}
 
@@ -114,7 +118,7 @@ class Widgets {
 		 */
 		global $wp_widget_factory;
 
-		$sidebar_id = 'amp-wp-comp-sidebar';
+		$sidebar_id = self::SIDEBAR_ID;
 
 		$widget_ids = [];
 		foreach ( $wp_widget_factory->widgets as $widget ) {
@@ -235,6 +239,8 @@ class Widgets {
 						'attachment_id' => $attachment->ID,
 					];
 				}
+				break;
+			default:
 				break;
 		}
 
