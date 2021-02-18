@@ -8,6 +8,7 @@
 namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
 use AMP_WP_Dummy_Data_Generator\Inc\Strings;
+use function WP_CLI\Utils\make_progress_bar;
 
 /**
  * Class Taxonomies
@@ -43,7 +44,7 @@ class Taxonomies extends Base {
 		$count      = count( $taxonomies );
 		$terms      = [];
 
-		$progress = \WP_CLI\Utils\make_progress_bar(
+		$progress = make_progress_bar(
 			sprintf( $count === 1 ? 'Generating terms for %d taxonomy...' : 'Generating terms for %d taxonomies...', $count ),
 			$count
 		);
@@ -66,7 +67,7 @@ class Taxonomies extends Base {
 		$taxonomies = $this->get_taxonomy_list();
 		$count      = count( $taxonomies );
 
-		$progress = \WP_CLI\Utils\make_progress_bar(
+		$progress = make_progress_bar(
 			sprintf( $count === 1 ? 'Deleting terms for %d taxonomy...' : 'Deleting terms for %d taxonomies...', $count ),
 			$count
 		);
@@ -130,8 +131,7 @@ class Taxonomies extends Base {
 			if ( ! empty( $term_object ) && is_a( $term_object, 'WP_Term' ) ) {
 				$term_id = $term_object->term_id;
 			} else {
-				$response = $this->generate_term( $term, $taxonomy, $args );
-				$term_id  = ( ! empty( $response ) && ! is_wp_error( $response ) ) ? $response['term_id'] : false;
+				$term_id = $this->generate_term( $term, $taxonomy, $args );
 			}
 
 			$terms[ $index ] = $term_id;

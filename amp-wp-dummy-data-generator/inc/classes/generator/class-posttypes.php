@@ -7,111 +7,52 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
+use AMP_WP_Dummy_Data_Generator\Inc\Strings;
+use function WP_CLI\Utils\make_progress_bar;
+
 /**
  * Class PostTypes
  */
 class PostTypes extends Base {
 
-	const BLOCK_PAGE_SLUG = 'amp-test-page-for-blocks';
+	protected function get_post_types() {
+
+		$exclude_list = [
+			'nav_menu_item',
+			'revision',
+			'custom_css',
+			'customize_changeset',
+			'oembed_cache',
+			'user_request',
+		];
+
+		$post_types = get_post_types();
+		$post_types = array_diff( $post_types, $exclude_list );
+
+		return array_values( $post_types );
+	}
 
 	/**
 	 * Generates new posts for the current WordPress context.
 	 *
-	 * @return array List of generated content results. See {@see Object_Generator::get_fields()}
-	 *               for available fields.
-	 * @since 1.0.0
-	 *
+	 * @return void
 	 */
-	public function generate(): array {
+	public function generate() {
 
-		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+		$post_types = $this->get_post_types();
+		$count      = count( $post_types );
 
-		$existing_posts = get_posts(
-			array(
-				'posts_per_page' => -1,
-				'post_type'      => array_keys( $post_types ),
-				// 'inherit' is needed for attachments.
-				'post_status'    => array( 'publish', 'inherit' ),
-			)
-		);
-
-		$posts_by_type = array_reduce(
-			$existing_posts,
-			function ( array $acc, \WP_Post $post ) {
-
-				if ( ! isset( $acc[ $post->post_type ] ) ) {
-					$acc[ $post->post_type ] = array();
-				}
-				$acc[ $post->post_type ][] = $post;
-
-				return $acc;
-			},
-			array()
-		);
-
-		// Only generate posts for post types that don't have any.
-		$post_types_to_generate_content = array_filter(
-			$post_types,
-			function ( \WP_Post_Type $post_type ) use ( $posts_by_type ) {
-
-				return empty( $posts_by_type[ $post_type->name ] );
-			}
-		);
-
-		// +1 for Gutenberg block tests page (see below).
-		$count = count( $post_types_to_generate_content ) + 1;
-
-		$progress = \WP_CLI\Utils\make_progress_bar(
-			sprintf( $count === 1 ? 'Generating %d post...' : 'Generating %d posts...', $count ),
+		$progress = make_progress_bar(
+			sprintf( $count === 1 ? 'Generating posts for %d post type...' : 'Generating posts for %d post types...', $count ),
 			$count
 		);
 
-		// Generate one post for every post type that does not have any.
-		$items = array();
-		foreach ( $post_types_to_generate_content as $post_type ) {
-			try {
-				$items[] = $this->generate_post(
-					array(
-						'post_type'    => $post_type->name,
-						'post_title'   => sprintf( 'AMP Test %s', $post_type->labels->singular_name ),
-						'post_content' => 'This is the content.',
-					)
-				);
-			} catch ( \Exception $e ) {
-				\WP_CLI::error(
-					sprintf(
-						'Could not create post of post type "%1$s". Error: %2$s',
-						$post_type->name,
-						$e->getMessage()
-					)
-				);
-			}
+		foreach ( $post_types as $post_type ) {
+			$posts[ $post_type ] = $this->generate_posts_for( $post_type );
 			$progress->tick();
 		}
 
-		// Generate a page that will be populated with Gutenberg blocks to test.
-		try {
-			$items[] = $this->generate_post(
-				array(
-					'post_type'    => 'page',
-					'post_title'   => 'AMP Test Page for Blocks',
-					'post_name'    => static::BLOCK_PAGE_SLUG,
-					'post_content' => '',
-				)
-			);
-		} catch ( \Exception $e ) {
-			\WP_CLI::error(
-				sprintf(
-					'Could not create post of post type "page" for blocks tests. Error: %s',
-					$e->getMessage()
-				)
-			);
-		}
-		$progress->tick();
-
 		$progress->finish();
-
-		return $items;
 	}
 
 	/**
@@ -121,24 +62,23 @@ class PostTypes extends Base {
 	 */
 	public function clear() {
 
-		$posts = get_posts(
-			array(
-				'posts_per_page' => - 1,
-				'post_type'      => get_post_types( array( 'public' => true ), 'names' ),
-				// 'inherit' is needed for attachments.
-				'post_status'    => array( 'publish', 'inherit' ),
-				'meta_query'     => array(
-					array(
-						'key'   => self::GENERATED_FLAG,
-						'value' => 'true',
-					),
-				),
-			)
-		);
+		$post_types = $this->get_post_types();
 
+		$args  = [
+			'posts_per_page' => 100,
+			'post_type'      => $post_types,
+			'post_status'    => 'any',
+			'meta_query'     => [
+				[
+					'key'   => self::GENERATED_FLAG,
+					'value' => 'true',
+				],
+			],
+		];
+		$posts = get_posts( $args );
 		$count = count( $posts );
 
-		$progress = \WP_CLI\Utils\make_progress_bar(
+		$progress = make_progress_bar(
 			sprintf( $count === 1 ? 'Deleting %d post...' : 'Deleting %d posts...', $count ),
 			$count
 		);
@@ -151,5 +91,93 @@ class PostTypes extends Base {
 		$progress->finish();
 	}
 
+	protected function generate_posts_for( $post_type ) {
+
+		if ( empty( $post_type ) || ! post_type_exists( $post_type ) ) {
+			return [];
+		}
+
+		$posts            = [];
+		$post_type_object = get_post_type_object( $post_type );
+		$limit            = $post_type_object->hierarchical ? AMP_WP_DUMMY_DATA_GENERATOR_LIMIT * 2 : AMP_WP_DUMMY_DATA_GENERATOR_LIMIT;
+		$singular_name    = ( ! empty( $post_type_object->labels->singular_name ) ) ? $post_type_object->labels->singular_name : $post_type;
+
+		// Find associated taxonomies.
+		$taxonomy_terms = [];
+		$taxonomies     = get_taxonomies( [
+			'object_type' => [ $post_type ],
+		] );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$taxonomy_terms[ $taxonomy ] = get_terms( [
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+			] );
+		}
+
+		$taxonomy_terms = array_filter( $taxonomy_terms );
+
+		for ( $index = 1; $index <= $limit; $index ++ ) {
+
+			$post_id    = false;
+			$post_title = "$index: $singular_name";
+
+			$args = [
+				'post_title'  => $post_title,
+				'post_type'   => $post_type,
+				'post_status' => 'publish',
+			];
+
+			if ( $post_type_object->hierarchical && $index > ( $limit / 2 ) ) {
+				$parent_index        = $index - ( $limit / 2 );
+				$args['post_parent'] = $posts[ $parent_index ];
+			}
+
+			$existing_posts = get_posts( [
+				'title'       => $post_title,
+				'post_type'   => $post_type,
+				'numberposts' => 1,
+				'fields'      => 'ids',
+			] );
+
+			if ( ! empty( $existing_posts[0] ) && 0 < intval( $existing_posts[0] ) ) {
+				$post_id = $existing_posts[0];
+			} else {
+
+				$args['post_content'] = Strings::get_dummy_content( 1024 );
+				$args['post_excerpt'] = Strings::get_dummy_content( 256 );
+
+				if ( ! empty( $taxonomy_terms ) && 0 < count( $taxonomy_terms ) ) {
+
+					$args['tax_input'] = [];
+
+					foreach ( $taxonomy_terms as $taxonomy => $terms ) {
+
+						if ( ! in_array( $taxonomy, $post_type_object->taxonomies, true ) ) {
+							continue;
+						}
+
+						$count  = count( $terms );
+						$term_1 = rand( 1, $count ) - 1;
+
+						$args['tax_input'][ $taxonomy ] = [
+							$terms[ $term_1 ]->term_id,
+						];
+
+					}
+
+				}
+
+				$post_id = $this->generate_post( $args );
+
+			}
+
+			$posts[ $index ] = $post_id;
+
+		}
+
+		return $posts;
+
+	}
 
 }
