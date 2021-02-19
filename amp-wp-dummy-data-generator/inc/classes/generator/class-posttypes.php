@@ -63,28 +63,32 @@ class PostTypes extends Base {
 	public function clear() {
 
 		$post_types = $this->get_post_types();
-
-		$args  = [
-			'posts_per_page' => 100,
-			'post_type'      => $post_types,
-			'post_status'    => 'any',
-			'meta_query'     => [
-				[
-					'key'   => self::GENERATED_FLAG,
-					'value' => 'true',
-				],
-			],
-		];
-		$posts = get_posts( $args );
-		$count = count( $posts );
+		$count      = count( $post_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting %d post...' : 'Deleting %d posts...', $count ),
+			sprintf( $count === 1 ? 'Deleting posts for %d post type...' : 'Deleting posts for %d post types...', $count ),
 			$count
 		);
 
-		foreach ( $posts as $post ) {
-			wp_delete_post( $post->ID, true );
+		foreach ( $post_types as $post_type ) {
+			$args = [
+				'posts_per_page' => 100,
+				'post_type'      => $post_type,
+				'post_status'    => 'any',
+				'meta_query'     => [
+					[
+						'key'   => self::GENERATED_FLAG,
+						'value' => 'true',
+					],
+				],
+			];
+
+			$posts = get_posts( $args );
+
+			foreach ( $posts as $post ) {
+				wp_delete_post( $post->ID, true );
+			}
+
 			$progress->tick();
 		}
 
