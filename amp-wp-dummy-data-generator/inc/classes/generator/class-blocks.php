@@ -7,11 +7,14 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
+use function WP_CLI\Utils\make_progress_bar;
+
 /**
  * Class Blocks
  */
 class Blocks extends Base {
 
+	const PAGE_SLUG = 'amp-wp-dummy-data-generator-blocks';
 
 	const SELF_CLOSING_TAGS = array( 'img', 'br' );
 
@@ -21,7 +24,7 @@ class Blocks extends Base {
 	 * @since 1.0.0
 	 * @var array
 	 */
-	private $blocks = array();
+	private $blocks = [];
 
 	/**
 	 * Child blocks associative array, to populate temporarily if parent block has not been created yet.
@@ -29,58 +32,35 @@ class Blocks extends Base {
 	 * @since 1.0.0
 	 * @var array
 	 */
-	private $child_blocks = array();
+	private $child_blocks = [];
 
 	/**
 	 * Generates new blocks for the current WordPress context.
 	 *
-	 * @return array List of generated content results. See {@see Object_Generator::get_fields()}
-	 *               for available fields.
-	 * @since 1.0.0
-	 *
+	 * @return void
 	 */
-	public function generate(): array {
+	public function generate() {
 
-		$post_for_blocks = get_posts(
-			array(
-				'posts_per_page' => 1,
-				'post_type'      => 'page',
-				'post_status'    => 'publish',
-				'post_name'      => PostTypes::BLOCK_PAGE_SLUG,
-				'meta_query'     => array(
-					array(
-						'key'   => self::GENERATED_FLAG,
-						'value' => 'true',
-					),
-				),
-			)
-		);
-		if ( empty( $post_for_blocks ) ) {
-			\WP_CLI::error(
-				sprintf(
-					'Could not find post "%s" to populate with blocks.',
-					PostTypes::BLOCK_PAGE_SLUG
-				)
-			);
-		}
-		$post_for_blocks = $post_for_blocks[0];
+		$page_args = [
+			'post_type'  => 'page',
+			'post_title' => 'AMP WP Dummy data: Blocks',
+			'post_name'  => self::PAGE_SLUG,
+		];
 
-		$block_types = \WP_Block_Type_Registry::get_instance()->get_all_registered();
+		$post_id         = $this->generate_post( $page_args );
+		$post_for_blocks = get_post( $post_id );
+		$block_types     = \WP_Block_Type_Registry::get_instance()->get_all_registered();
+		$count           = count( $block_types );
+		$this->blocks    = [];
 
-		$count = count( $block_types );
-
-		$progress = \WP_CLI\Utils\make_progress_bar(
+		$progress = make_progress_bar(
 			sprintf( $count === 1 ? 'Generating %d block...' : 'Generating %d blocks...', $count ),
 			$count
 		);
 
-		$this->blocks = array();
-
-		// Generate one block for every block type and add it to the blocks class property.
-		$items = array();
 		foreach ( $block_types as $block_type ) {
 			try {
-				$items[] = $this->generate_block( $block_type );
+				$this->generate_block( $block_type );
 			} catch ( \Exception $e ) {
 				\WP_CLI::error(
 					sprintf(
@@ -93,16 +73,18 @@ class Blocks extends Base {
 			$progress->tick();
 		}
 
-		$post_args = array(
+		$post_args = [
 			'ID'           => $post_for_blocks->ID,
 			'post_content' => serialize_blocks( $this->blocks ),
-		);
-		$post_id   = wp_update_post( wp_slash( $post_args ), true );
+		];
+
+		$post_id = wp_update_post( wp_slash( $post_args ), true );
+
 		if ( is_wp_error( $post_id ) ) {
 			\WP_CLI::error(
 				sprintf(
 					'Could not update post "%1$s" with blocks. Error: %2$s',
-					PostTypes::BLOCK_PAGE_SLUG,
+					self::PAGE_SLUG,
 					$post_id->get_error_message()
 				)
 			);
@@ -110,13 +92,12 @@ class Blocks extends Base {
 
 		$progress->finish();
 
-		return $items;
 	}
 
 	/**
 	 * Deletes all generated blocks.
 	 *
-	 * @since 1.0.0
+	 * @return void
 	 */
 	public function clear() {
 
@@ -124,7 +105,7 @@ class Blocks extends Base {
 
 		$count = count( $block_types );
 
-		$progress = \WP_CLI\Utils\make_progress_bar(
+		$progress = make_progress_bar(
 			sprintf( $count === 1 ? 'Deleting %d block...' : 'Deleting %d blocks...', $count ),
 			$count
 		);
@@ -144,23 +125,20 @@ class Blocks extends Base {
 	 * @param \WP_Block_Type $block_type Block type to generate block for.
 	 *
 	 * @throws \Exception Thrown when creating block failed.
-	 * @return array Associative item array. See {@see Object_Generator::get_fields()}
-	 *               for available fields.
 	 *
-	 * @since 1.0.0
-	 *
+	 * @return void
 	 */
-	private function generate_block( \WP_Block_Type $block_type ): array {
+	private function generate_block( \WP_Block_Type $block_type ) {
 
 		$block = array(
 			'blockName'    => $block_type->name,
-			'attrs'        => array(),
-			'innerBlocks'  => array(),
-			'innerContent' => array(),
+			'attrs'        => [],
+			'innerBlocks'  => [],
+			'innerContent' => [],
 		);
 
 		// Populate block attrs and innerContent.
-		$html = array();
+		$html = [];
 		foreach ( $block_type->get_attributes() as $slug => $data ) {
 			$value = $this->generate_block_attribute_value( $slug, $data );
 
@@ -182,9 +160,8 @@ class Blocks extends Base {
 					$block['attrs'][ $slug ] = $value;
 			}
 		}
-		$block['innerContent'] = $this->extract_block_html_to_inner_content( $html );
 
-		$block_hash = md5( serialize( $block ) );
+		$block['innerContent'] = $this->extract_block_html_to_inner_content( $html );
 
 		// If child blocks for this block already exist, add them as innerBlocks.
 		if ( isset( $this->child_blocks[ $block_type->name ] ) ) {
@@ -203,7 +180,7 @@ class Blocks extends Base {
 				$this->blocks[ $parent ]['innerContent'][] = null;
 			} else {
 				if ( ! isset( $this->child_blocks[ $parent ] ) ) {
-					$this->child_blocks[ $parent ] = array();
+					$this->child_blocks[ $parent ] = [];
 				}
 				$this->child_blocks[ $parent ][] = $block;
 			}
@@ -211,12 +188,6 @@ class Blocks extends Base {
 			$this->blocks[ $block_type->name ] = $block;
 		}
 
-		return array(
-			static::KEY_URL            => '',
-			static::KEY_OBJECT_TYPE    => 'block',
-			static::KEY_OBJECT_SUBTYPE => $block_type->name,
-			static::KEY_ID             => $block_hash,
-		);
 	}
 
 	/**
@@ -226,8 +197,6 @@ class Blocks extends Base {
 	 * @param array  $data Block attribute data.
 	 *
 	 * @return mixed Value to use for the block attribute.
-	 * @since 1.0.0
-	 *
 	 */
 	private function generate_block_attribute_value( string $slug, array $data ) {
 
@@ -244,7 +213,7 @@ class Blocks extends Base {
 					return array( $this->generate_block_attribute_value( $slug, $data['items'] ) );
 				}
 
-				return array();
+				return [];
 			case 'boolean':
 				return true;
 			case 'number':
@@ -313,7 +282,7 @@ class Blocks extends Base {
 	 */
 	private function generate_block_attribute_html( array $data, $value ): array {
 
-		$html = array();
+		$html = [];
 		if ( empty( $data['selector'] ) ) {
 			return $html;
 		}
@@ -331,7 +300,7 @@ class Blocks extends Base {
 
 			$current[ $tag_name ] = array(
 				'attrs'     => $attrs,
-				'innerHTML' => array(),
+				'innerHTML' => [],
 			);
 
 			// If final nested element, fill it with attribute value accordingly.
@@ -364,8 +333,6 @@ class Blocks extends Base {
 	 *
 	 * @return array Indexed array with tag name at index 0 and associative
 	 *               array of attributes at index 1.
-	 * @since 1.0.0
-	 *
 	 */
 	private function parse_selector( string $selector ): array {
 
@@ -390,7 +357,7 @@ class Blocks extends Base {
 					$acc[ $attr ] = true;
 				}
 			},
-			array()
+			[]
 		);
 
 		if ( false !== strpos( $selector, '#' ) ) {
@@ -420,12 +387,10 @@ class Blocks extends Base {
 	 *                    {@see Blocks_Generator::generate_block_attribute_html()}.
 	 *
 	 * @return array List of HTML strings.
-	 * @since 1.0.0
-	 *
 	 */
-	private function extract_block_html_to_inner_content( array $html ): array {
+	private function extract_block_html_to_inner_content( array $html ) {
 
-		$results = array();
+		$results = [];
 
 		foreach ( $html as $tag_name => $data ) {
 			if ( is_string( $data ) ) {
@@ -435,15 +400,18 @@ class Blocks extends Base {
 
 			$result = '<' . $tag_name;
 			foreach ( $data['attrs'] as $attr => $value ) {
+
 				if ( is_bool( $value ) ) {
 					if ( $value ) {
 						$result .= ' ' . $attr;
 					}
 					continue;
 				}
+
 				if ( is_string( $value ) && empty( $value ) ) {
 					continue;
 				}
+
 				$result .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
 			}
 
