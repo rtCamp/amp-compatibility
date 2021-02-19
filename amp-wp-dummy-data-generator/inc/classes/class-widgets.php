@@ -16,6 +16,8 @@ class Widgets {
 
 	use Singleton;
 
+	const SIDEBAR_ID = 'amp-wp-dummy-data-generator';
+
 	/**
 	 * Construct method.
 	 */
@@ -69,8 +71,8 @@ class Widgets {
 		}
 
 		get_header();
-		if ( is_active_sidebar( 'amp-wp-comp-sidebar' ) ) {
-			dynamic_sidebar( 'amp-wp-comp-sidebar' );
+		if ( is_active_sidebar( self::SIDEBAR_ID ) ) {
+			dynamic_sidebar( self::SIDEBAR_ID );
 		}
 		get_footer();
 	}
@@ -85,7 +87,7 @@ class Widgets {
 		register_sidebar(
 			[
 				'name'          => 'AMP WP Comp Sidebar',
-				'id'            => 'amp-wp-comp-sidebar',
+				'id'            => self::SIDEBAR_ID,
 				'before_widget' => '<div id="%1$s" class="widget %2$s">',
 				'after_widget'  => '</div>',
 				'before_title'  => '<h2 class="widgettitle">',
@@ -103,7 +105,9 @@ class Widgets {
 	 */
 	public function add_widgets( $sidebars_widgets ) {
 
-		if ( ! did_action( 'template_redirect' ) ) {
+		static $is_set = false;
+
+		if ( ! did_action( 'template_redirect' ) || true === $is_set ) {
 			return $sidebars_widgets;
 		}
 
@@ -114,7 +118,7 @@ class Widgets {
 		 */
 		global $wp_widget_factory;
 
-		$sidebar_id = 'amp-wp-comp-sidebar';
+		$sidebar_id = self::SIDEBAR_ID;
 
 		$widget_ids = [];
 		foreach ( $wp_widget_factory->widgets as $widget ) {
@@ -236,9 +240,185 @@ class Widgets {
 					];
 				}
 				break;
+			default:
+
+				$params      = $this->get_widget_params( $widget );
+				$settings[2] = [];
+
+				foreach ( $params as $param ) {
+					$settings[2][ $param['name'] ] = ( ! empty( $param['default'] ) ) ? $param['default'] : '';
+				}
+
+				break;
 		}
 
+
 		$widget->save_settings( $settings );
+	}
+
+
+	/**
+	 * To get parameter of widget.
+	 *
+	 * @param \WP_Widget $widget_object Widget object.
+	 *
+	 * @return array List of parameter of widget.
+	 */
+	protected function get_widget_params( $widget_object ) {
+
+		$parameters = [];
+
+		ob_start();
+		$widget_object->form( [] );
+		$function_body = ob_get_clean();
+
+		$dom    = new Dom( $function_body );
+		$inputs = $dom->query( '//input | //textarea | //select' );
+
+		foreach ( $inputs as $input ) {
+
+			if ( empty( $input ) || ! is_a( $input, 'DOMElement' ) ) {
+				continue;
+			}
+
+			$param_name = strtolower( trim( $input->getAttribute( 'name' ) ) );
+			$param_name = str_replace( sprintf( 'widget-%s[%d]', $widget_object->id_base, $widget_object->number ), '', $param_name );
+			$param_name = trim( $param_name, '[]' );
+
+			if ( empty( $param_name ) ) {
+
+				$param_name = strtolower( trim( $input->getAttribute( 'id' ) ) );
+				$param_name = str_replace( sprintf( 'widget-%s-%d-', $widget_object->id_base, $widget_object->number ), '', $param_name );
+				$param_name = trim( $param_name );
+
+			}
+
+			if ( ! empty( $parameters[ $param_name ] ) ) {
+				$param = $parameters[ $param_name ];
+			} else {
+				$param = [ 'name' => $param_name ];
+			}
+
+			$param_type = strtolower( trim( $input->tagName ) );
+
+			if ( 'input' === $param_type ) {
+				$param_type = strtolower( trim( $input->getAttribute( 'type' ) ) );
+			}
+
+			if ( in_array( $param_type, [
+				'hidden',
+				'password',
+				'submit',
+				'reset',
+				'file',
+				'datetime-local',
+			], true ) ) {
+				continue;
+			}
+
+			$param['type'] = $param_type;
+
+			switch ( $param_type ) {
+				case 'color':
+				case 'date':
+				case 'email':
+				case 'search':
+				case 'tel':
+				case 'time':
+				case 'url':
+				case 'week':
+				case 'month':
+
+					$param['format']  = $param_type;
+					$param['type']    = 'text';
+					$param['default'] = $input->getAttribute( 'value' );
+
+					break;
+				case 'checkbox':
+					if ( $input->hasAttribute( 'checked' ) ) {
+						$param['default'] = true;
+					}
+					break;
+				case 'radio':
+					$param['type'] = 'select';
+
+					$param['options']   = ( ! empty( $param['options'] ) && is_array( $param['options'] ) ) ? $param['options'] : [];
+					$param['options'][] = $input->getAttribute( 'value' );
+
+					if ( $input->hasAttribute( 'checked' ) ) {
+						$param['default'] = $input->getAttribute( 'value' );
+					}
+
+					break;
+				case 'number':
+				case 'range':
+
+					$param['type'] = 'number';
+
+					$attribute_text = [ 'max', 'min', 'step' ];
+
+					$param['default'] = $input->getAttribute( 'value' );
+
+					foreach ( $attribute_text as $text ) {
+						$value          = intval( $input->getAttribute( $text ) );
+						$param[ $text ] = ( ! empty( $value ) ) ? $value : null;
+					}
+
+					if ( empty( $param['default'] ) ) {
+						if ( ! empty( $param['max'] ) ) {
+							$param['default'] = $param['max'];
+						} elseif ( ! empty( $param['min'] ) ) {
+							$param['default'] = $param['min'];
+						} else {
+							$param['default'] = 5;
+						}
+					}
+
+
+					break;
+				case 'select':
+
+					$param['options'] = [];
+
+					if ( $input->hasChildNodes() ) {
+
+						for ( $index = 0; $index <= $input->childNodes->length; $index ++ ) {
+							$option_dom = $input->childNodes->item( $index );
+
+							if ( ! empty( $option_dom ) && is_a( $option_dom, 'DOMElement' ) ) {
+								$param['options'][] = $option_dom->getAttribute( 'value' );
+
+								if ( $option_dom->hasAttribute( 'selected' ) ) {
+									$param['default'] = $option_dom->getAttribute( 'value' );
+								}
+							}
+						}
+
+						if ( empty( $param['default'] ) ) {
+
+							foreach ( $param['options'] as $option ) {
+								if ( ! empty( $option ) ) {
+									$param['default'] = $option;
+									break;
+								}
+							}
+						}
+
+					}
+					break;
+				default:
+					$param['default'] = $input->getAttribute( 'value' );
+
+					if ( empty( $param['default'] ) ) {
+						$param['default'] = 'Some Text.';
+					}
+			}
+
+			$parameters[ $param['name'] ] = $param;
+		}
+
+
+		return $parameters;
 	}
 
 }
