@@ -15,11 +15,10 @@ class ShortCodes extends Base {
 	/**
 	 * Generator function.
 	 *
-	 * @return array
+	 * @return void
 	 */
-	public function generate(): array {
+	public function generate() {
 
-		return [];
 	}
 
 }

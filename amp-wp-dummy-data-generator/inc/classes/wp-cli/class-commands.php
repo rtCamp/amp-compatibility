@@ -34,40 +34,10 @@ class Commands extends Base {
 			Taxonomies::get_instance(),
 			Posts::get_instance(),
 			Widgets::get_instance(),
-//			new ShortCodes(),
-//			new Blocks(),
+			ShortCodes::get_instance(),
+			Blocks::get_instance(),
 		];
 
-		$this->setup();
-
-	}
-
-	/**
-	 * To setup class variables.
-	 *
-	 */
-	private function setup() {
-
-	}
-
-	/**
-	 * To convert theme/plugin slug into class name.
-	 *
-	 * @param string $slug Slug of theme/plugin.
-	 *
-	 * @return string Class name based on theme/plugin.
-	 */
-	private function get_class_name( $slug ) {
-
-		$class_name = '';
-
-		if ( ! empty( $slug ) ) {
-			$class_name = str_replace( [ '_', '-' ], ' ', $slug );
-			$class_name = ucfirst( $class_name );
-			$class_name = str_replace( ' ', '_', $class_name );
-		}
-
-		return $class_name;
 	}
 
 	/**
