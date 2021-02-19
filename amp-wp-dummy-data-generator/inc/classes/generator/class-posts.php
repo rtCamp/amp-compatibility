@@ -72,7 +72,7 @@ class Posts extends Base {
 
 		foreach ( $post_types as $post_type ) {
 			$args = [
-				'posts_per_page' => 100,
+				'posts_per_page' => -1,
 				'post_type'      => $post_type,
 				'post_status'    => 'any',
 				'meta_query'     => [

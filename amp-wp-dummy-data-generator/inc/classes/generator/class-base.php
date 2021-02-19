@@ -7,10 +7,14 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
+use AMP_WP_Dummy_Data_Generator\Inc\Traits\Singleton;
+
 /**
  * Class Base
  */
 class Base {
+
+	use Singleton;
 
 	const GENERATED_FLAG = '_amp_wp_dummy_data';
 

@@ -31,9 +31,9 @@ class Commands extends Base {
 	public function __construct() {
 
 		$this->generators = [
-			new Taxonomies(),
-			new Posts(),
-			new Widgets(),
+			Taxonomies::get_instance(),
+			Posts::get_instance(),
+			Widgets::get_instance(),
 //			new ShortCodes(),
 //			new Blocks(),
 		];
