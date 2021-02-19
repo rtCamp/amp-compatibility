@@ -252,10 +252,17 @@ class Widgets {
 				break;
 		}
 
+
 		$widget->save_settings( $settings );
 	}
 
 
+	/**
+	 * @param $widget_object
+	 *
+	 * @throws \Exception
+	 * @return array
+	 */
 	protected function get_widget_params( $widget_object ) {
 
 		$parameters = [];
@@ -356,6 +363,17 @@ class Widgets {
 						$param[ $text ] = ( ! empty( $value ) ) ? $value : null;
 					}
 
+					if ( empty( $param['default'] ) ) {
+						if ( ! empty( $param['max'] ) ) {
+							$param['default'] = $param['max'];
+						} elseif ( ! empty( $param['min'] ) ) {
+							$param['default'] = $param['min'];
+						} else {
+							$param['default'] = 5;
+						}
+					}
+
+
 					break;
 				case 'select':
 
@@ -363,7 +381,7 @@ class Widgets {
 
 					if ( $input->hasChildNodes() ) {
 
-						for ( $index = 0; $index <= $input->childNodes->length; $index++ ) {
+						for ( $index = 0; $index <= $input->childNodes->length; $index ++ ) {
 							$option_dom = $input->childNodes->item( $index );
 
 							if ( ! empty( $option_dom ) && is_a( $option_dom, 'DOMElement' ) ) {
@@ -374,10 +392,25 @@ class Widgets {
 								}
 							}
 						}
+
+						if ( empty( $param['default'] ) ) {
+
+							foreach ( $param['options'] as $option ) {
+								if ( ! empty( $option ) ) {
+									$param['default'] = $option;
+									break;
+								}
+							}
+						}
+
 					}
 					break;
 				default:
 					$param['default'] = $input->getAttribute( 'value' );
+
+					if ( empty( $param['default'] ) ) {
+						$param['default'] = 'Some Text.';
+					}
 			}
 
 			$parameters[ $param['name'] ] = $param;
