@@ -363,7 +363,7 @@ class Widgets {
 
 					if ( $input->hasChildNodes() ) {
 
-						for ( $index = 0; $index <= $input->childNodes->length; $index ++ ) {
+						for ( $index = 0; $index <= $input->childNodes->length; $index++ ) {
 							$option_dom = $input->childNodes->item( $index );
 
 							if ( ! empty( $option_dom ) && is_a( $option_dom, 'DOMElement' ) ) {
