@@ -17,20 +17,18 @@ class Widgets extends Base {
 	/**
 	 * Generator function.
 	 *
-	 * @return array
+	 * @return void
 	 */
-	public function generate(): array {
+	public function generate() {
 
-		$items     = [];
 		$page_args = [
 			'post_type'  => 'page',
 			'post_title' => 'AMP WP Dummy data: Widgets',
 			'post_name'  => self::PAGE_SLUG,
 		];
 
-		$items[] = $this->generate_post( $page_args );
+		$this->generate_post( $page_args );
 
-		return $items;
 	}
 
 }

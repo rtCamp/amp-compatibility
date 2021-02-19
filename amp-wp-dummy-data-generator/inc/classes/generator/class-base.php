@@ -29,7 +29,7 @@ class Base {
 	/**
 	 * Deletes all generated content.
 	 *
-	 * @since 1.0.0
+	 * @return void
 	 */
 	public function clear() {
 	}
@@ -52,7 +52,6 @@ class Base {
 			'meta_input'   => [],
 		];
 
-		//$meta_input         = ( ! empty( $args['meta_input'] ) && is_array( $args['meta_input'] ) ) ? $args['meta_input'] : [];
 		$args = wp_parse_args( $args, $defaults );
 
 		$args['meta_input'] = array_merge( $args['meta_input'], [
@@ -68,10 +67,8 @@ class Base {
 	 * Gets the user to specify as author for generated content.
 	 *
 	 * @return \WP_User User object.
-	 * @since 1.0.0
-	 *
 	 */
-	protected function get_author_user(): \WP_User {
+	protected function get_author_user() {
 
 		$user = wp_get_current_user();
 		if ( $user->exists() && user_can( $user->ID, 'edit_posts' ) ) {
@@ -84,6 +81,7 @@ class Base {
 				'role'   => 'administrator',
 			)
 		);
+
 		if ( ! empty( $users ) ) {
 			return $users[0];
 		}

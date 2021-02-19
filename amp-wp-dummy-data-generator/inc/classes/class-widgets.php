@@ -258,10 +258,11 @@ class Widgets {
 
 
 	/**
-	 * @param $widget_object
+	 * To get parameter of widget.
 	 *
-	 * @throws \Exception
-	 * @return array
+	 * @param \WP_Widget $widget_object Widget object.
+	 *
+	 * @return array List of parameter of widget.
 	 */
 	protected function get_widget_params( $widget_object ) {
 
