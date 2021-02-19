@@ -24,9 +24,10 @@ class Posts extends Base {
 			'customize_changeset',
 			'oembed_cache',
 			'user_request',
+			'user_request',
 		];
 
-		$post_types = get_post_types();
+		$post_types = get_post_types( [ 'public' => true ] );
 		$post_types = array_diff( $post_types, $exclude_list );
 
 		return array_values( $post_types );
@@ -101,10 +102,17 @@ class Posts extends Base {
 			return [];
 		}
 
+		$theme_object = wp_get_theme();
+
 		$posts            = [];
 		$post_type_object = get_post_type_object( $post_type );
-		$limit            = $post_type_object->hierarchical ? AMP_WP_DUMMY_DATA_GENERATOR_LIMIT * 2 : AMP_WP_DUMMY_DATA_GENERATOR_LIMIT;
 		$singular_name    = ( ! empty( $post_type_object->labels->singular_name ) ) ? $post_type_object->labels->singular_name : $post_type;
+		$templates        = $theme_object->get_page_templates( null, $post_type );
+		$templates        = ( ! empty( $templates ) && is_array( $templates ) ) ? array_keys( $templates ) : [];
+
+		// Adjust the limit according the post types and it's template.
+		$limit = AMP_WP_DUMMY_DATA_GENERATOR_LIMIT + count( $templates );
+		$limit = $post_type_object->hierarchical ? $limit * 2 : $limit;
 
 		// Find associated taxonomies.
 		$taxonomy_terms = [];
@@ -133,8 +141,21 @@ class Posts extends Base {
 			];
 
 			if ( $post_type_object->hierarchical && $index > ( $limit / 2 ) ) {
+
+				// Child Pages.
 				$parent_index        = $index - ( $limit / 2 );
 				$args['post_parent'] = $posts[ $parent_index ];
+			} elseif ( 1 !== $index ) {
+				// Parent Pages
+				$template = array_pop( $templates );
+
+				// Set
+				if ( ! empty( $template ) ) {
+					$args['post_title'] .= " : $template";
+
+					$args['meta_input']['_wp_page_template'] = $template;
+				}
+
 			}
 
 			$existing_posts = get_posts( [

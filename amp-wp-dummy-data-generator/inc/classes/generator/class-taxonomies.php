@@ -22,7 +22,7 @@ class Taxonomies extends Base {
 	 */
 	protected function get_taxonomy_list() {
 
-		$taxonomies = get_taxonomies();
+		$taxonomies = get_taxonomies( [ 'public' => true ] );
 		$exclude    = [
 			'amp_validation_error',
 			'coblocks_pattern_type',

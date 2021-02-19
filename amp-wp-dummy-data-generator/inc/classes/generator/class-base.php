@@ -49,12 +49,16 @@ class Base {
 			'post_title'   => 'AMP Test Post',
 			'post_content' => '',
 			'post_author'  => $this->get_author_user()->ID,
-			'meta_input'   => [
-				self::GENERATED_FLAG => 'true',
-			],
+			'meta_input'   => [],
 		];
 
-		$args    = wp_parse_args( $args, $defaults );
+		//$meta_input         = ( ! empty( $args['meta_input'] ) && is_array( $args['meta_input'] ) ) ? $args['meta_input'] : [];
+		$args = wp_parse_args( $args, $defaults );
+
+		$args['meta_input'] = array_merge( $args['meta_input'], [
+			self::GENERATED_FLAG => 'true',
+		] );
+
 		$post_id = wp_insert_post( wp_slash( $args ), true );
 
 		return ( ! empty( $post_id ) && ! is_wp_error( $post_id ) && 0 < intval( $post_id ) ) ? intval( $post_id ) : 0;
