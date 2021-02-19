@@ -34,8 +34,8 @@ class Commands extends Base {
 			Taxonomies::get_instance(),
 			Posts::get_instance(),
 			Widgets::get_instance(),
-//			new ShortCodes(),
-//			new Blocks(),
+			ShortCodes::get_instance(),
+			Blocks::get_instance(),
 		];
 
 		$this->setup();
