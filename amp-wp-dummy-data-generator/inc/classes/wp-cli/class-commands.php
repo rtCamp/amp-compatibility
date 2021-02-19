@@ -8,10 +8,9 @@
 namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
 
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\Blocks;
-use AMP_WP_Dummy_Data_Generator\Inc\Generator\PostTypes;
+use AMP_WP_Dummy_Data_Generator\Inc\Generator\Posts;
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\ShortCodes;
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\Taxonomies;
-use AMP_WP_Dummy_Data_Generator\Inc\Generator\Templates;
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\Widgets;
 
 /**
@@ -33,10 +32,9 @@ class Commands extends Base {
 
 		$this->generators = [
 			new Taxonomies(),
-			new PostTypes(),
+			new Posts(),
 			new Widgets(),
 //			new ShortCodes(),
-//			new Templates(),
 //			new Blocks(),
 		];
 

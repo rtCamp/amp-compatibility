@@ -13,7 +13,7 @@ use function WP_CLI\Utils\make_progress_bar;
 /**
  * Class PostTypes
  */
-class PostTypes extends Base {
+class Posts extends Base {
 
 	protected function get_post_types() {
 
