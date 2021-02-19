@@ -246,63 +246,6 @@ class Commands extends Base {
 	}
 
 	/**
-	 * To run custom code before or after importing data.
-	 *
-	 * ## OPTIONS
-	 * [--exclude-default]
-	 * : Whether or not we need to import default test content or not.
-	 * ---
-	 * default: false
-	 * options:
-	 *  - true
-	 *  - false
-	 *
-	 * [--type=<type>]
-	 * : Which command need to get. Is it commands for before importing or after importing.
-	 * ---
-	 * default: before
-	 * options:
-	 *  - before
-	 *  - after
-	 *
-	 * ## EXAMPLES
-	 *
-	 *      wp amp-wp-dummy-data-generator run_custom
-	 *
-	 * @subcommand run_custom
-	 *
-	 * @param array $args       Store all the positional arguments.
-	 * @param array $assoc_args Store all the associative arguments.
-	 *
-	 * @throws \WP_CLI\ExitException WP CLI Exit Exception.
-	 *
-	 * @return void
-	 */
-	public function run_custom( $args, $assoc_args ) {
-
-		$this->extract_args( $assoc_args );
-
-		$type = ( ! empty( $assoc_args['type'] ) ) ? strtolower( trim( $assoc_args['type'] ) ) : 'before';
-
-		foreach ( $this->theme_configs as $theme_config ) {
-			if ( 'before' === $type ) {
-				$theme_config->before_importing();
-			} else {
-				$theme_config->after_importing();
-			}
-		}
-
-		foreach ( $this->plugin_configs as $plugin_config ) {
-			if ( 'before' === $type ) {
-				$plugin_config->before_importing();
-			} else {
-				$plugin_config->after_importing();
-			}
-		}
-
-	}
-
-	/**
 	 * To generate template pages.
 	 *
 	 * ## OPTIONS
