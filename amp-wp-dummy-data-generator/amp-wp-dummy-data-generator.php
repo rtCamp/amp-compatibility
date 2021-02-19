@@ -14,6 +14,10 @@
 define( 'AMP_WP_DUMMY_DATA_GENERATOR_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'AMP_WP_DUMMY_DATA_GENERATOR_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 
+if ( ! defined( 'AMP_WP_DUMMY_DATA_GENERATOR_LIMIT' ) ) {
+	define( 'AMP_WP_DUMMY_DATA_GENERATOR_LIMIT', 1 );
+}
+
 // phpcs:disable WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/inc/helpers/autoloader.php';
 require_once AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/amp-send-data.php';
