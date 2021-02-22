@@ -280,7 +280,7 @@ class Blocks extends Base {
 	 * @since 1.0.0
 	 *
 	 */
-	private function generate_block_attribute_html( array $data, $value ): array {
+	private function generate_block_attribute_html( array $data, $value ) {
 
 		$html = [];
 		if ( empty( $data['selector'] ) ) {
@@ -334,7 +334,7 @@ class Blocks extends Base {
 	 * @return array Indexed array with tag name at index 0 and associative
 	 *               array of attributes at index 1.
 	 */
-	private function parse_selector( string $selector ): array {
+	private function parse_selector( string $selector ) {
 
 		// Ignore any :first-child, :not, etc. rules for now.
 		$selector = explode( ':', $selector )[0];

@@ -12,7 +12,7 @@ use AMP_WP_Dummy_Data_Generator\Inc\Traits\Singleton;
 /**
  * Class Base
  */
-class Base {
+abstract class Base {
 
 	use Singleton;
 

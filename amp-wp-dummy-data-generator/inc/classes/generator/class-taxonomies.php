@@ -18,9 +18,9 @@ class Taxonomies extends Base {
 	/**
 	 * Get list of taxonomies for that terms need to generate.
 	 *
-	 * @return array
+	 * @return array List of taxonomy.
 	 */
-	protected function get_taxonomy_list() {
+	protected function get_taxonomies() {
 
 		$taxonomies = get_taxonomies( [ 'public' => true ] );
 		$exclude    = [
@@ -40,7 +40,7 @@ class Taxonomies extends Base {
 	 */
 	public function generate() {
 
-		$taxonomies = $this->get_taxonomy_list();
+		$taxonomies = $this->get_taxonomies();
 		$count      = count( $taxonomies );
 		$terms      = [];
 
@@ -64,7 +64,7 @@ class Taxonomies extends Base {
 	 */
 	public function clear() {
 
-		$taxonomies = $this->get_taxonomy_list();
+		$taxonomies = $this->get_taxonomies();
 		$count      = count( $taxonomies );
 
 		$progress = make_progress_bar(

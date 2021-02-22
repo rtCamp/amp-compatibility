@@ -15,7 +15,7 @@ class ShortCodes extends Base {
 	const PAGE_SLUG = 'amp-wp-dummy-data-generator-shortcodes';
 
 	/**
-	 * Generator function.
+	 * To generate shortcode page.
 	 *
 	 * @return void
 	 */
