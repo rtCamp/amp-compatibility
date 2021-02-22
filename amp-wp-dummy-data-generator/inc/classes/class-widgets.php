@@ -36,45 +36,38 @@ class Widgets {
 		/**
 		 * Actions
 		 */
-		add_action( 'init', [ $this, 'register_page' ] );
 		add_action( 'widgets_init', [ $this, 'register_sidebar' ] );
 
 		/**
 		 * Filters
 		 */
+		add_filter( 'the_content', [ $this, 'render_widget_page' ], 1 );
 		add_filter( 'sidebars_widgets', [ $this, 'add_widgets' ] );
 
 	}
 
 	/**
-	 * To register pages.
+	 * To render shortcode content on the page..
 	 *
-	 * @return void
+	 * @param string $content Page content.
+	 *
+	 * @return string Page content.
 	 */
-	public function register_page() {
+	public function render_widget_page( $content ) {
 
-		// @TODO: Create separate page for each widgets.
-		Page::register_page( 'amp-wp-dummy-data-generator-widgets', [ $this, 'render_widget_page' ], 'widget' );
-	}
+		global $post, $shortcode_tags;
 
-	/**
-	 * To render widget pages.
-	 *
-	 * @param string $type Type of page.
-	 *
-	 * @return void
-	 */
-	public function render_widget_page( $type ) {
-
-		if ( ! empty( $type ) && 'widget' !== $type ) {
-			return;
+		if ( empty( $post ) || ! is_a( $post, 'WP_Post' ) || 'amp-wp-dummy-data-generator-widgets' !== $post->post_name ) {
+			return $content;
 		}
 
-		get_header();
+		ob_start();
 		if ( is_active_sidebar( self::SIDEBAR_ID ) ) {
 			dynamic_sidebar( self::SIDEBAR_ID );
 		}
-		get_footer();
+		$content = ob_get_clean();
+
+		return $content;
 	}
 
 	/**
@@ -86,7 +79,7 @@ class Widgets {
 
 		register_sidebar(
 			[
-				'name'          => 'AMP WP Comp Sidebar',
+				'name'          => 'AMP WP Dummy Data Sidebar',
 				'id'            => self::SIDEBAR_ID,
 				'before_widget' => '<div id="%1$s" class="widget %2$s">',
 				'after_widget'  => '</div>',
