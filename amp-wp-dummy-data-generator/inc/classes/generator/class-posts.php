@@ -15,6 +15,11 @@ use function WP_CLI\Utils\make_progress_bar;
  */
 class Posts extends Base {
 
+	/**
+	 * To get list of post types for that post need to create.
+	 *
+	 * @return array List of post types.
+	 */
 	protected function get_post_types() {
 
 		$exclude_list = [
@@ -59,7 +64,7 @@ class Posts extends Base {
 	/**
 	 * Deletes all generated posts.
 	 *
-	 * @since 1.0.0
+	 * @return void
 	 */
 	public function clear() {
 
@@ -96,6 +101,13 @@ class Posts extends Base {
 		$progress->finish();
 	}
 
+	/**
+	 * To generate posts for given post type.
+	 *
+	 * @param string $post_type Post types name.
+	 *
+	 * @return array IDs of post that is created for post.
+	 */
 	protected function generate_posts_for( $post_type ) {
 
 		if ( empty( $post_type ) || ! post_type_exists( $post_type ) ) {
@@ -149,7 +161,7 @@ class Posts extends Base {
 				// Parent Pages
 				$template = array_pop( $templates );
 
-				// Set
+				// Set page template to post.
 				if ( ! empty( $template ) ) {
 					$args['post_title'] .= " : $template";
 
@@ -172,6 +184,7 @@ class Posts extends Base {
 				$args['post_content'] = Strings::get_dummy_content( 1024 );
 				$args['post_excerpt'] = Strings::get_dummy_content( 256 );
 
+				// Assign random terms.
 				if ( ! empty( $taxonomy_terms ) && 0 < count( $taxonomy_terms ) ) {
 
 					$args['tax_input'] = [];
