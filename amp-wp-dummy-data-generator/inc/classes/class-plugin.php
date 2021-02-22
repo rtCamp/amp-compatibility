@@ -25,6 +25,7 @@ class Plugin {
 
 		// Load plugin classes.
 		Widgets::get_instance();
+		Shortcodes::get_instance();
 		WP_CLI::get_instance();
 		Page::get_instance();
 		Navigations::get_instance();
