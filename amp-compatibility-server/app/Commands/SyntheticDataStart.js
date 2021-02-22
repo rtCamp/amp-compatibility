@@ -28,6 +28,8 @@ class SyntheticDataStart extends Command {
 		return `synthetic-data:start
 		 { --only-themes : To generate synthetic data only for themes.. }
 		 { --only-plugins : To generate synthetic data only for plugins.. }
+		 { --plugin-active-install=@value : Active installs criteria for plugins to run synthetic data. The plugin must have more or equal active install to test. "0" means all the plugins. (Default = 0) }
+		 { --theme-active-install=@value : Active installs criteria for themes to run synthetic data. The themes must have more or equal active install to test. "0" means all the plugins. (Default = 0) }
 		 { --limit=@value : The number of themes/plugins need to add to the queue and process.. }
 		 { --number-of-instance=@value : The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 ) }
 		 { --concurrency=@value : The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) }
@@ -69,6 +71,9 @@ class SyntheticDataStart extends Command {
 			onlyThemes: ( true === options.onlyThemes ),
 			onlyPlugins: ( true === options.onlyPlugins ),
 			limit: ( ! isNaN( options.limit ) && 0 < parseInt( options.limit ) ) ? parseInt( options.limit ) : false,
+
+			pluginActiveInstall: ( ! isNaN( options.pluginActiveInstall ) && 0 < parseInt( options.pluginActiveInstall ) ) ? parseInt( options.pluginActiveInstall ) : 0,
+			themeActiveInstall: ( ! isNaN( options.themeActiveInstall ) && 0 < parseInt( options.themeActiveInstall ) ) ? parseInt( options.themeActiveInstall ) : 0,
 
 			numberOfInstance: ( numberOfInstance >= 1 && numberOfInstance <= 100 ) ? numberOfInstance : 1,
 
@@ -274,7 +279,7 @@ class SyntheticDataStart extends Command {
 		let query = `SELECT extension_versions.extension_version_slug, extension_versions.type, extension_versions.slug, extension_versions.version
 			FROM ${ versionTable } AS extension_versions
 			INNER JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug
-			WHERE extension_versions.has_synthetic_data != TRUE OR extension_versions.has_synthetic_data IS NULL 
+			WHERE ( extension_versions.has_synthetic_data != TRUE OR extension_versions.has_synthetic_data IS NULL )
 				AND extensions.wporg = TRUE 
 			`;
 
@@ -294,6 +299,16 @@ class SyntheticDataStart extends Command {
 
 		if ( ! _.isEmpty( extensionClause ) ) {
 			query += ` AND ( ${ extensionClause.join( ' OR ' ) } )`;
+		}
+
+		if ( this.options.pluginActiveInstall || this.options.themeActiveInstall ) {
+
+			let activeInstallClause = [];
+
+			activeInstallClause.push( `( extensions.type = 'plugin' AND extensions.active_installs >= ${ this.options.pluginActiveInstall } )` );
+			activeInstallClause.push( `( extensions.type = 'theme' AND extensions.active_installs >= ${ this.options.themeActiveInstall } )` );
+			query += ` AND ( ${ activeInstallClause.join( ' OR ' ) } ) `;
+
 		}
 
 		query += ' ORDER BY extensions.active_installs DESC';
