@@ -150,8 +150,7 @@ class Taxonomies extends Base {
 	 *
 	 * @return int Term ID.
 	 */
-	protected function generate_term( string $term, string $taxonomy, array $args ) {
-
+	protected function generate_term( $term, $taxonomy, array $args = [] ) {
 		$response = wp_insert_term( $term, $taxonomy, $args );
 
 		$term_id = ( ! empty( $response ) && ! is_wp_error( $response ) && 0 < intval( $response['term_id'] ) ) ? intval( $response['term_id'] ) : 0;
@@ -162,5 +161,4 @@ class Taxonomies extends Base {
 
 		return $term_id;
 	}
-
 }

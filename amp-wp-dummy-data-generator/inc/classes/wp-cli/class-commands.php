@@ -45,7 +45,7 @@ class Commands extends Base {
 	 *
 	 * @param string $slug Slug of theme/plugin.
 	 *
-	 * @return array Array of strings, containing data directory paths.
+	 * @return string[] Data directory paths.
 	 */
 	private function get_data_dirs( $slug ) {
 
@@ -71,13 +71,13 @@ class Commands extends Base {
 	 * To get the data directory/directories of WordPress Core.
 	 * Adding this function in case we might want to include some other directories later.
 	 *
-	 * @return array Array of strings, containing data directory paths.
+	 * @return string[] Data directory paths.
 	 */
 	private function get_data_dir_core() {
 
 		$return_locations = array();
 		$maybe_data_dir   = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
-		if ( is_dir( $maybe_data_dir ) ) {
+		if ( is_dir( $maybe_data_dir ) ) { // @todo Why would this never be true?
 			$return_locations[] = $maybe_data_dir;
 		}
 
@@ -87,11 +87,11 @@ class Commands extends Base {
 	/**
 	 * Returns array of import files for a given plugin or theme.
 	 *
-	 * @param string $slug         Name of plugin or theme.
+	 * @param string   $slug         Name of plugin or theme.
 	 *
-	 * @param array  $import_files Array of files already listed to be imported.
+	 * @param string[] $import_files Array of files already listed to be imported.
 	 *
-	 * @return array Array of import files list.
+	 * @return string[] Import files list.
 	 */
 	private function get_import_files_single( $slug, $import_files = array() ) {
 
@@ -126,7 +126,7 @@ class Commands extends Base {
 	 *
 	 * @return array Array of script files list.
 	 */
-	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
+	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) { // @todo This last arg is not docummented and it seems misnamed. The method is "get_pre_post_script but then the argument is called "$pre_post" which seems it can be either "pre" or "post", but being a string it could be anything else too? Given the usage, it seems $before_after would be more appropriate. If it shouldn't be anything else, should it not rather be a bool? It can be like wp_add_inline_script() in this way.
 
 		$return_path = array();
 		$data_dirs   = $this->get_data_dirs( $slug );
@@ -135,11 +135,11 @@ class Commands extends Base {
 			foreach ( $data_dirs as $data_dir ) {
 				$pre_post_glob = glob( "{$data_dir}/{$pre_post}.sh" );
 				if ( ! empty( $pre_post_glob ) ) {
-					$return_path = $pre_post_glob;
+					$return_path = $pre_post_glob; // @todo If $data_dirs has more than one item in it, then some scripts will get lost. Only the last one will be returned. Shouldn't this rather be doing `$return_path = array_merge( $return_path, $pre_post_glob )`? I suppose it would be unusually for there to be multiple matches. If that is the case, then it should `break` here.
 				}
 			}
 		}
-		$return_path = array_merge( $script_files, $return_path );
+		$return_path = array_merge( $script_files, $return_path ); // @todo I think it makes more sense to not do the merging inside here. It can be done in the caller.
 
 		return $return_path;
 	}
@@ -196,7 +196,7 @@ class Commands extends Base {
 
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
-			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename );
+			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename ); // @todo Shouldn't this be merged with the child theme $script_files above? Or actually I see the merge is being done _inside_ the function. I think it would be better to just return the array and do the array_merge at this level.
 		}
 
 		/**
@@ -206,11 +206,11 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename );
+			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename ); // @todo See note above for how I think the array_merge() should be done here rather than passing $script_files into the method.
 		}
 
 		if ( ! empty( $script_files ) ) {
-			$this->write_log( implode( '|', $script_files ) );
+			$this->write_log( implode( '|', $script_files ) ); // @todo Why not rather implode with "\n"?
 		}
 
 	}
@@ -250,7 +250,7 @@ class Commands extends Base {
 			/**
 			 * WordPress default sample data.
 			 */
-			$import_files = $this->get_import_files_single( 'core', $import_files );
+			$import_files = $this->get_import_files_single( 'core', $import_files ); // @todo For each call to get_import_files_single in this method I think its better to do the array_merge() in the caller function.
 
 			if ( self::is_gutenberg_active() ) {
 				$import_files = $this->get_import_files_single( 'gutenberg', $import_files );
@@ -280,7 +280,7 @@ class Commands extends Base {
 		}
 
 		if ( ! empty( $import_files ) ) {
-			$this->write_log( implode( '|', $import_files ) );
+			$this->write_log( implode( '|', $import_files ) ); // @todo See note above about concatenating with newline.
 		}
 
 	}

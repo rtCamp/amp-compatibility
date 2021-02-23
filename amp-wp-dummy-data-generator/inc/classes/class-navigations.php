@@ -1,6 +1,6 @@
 <?php
 /**
- * Navigation class.
+ * Navigations class.
  *
  * @package amp-wp-dummy-data-generator
  */
@@ -64,5 +64,4 @@ class Navigations {
 
 		return $locations;
 	}
-
 }

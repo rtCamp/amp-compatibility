@@ -51,7 +51,7 @@ class Strings {
 
 	public static function get_dummy_content( $limit = 512 ) {
 
-		$file_name = rand( 1, 10 );
+		$file_name = wp_rand( 1, 10 );
 		$file_name = "$file_name.txt";
 		$file_path = implode(
 			DIRECTORY_SEPARATOR,
@@ -72,10 +72,8 @@ class Strings {
 			if ( $limit > strlen( $response ) + strlen( $content_line ) ) {
 				$response .= "\n" . $content_line;
 			}
-
 		}
 
 		return trim( $response, "\n" );
 	}
-
 }

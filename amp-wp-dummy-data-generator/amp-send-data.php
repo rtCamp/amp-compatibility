@@ -10,14 +10,17 @@ use function WP_CLI\Utils\get_flag_value;
 define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://rich-torus-221321.ue.r.appspot.com' );
 
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
-	return;
+	fwrite( STDERR, "Must be run in context of WP-CLI.\n" );
+	exit( 1 );
 }
 
 /**
  * Check if AMP plugin activate or not.
  * If not than throw exception.
  *
- * @throws Exception
+ * @todo This could be better named. Like verify_amp_plugin_active().
+ *
+ * @throws Exception When the AMP plugin is not active.
  */
 function amp_send_data_check_amp_activate() {
 
@@ -26,13 +29,13 @@ function amp_send_data_check_amp_activate() {
 	}
 }
 
-\WP_CLI::add_command( 'configure-amp-site', 'amp_send_data_configure_amp_site' );
-\WP_CLI::add_command( 'amp-send-data', 'amp_send_data_amp_sent_data' );
+WP_CLI::add_command( 'configure-amp-site', 'amp_send_data_configure_amp_site' );
+WP_CLI::add_command( 'amp-send-data', 'amp_send_data_amp_sent_data' );
 
 /**
  * To configure AMP site.
  *
- * @throws \WP_CLI\ExitException
+ * @throws WP_CLI\ExitException When exiting.
  *
  * @return void
  */
@@ -43,13 +46,14 @@ function amp_send_data_configure_amp_site() {
 	/**
 	 * To update amp option.
 	 * User must have manage_options capabilities.
+	 * TODO: The AMP plugin needs to refactor the options management to eliminate the need for this.
 	 */
-	add_filter( 'user_has_cap', function ( $allCaps ) {
-
-		return array_merge( $allCaps, [
-			'manage_options' => true,
-		] );
-	} );
+	add_filter(
+		'user_has_cap',
+		function ( $all_caps ) {
+			return array_merge( $all_caps, [ 'manage_options' => true ] );
+		}
+	);
 
 	$supportable_templates = AMP_Theme_Support::get_supportable_templates();
 	$supportable_templates = ( ! empty( $supportable_templates ) && is_array( $supportable_templates ) ) ? array_keys( $supportable_templates ) : [];
@@ -64,14 +68,13 @@ function amp_send_data_configure_amp_site() {
 	];
 
 	if ( AMP_Options_Manager::update_options( $new_settings ) ) {
-		\WP_CLI::success( 'AMP options updated.' );
+		WP_CLI::success( 'AMP options updated.' );
 	} else {
-		\WP_CLI::error( 'Fail to update AMP options.' );
+		WP_CLI::error( 'Fail to update AMP options.' );
 	}
-
 }
 
-
+// @todo Please add phpdoc.
 function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 
 	amp_send_data_check_amp_activate();
@@ -108,9 +111,9 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		// Print the data.
 		$print = strtolower( trim( $is_print ) );
 		if ( 'json' === $print ) {
-			print_r( wp_json_encode( $data ) . PHP_EOL );
+			print_r( wp_json_encode( $data ) . PHP_EOL ); // @todo Should be echo instead of print_r().
 		} elseif ( 'json-pretty' === $print ) {
-			print_r( wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL );
+			print_r( wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL ); // @todo Should be echo instead of print_r().
 		} else {
 			print_r( $data );
 		}
@@ -122,7 +125,7 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 			sprintf( '%s/api/v1/amp-wp/', $endpoint ),
 			[
 				'method'   => 'POST',
-				'timeout'  => 1000,
+				'timeout'  => 1000, // @todo Maybe waiting 16 minutes is too long? :) If it is taking this long, it probably indicates there is a problem and it should stop earlier, no?
 				'body'     => $data,
 				'compress' => true,
 			]
@@ -132,11 +135,9 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 			$error_message = $response->get_error_message();
 			WP_CLI::warning( "Something went wrong: $error_message" );
 		} else {
-
 			$body = wp_remote_retrieve_body( $response );
 			WP_CLI::success( $body );
 		}
-
 	}
 
 	/**
@@ -201,13 +202,20 @@ class AMP_Prepare_Data {
 
 		$amp_urls = static::get_amp_urls();
 
+		// TODO: It seems certain data is being repeatedly sent here. The obtaining of the information could be simplified in this way:
+		// - Skip having a separate get_errors() call which sends all the errors together.
+		// - Skip sending all error sources separately.
+		// - Instead, send all the information together with the validated URL. So the POST body would be a list of URL objects,
+		//   each which contain all the errors, and each error has all their sources.
+		//   Then at the time of injestion on the server, it can process each URL with all of its errors and their sources--URL by URL.
+		//   I believe this would simplify both obtaining the validation data as well as injeting it on the server.
 		$request_data = [
 			'site_url'                   => static::get_home_url(),
 			'site_info'                  => static::get_site_info(),
 			'plugins'                    => static::get_plugin_info(),
 			'themes'                     => static::get_theme_info(),
-			'errors'                     => array_values( static::get_errors() ),
-			'error_sources'              => array_values( $amp_urls['error_sources'] ),
+			'errors'                     => array_values( static::get_errors() ), // TODO: Per above, eliminate in favor of sending all information in urls.
+			'error_sources'              => array_values( $amp_urls['error_sources'] ), // TODO: Per above, eliminate in favor of sending all information in urls.
 			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
 			'urls'                       => array_values( $amp_urls['urls'] ),
 		];
@@ -238,6 +246,7 @@ class AMP_Prepare_Data {
 
 		$loopback_status = '';
 
+		// TODO: Is this necessary? We're synthetic after all.
 		if ( class_exists( 'Health_Check_Loopback' ) ) {
 			$loopback_status = Health_Check_Loopback::can_perform_loopback();
 			$loopback_status = ( ! empty( $loopback_status->status ) ) ? $loopback_status->status : '';
@@ -253,7 +262,7 @@ class AMP_Prepare_Data {
 			'wp_https_status'              => is_ssl() ? true : false,
 			'wp_multisite'                 => $wp_type,
 			'wp_active_theme'              => $active_theme,
-			'object_cache_status'          => ( ! empty( $_wp_using_ext_object_cache ) ) ? true : false,
+			'object_cache_status'          => ( ! empty( $_wp_using_ext_object_cache ) ) ? true : false, //  @todo Why not use wp_using_ext_object_cache()?
 			'libxml_version'               => ( defined( 'LIBXML_VERSION' ) ) ? LIBXML_VERSION : '',
 			'is_defined_curl_multi'        => ( function_exists( 'curl_multi_init' ) ),
 			'stylesheet_transient_caching' => '',
@@ -394,6 +403,7 @@ class AMP_Prepare_Data {
 	/**
 	 * To get list of AMP errors.
 	 *
+	 * @todo Per above, I believe this method can be eliminated.
 	 * @return array List of errors.
 	 */
 	protected static function get_errors() {
@@ -443,6 +453,7 @@ class AMP_Prepare_Data {
 
 		/**
 		 * Remove duplicate data.
+		 * TODO: This should not be needed because $error_data is keyed by $error_term->slug which is itself an md5 slug of the original validation error data.
 		 */
 		$error_data = array_map( 'unserialize', array_unique( array_map( 'serialize', $error_data ) ) );
 
@@ -470,7 +481,7 @@ class AMP_Prepare_Data {
 		// To store all AMP validated URls
 		$amp_invalid_urls = [];
 
-		$error_data      = static::get_errors();
+		$error_data      = static::get_errors(); // TODO: The errors are also being returned by static::get_data(). Also, the error data is already embedded inside the post_content (redundantly). Therefore, this could probably be skipped in favor of obtaining it when looping over the validated URLs below.
 		$plugin_info     = static::get_plugin_info();
 		$theme_info      = static::get_theme_info();
 		$plugin_versions = [];
@@ -586,7 +597,6 @@ class AMP_Prepare_Data {
 				if ( false !== strpos( $amp_error_post->post_title, '?s=' ) ) {
 					$object_type = 'search';
 				}
-
 			}
 
 			switch ( $object_type ) {
@@ -616,7 +626,7 @@ class AMP_Prepare_Data {
 		}
 
 		return [
-			'error_sources'              => $all_sources,
+			'error_sources'              => $all_sources, // @todo Per above, I believe this method can be eliminated.
 			'amp_validated_environments' => $all_amp_validated_environments,
 			'urls'                       => $amp_invalid_urls,
 		];
@@ -775,5 +785,4 @@ class AMP_Prepare_Data {
 
 		return $hash;
 	}
-
 }

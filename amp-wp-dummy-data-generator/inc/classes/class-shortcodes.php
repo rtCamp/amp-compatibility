@@ -1,6 +1,8 @@
 <?php
 /**
+ * Shortcodes class.
  *
+ * @package amp-wp-dummy-data-generator
  */
 
 namespace AMP_WP_Dummy_Data_Generator\Inc;
@@ -60,7 +62,6 @@ class Shortcodes {
 		return $content;
 	}
 
-
 	/**
 	 * To get short code markup.
 	 *
@@ -111,7 +112,6 @@ class Shortcodes {
 
 
 			case 'playlist':
-
 				$args           = [
 					'post_type'      => 'attachment',
 					'post_mime_type' => 'audio',
@@ -163,7 +163,5 @@ class Shortcodes {
 		}
 
 		return $markup;
-
 	}
-
 }

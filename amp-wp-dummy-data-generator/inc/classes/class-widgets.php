@@ -47,7 +47,7 @@ class Widgets {
 	}
 
 	/**
-	 * To render shortcode content on the page..
+	 * To render widget sidebar on the page..
 	 *
 	 * @param string $content Page content.
 	 *
@@ -55,7 +55,7 @@ class Widgets {
 	 */
 	public function render_widget_page( $content ) {
 
-		global $post, $shortcode_tags;
+		global $post;
 
 		if ( empty( $post ) || ! is_a( $post, 'WP_Post' ) || 'amp-wp-dummy-data-generator-widgets' !== $post->post_name ) {
 			return $content;
@@ -234,7 +234,6 @@ class Widgets {
 				}
 				break;
 			default:
-
 				$params      = $this->get_widget_params( $widget );
 				$settings[2] = [];
 
@@ -245,13 +244,11 @@ class Widgets {
 				break;
 		}
 
-
 		$widget->save_settings( $settings );
 	}
 
-
 	/**
-	 * To get parameter of widget.
+	 * To get parameter of widget (that is, widget instance data).
 	 *
 	 * @param \WP_Widget $widget_object Widget object.
 	 *
@@ -321,7 +318,6 @@ class Widgets {
 				case 'url':
 				case 'week':
 				case 'month':
-
 					$param['format']  = $param_type;
 					$param['type']    = 'text';
 					$param['default'] = $input->getAttribute( 'value' );
@@ -345,7 +341,6 @@ class Widgets {
 					break;
 				case 'number':
 				case 'range':
-
 					$param['type'] = 'number';
 
 					$attribute_text = [ 'max', 'min', 'step' ];
@@ -367,10 +362,8 @@ class Widgets {
 						}
 					}
 
-
 					break;
 				case 'select':
-
 					$param['options'] = [];
 
 					if ( $input->hasChildNodes() ) {
@@ -396,7 +389,6 @@ class Widgets {
 								}
 							}
 						}
-
 					}
 					break;
 				default:
@@ -410,8 +402,6 @@ class Widgets {
 			$parameters[ $param['name'] ] = $param;
 		}
 
-
 		return $parameters;
 	}
-
 }

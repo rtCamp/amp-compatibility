@@ -29,6 +29,8 @@ abstract class Base {
 	/**
 	 * Deletes all generated content.
 	 *
+	 * @todo As noted in cleanup.sh, I think we can avoid needing to worry about cleanup by just restoring a DB dump after the run completes.
+	 *
 	 * @return void
 	 */
 	public function clear() {
@@ -76,7 +78,7 @@ abstract class Base {
 		}
 
 		$users = get_users(
-			array(
+			array( // @todo Please update all PHP files to use the square bracket syntax.
 				'number' => 1,
 				'role'   => 'administrator',
 			)
@@ -86,6 +88,7 @@ abstract class Base {
 			return $users[0];
 		}
 
+		// @todo Probably better to throw an exception.
 		// Edge-case, probably never.
 		\WP_CLI::error(
 			'There appears to not be any administrator account on your site.'
@@ -93,5 +96,4 @@ abstract class Base {
 
 		return new \WP_User();
 	}
-
 }

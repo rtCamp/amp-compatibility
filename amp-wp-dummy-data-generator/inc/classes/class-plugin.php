@@ -26,7 +26,7 @@ class Plugin {
 		// Load plugin classes.
 		Widgets::get_instance();
 		Shortcodes::get_instance();
-		WP_CLI::get_instance();
+		WP_CLI::get_instance(); // @todo It's confusing that there is a WP_CLI global in addition to a namespaced WP_CLI.
 		Navigations::get_instance();
 
 	}

@@ -58,7 +58,7 @@ function autoloader( $resource = '' ) {
 			case 'meta-boxes':
 			case 'widgets':
 			case 'wp-cli':
-			case 'generator':
+			case 'generator': // TODO: There is a phpcs complaint here from PSR2.ControlStructures.SwitchDeclaration.TerminatingComment.
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

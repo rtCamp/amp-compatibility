@@ -143,7 +143,7 @@ class Blocks extends Base {
 			$value = $this->generate_block_attribute_value( $slug, $data );
 
 			if ( isset( $data['selector'] ) ) {
-				$selector = explode( ',', $data['selector'] )[0];
+				$selector = explode( ',', $data['selector'] )[0]; // @todo The $selector variable is not used.
 			}
 
 			$source = isset( $data['source'] ) ? $data['source'] : 'comment';
@@ -428,5 +428,4 @@ class Blocks extends Base {
 
 		return $results;
 	}
-
 }

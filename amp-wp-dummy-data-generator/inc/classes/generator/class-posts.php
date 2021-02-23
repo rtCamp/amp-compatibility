@@ -18,7 +18,7 @@ class Posts extends Base {
 	/**
 	 * To get list of post types for that post need to create.
 	 *
-	 * @return array List of post types.
+	 * @return string[] List of post types.
 	 */
 	protected function get_post_types() {
 
@@ -28,7 +28,6 @@ class Posts extends Base {
 			'custom_css',
 			'customize_changeset',
 			'oembed_cache',
-			'user_request',
 			'user_request',
 		];
 
@@ -143,7 +142,6 @@ class Posts extends Base {
 
 		for ( $index = 1; $index <= $limit; $index ++ ) {
 
-			$post_id    = false;
 			$post_title = "$index: $singular_name";
 
 			$args = [
@@ -158,7 +156,7 @@ class Posts extends Base {
 				$parent_index        = $index - ( $limit / 2 );
 				$args['post_parent'] = $posts[ $parent_index ];
 			} elseif ( 1 !== $index ) {
-				// Parent Pages
+				// Parent Pages.
 				$template = array_pop( $templates );
 
 				// Set page template to post.
@@ -167,7 +165,6 @@ class Posts extends Base {
 
 					$args['meta_input']['_wp_page_template'] = $template;
 				}
-
 			}
 
 			$existing_posts = get_posts( [
@@ -196,14 +193,12 @@ class Posts extends Base {
 						}
 
 						$count  = count( $terms );
-						$term_1 = rand( 1, $count ) - 1;
+						$term_1 = wp_rand( 1, $count ) - 1;
 
 						$args['tax_input'][ $taxonomy ] = [
 							$terms[ $term_1 ]->term_id,
 						];
-
 					}
-
 				}
 
 				$post_id = $this->generate_post( $args );
@@ -217,5 +212,4 @@ class Posts extends Base {
 		return $posts;
 
 	}
-
 }
