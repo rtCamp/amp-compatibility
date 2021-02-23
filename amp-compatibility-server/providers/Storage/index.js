@@ -10,7 +10,7 @@ class StorageExtended {
 	constructor() {
 		this.storage = new Storage();
 
-		this.bucketName = Env.get( 'STORAGE_BUCKET_NAME', 'amp_comp_db' );
+		this.bucketName = Env.get( 'STORAGE_BUCKET_NAME', '' );
 
 		this.createBucket( this.bucketName );
 	}
@@ -31,6 +31,10 @@ class StorageExtended {
 
 		const existingBuckets = await this.getBucketList();
 
+		if ( ! this.bucketName ) {
+			return false;
+		}
+
 		if ( existingBuckets.includes( bucketName ) ) {
 			return true;
 		}
@@ -41,6 +45,10 @@ class StorageExtended {
 	}
 
 	async uploadFile( filePath ) {
+
+		if ( ! this.bucketName ) {
+			return false;
+		}
 
 		const appRoot = Helpers.appRoot() + '/';
 		const destination = filePath.replace( appRoot, '' );

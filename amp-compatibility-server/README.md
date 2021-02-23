@@ -28,7 +28,7 @@ cp .env.example .env
 | NODE_ENV                       | -                      | Application environment.                                        | All                                                                                           |
 | HOST                           | -                      | Application IP address.                                         | Rest API Listener, Dashboard                                                                  |
 | PORT                           | -                      | Port for the application.                                       | Rest API Listener, Dashboard                                                                  |
-| APP_NAME                       | (Optional)             |    Node application name.                                       | Rest API Listener, Dashboard                                                                  |
+| APP_NAME                       | (Optional)             | Node application name.                                          | Rest API Listener, Dashboard                                                                  |
 | APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                           | Rest API Listener, Dashboard                                                                  |
 | APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key. | All                                                                                           |
 | SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis       | Rest API Listener, Dashboard                                                                  |
@@ -47,14 +47,14 @@ cp .env.example .env
 | REDIS_PASSWORD                 | -                      | Redis password for local object caching.                        | WordPress Org Scraper, Request worker,                                                        |
 | REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                     | Rest API Listener, WordPress Org Scraper, Request worker, Dashboard                           |
 | GOOGLE_CLOUD_PROJECT           | -                      | Name of Google cloud project.                                   | Synthetic data generator,                                                                     |
-| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                         | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                         | WordPress Org Scraper, Request worker, Synthetic data generator                               |
 | DEPLOY_KEY_PATH                | -                      | SSH key path. which will use by secondary compute instance.     | Synthetic data generator,                                                                     |
-| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.              | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
-| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                          | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.              | WordPress Org Scraper, Request worker, Synthetic data generator                               |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                          | WordPress Org Scraper, Request worker, Synthetic data generator                               |
 | GCP_ZONE                       | us-central1-a          | GCP zone where we secondary instances will created.             | Synthetic data generator                                                                      |
 | GCP_INSTANCE_TYPE              | c2-standard-4          | GCP instance type for secondary compute instances.              | Synthetic data generator                                                                      |
 | GITHUB_TOKEN                   | -                      | GitHub Token for cloning repos in secondary instance.           | Synthetic data generator                                                                      |
-| NEWRELIC_LICENSE               | (Optional)             |  New Relic License.                                             | Synthetic data generator                                                                      |
+| STORAGE_BUCKET_NAME            | (Optional)             | GCP Storage bucket name to store log files.                     | Synthetic data generator                                                                      |
 
 
 ### 3. Setup local database and BiqQuery dataset.
