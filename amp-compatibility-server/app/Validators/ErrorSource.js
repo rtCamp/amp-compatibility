@@ -21,7 +21,7 @@ class ErrorSource extends Base {
 			file: 'string|required',
 			line: 'integer|required',
 			function: 'string|required',
-			hook: 'string|required',
+			hook: 'string',
 			priority: 'integer',
 			dependency_type: 'string',
 			handle: 'string',

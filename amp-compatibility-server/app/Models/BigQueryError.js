@@ -48,6 +48,39 @@ class BigQueryError extends BigQueryBase {
 		return ErrorValidator;
 	}
 
+	/**
+	 * Prepare item for insert/update in bigquery.
+	 *
+	 * @param {Object} item Item to insert.
+	 *
+	 * @returns {Promise<Boolean|Object>} Object on success otherwise False.
+	 */
+	static async prepareItem( item ) {
+
+		const parentCallback = BigQueryBase.prepareItem.bind( this );
+		item = await parentCallback( item );
+
+		// Item should be the object.
+		if ( ! _.isObject( item ) ) {
+			return false;
+		}
+
+		/**
+		 * Remove unwanted fields.
+		 */
+		const tableFields = Object.keys( this.validator.rules );
+
+		for ( const field in item ) {
+			if ( ! tableFields.includes( field ) ) {
+				delete item[ field ];
+			}
+		}
+
+		item.raw_data = Utility.jsonPrettyPrint( item );
+
+		return item;
+	}
+
 }
 
 module.exports = BigQueryError;
