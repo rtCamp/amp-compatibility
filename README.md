@@ -74,7 +74,7 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
 Please check [./amp-compatibility-server#setup](./amp-compatibility-server#setup) to set up AMP compatibility server.
 
-Please check [./amp-wp-dummy-data-generator#setup](./amp-wp-dummy-data-generator#setup) to set up AMP WP dummy data generator.
+Please check [./amp-wp-dummy-data-generator](./amp-wp-dummy-data-generator) to set up AMP WP dummy data generator.
 
 [AMP compatibility server]: ./amp-compatibility-server/README.md
 [AMP WP Dummy data generator]: ./amp-wp-dummy-data-generator/README.md
