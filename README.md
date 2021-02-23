@@ -39,13 +39,19 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
     Please check more information in [./amp-wp-dummy-data-generator/README.md](./amp-wp-dummy-data-generator/README.md).
 
+3.  **[AMP Compatibility Dashboard]**
 
-3.  **[Reporting dashboard]**
+    The Basic dashboard where admin user can see current status of all the queues, And it's jobs related information. Also, user can add adhoc synthetic data generation request. For run test on combination of plugins and theme.
+
+    ![AMP Compatibility Dashboard](https://user-images.githubusercontent.com/8168027/108818408-5807e000-75df-11eb-885a-be1bbd5a7b8d.png)
+
+
+4.  **[Reporting dashboard]**
 
     The [AMP Compatibility Database - Dashboard] report visualizes the data gathered
     by [AMP compatibility server] in Google Data Studio.
 
-    ![amp-compatibility-database-dashboard](https://user-images.githubusercontent.com/1535505/107017683-70958f00-67c5-11eb-9294-4202118c982b.jpg)
+    ![AMP Compatibility Reporting Dashboard](https://user-images.githubusercontent.com/8168027/108817704-4ffb7080-75de-11eb-8ab2-07b01071970a.png)
 
 
 ## Infrastructure
@@ -90,4 +96,4 @@ Please check [./amp-wp-dummy-data-generator#setup](./amp-wp-dummy-data-generator
 [AdonisJS]: https://adonisjs.com/docs/4.1/about
 [WordPress.org]: https://wordpress.org/
 [Reporting dashboard]: https://datastudio.google.com/reporting/33e24fa4-a3e3-49ff-b2e1-8ba235a7424f/page/eCjyB
-[AMP Compatibility Database - Dashboard]: https://datastudio.google.com/reporting/33e24fa4-a3e3-49ff-b2e1-8ba235a7424f/page/eCjyB
+[AMP Compatibility Dashboard]: https://rich-torus-221321.ue.r.appspot.com/
