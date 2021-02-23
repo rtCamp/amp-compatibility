@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -50,7 +50,7 @@ class GlobalViewData {
 		 */
 		View.global( 'renderPagination', Templates.renderPagination );
 
-		await next()
+		await next();
 	}
 
 	/**
@@ -60,12 +60,12 @@ class GlobalViewData {
 	 */
 	async wsHandle( { request }, next ) {
 		// call next to advance the request
-		await next()
+		await next();
 	}
 
 	getDashboardMenuItems( request ) {
 
-		let currentRequest = request.url()
+		let currentRequest = request.url();
 		currentRequest = currentRequest.toString().toLowerCase();
 
 		return {
@@ -106,8 +106,14 @@ class GlobalViewData {
 					},
 				},
 			},
+			verifySyntheticData: {
+				title: 'Adhoc Synthetic Data Queue',
+				icon: '',
+				url: '/admin/verify-synthetic-data',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-synthetic-data' ) ),
+			}
 		};
 	}
 }
 
-module.exports = GlobalViewData
+module.exports = GlobalViewData;

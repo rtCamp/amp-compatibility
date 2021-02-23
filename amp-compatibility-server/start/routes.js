@@ -41,6 +41,10 @@ Route.group( () => {
 
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
 	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
+
+	Route.get( '/verify-synthetic-data/', 'VerifySyntheticDataController.index' );
+	Route.get( '/verify-synthetic-data/page/:paged', 'VerifySyntheticDataController.index' );
+
 } ).prefix( 'admin' ).middleware( 'auth' );
 
 /**
