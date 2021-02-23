@@ -4,16 +4,16 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
 **Repo Access Available To**
 
-| Google Team | rtCamp Team |
-| ------- | ------- |
-| [Alberto Medina] | [Rahul Bansal] |
-| [Weston Ruter] | [Dhaval Parekh] |
-| [Felix Arntz] | [Paul Clark] |
+| Google Team       | rtCamp Team        |
+|-------------------|--------------------|
+| [Alberto Medina]  | [Rahul Bansal]     |
+| [Weston Ruter]    | [Dhaval Parekh]    |
+| [Felix Arntz]     | [Paul Clark]       |
 | [Alain Schlesser] | [Riddhesh Sanghvi] |
-| [James G] | [Gagan Deep Singh] |
-| - | [Pradeep Sonawane] |
-| - | [Milind More] |
-| - | [Maitreyie Chavan] |
+| [James G]         | [Gagan Deep Singh] |
+| -                 | [Pradeep Sonawane] |
+| -                 | [Milind More]      |
+| -                 | [Maitreyie Chavan] |
 
 ---
 
