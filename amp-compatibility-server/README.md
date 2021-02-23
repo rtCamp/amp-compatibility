@@ -28,7 +28,7 @@ cp .env.example .env
 | NODE_ENV                       | -                      | Application environment.                                        | All                                                                                           |
 | HOST                           | -                      | Application IP address.                                         | Rest API Listener, Dashboard                                                                  |
 | PORT                           | -                      | Port for the application.                                       | Rest API Listener, Dashboard                                                                  |
-| APP_NAME                       | (Optional)             |    Node application name.                                       | Rest API Listener, Dashboard                                                                  |
+| APP_NAME                       | (Optional)             | Node application name.                                          | Rest API Listener, Dashboard                                                                  |
 | APP_URL                        | http://${HOST}:${PORT} | Application base URL.                                           | Rest API Listener, Dashboard                                                                  |
 | APP_KEY                        | -                      | App Key for hashing. Use `adonis key:generate` to generate key. | All                                                                                           |
 | SESSION_DRIVER                 | cookie                 | Driver for the session provider. e.g. cookie, file, redis       | Rest API Listener, Dashboard                                                                  |
@@ -47,14 +47,14 @@ cp .env.example .env
 | REDIS_PASSWORD                 | -                      | Redis password for local object caching.                        | WordPress Org Scraper, Request worker,                                                        |
 | REDIS_KEYPREFIX                | local                  | Prefix of redis cache keys.                                     | Rest API Listener, WordPress Org Scraper, Request worker, Dashboard                           |
 | GOOGLE_CLOUD_PROJECT           | -                      | Name of Google cloud project.                                   | Synthetic data generator,                                                                     |
-| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                         | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
+| GOOGLE_APPLICATION_CREDENTIALS | -                      | Full path to service account JSON file.                         | WordPress Org Scraper, Request worker, Synthetic data generator                               |
 | DEPLOY_KEY_PATH                | -                      | SSH key path. which will use by secondary compute instance.     | Synthetic data generator,                                                                     |
-| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.              | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
-| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                          | WordPress Org Scraper, Request worker, Synthetic data generator,                              |
+| BIGQUERY_PROJECT_ID            | -                      | Name of Google cloud project for BigQuery dataset.              | WordPress Org Scraper, Request worker, Synthetic data generator                               |
+| BIGQUERY_DATASET               | -                      | BigQuery dataset name.                                          | WordPress Org Scraper, Request worker, Synthetic data generator                               |
 | GCP_ZONE                       | us-central1-a          | GCP zone where we secondary instances will created.             | Synthetic data generator                                                                      |
 | GCP_INSTANCE_TYPE              | c2-standard-4          | GCP instance type for secondary compute instances.              | Synthetic data generator                                                                      |
 | GITHUB_TOKEN                   | -                      | GitHub Token for cloning repos in secondary instance.           | Synthetic data generator                                                                      |
-| NEWRELIC_LICENSE               | (Optional)             |  New Relic License.                                             | Synthetic data generator                                                                      |
+| STORAGE_BUCKET_NAME            | (Optional)             | GCP Storage bucket name to store log files.                     | Synthetic data generator                                                                      |
 
 
 ### 3. Setup local database and BiqQuery dataset.
@@ -140,15 +140,17 @@ node ace synthetic-data:start
 
 **Options**
 
-| Options               | Description                                                                                                                                                         | Usage                                                     |
-|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
-| --only-themes         | To generate synthetic data only for themes.                                                                                                                         | node ace synthetic-data:start --only-themes               |
-| --only-plugins        | To generate synthetic data only for plugins.                                                                                                                        | node ace synthetic-data:start --only-plugins              |
-| --limit               | The number of themes/plugins need to add to the queue and process.                                                                                                  | node ace synthetic-data:start --limit=1000                |
-| --number-of-instance  | The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 )                                                               | node ace synthetic-data:start --number-of-instance=5      |
-| --concurrency         | The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) | node ace synthetic-data:start --concurrency=30            |
-| --vm-name             | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine" |
-| --prevent-vm-deletion | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion       |
+| Options                 | Description                                                                                                                                                         | Usage                                                       |
+|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------|
+| --only-themes           | To generate synthetic data only for themes.                                                                                                                         | node ace synthetic-data:start --only-themes                 |
+| --only-plugins          | To generate synthetic data only for plugins.                                                                                                                        | node ace synthetic-data:start --only-plugins                |
+| --plugin-active-install | Active installs criteria for plugins to run synthetic data. The plugin must have more or equal active install to test. "0" means all the plugins. (Default=0)       | node ace synthetic-data:start --plugin-active-install=10000 |
+| --theme-active-install  | Active installs criteria for themes to run synthetic data. The themes must have more or equal active install to test. "0" means all the plugins. (Default=0)        | node ace synthetic-data:start  --theme-active-install=1000  |
+| --limit                 | The number of themes/plugins need to add to the queue and process.                                                                                                  | node ace synthetic-data:start --limit=1000                  |
+| --number-of-instance    | The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 )                                                               | node ace synthetic-data:start --number-of-instance=5        |
+| --concurrency           | The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) | node ace synthetic-data:start --concurrency=30              |
+| --vm-name               | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine"   |
+| --prevent-vm-deletion   | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion         |
 
 
 ### 5. Dashboard
