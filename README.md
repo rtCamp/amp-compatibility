@@ -39,7 +39,7 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
     Please check more information in [./amp-wp-dummy-data-generator/README.md](./amp-wp-dummy-data-generator/README.md).
 
-3.  **[AMP Compatibility Dashboard]**
+3.  🔒 **[AMP Compatibility Dashboard]**
 
     The Basic dashboard where admin user can see current status of all the queues, And it's jobs related information. Also, user can add adhoc synthetic data generation request. For run test on combination of plugins and theme.
 
