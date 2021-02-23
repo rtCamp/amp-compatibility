@@ -245,6 +245,11 @@ class BigQueryErrorsSchema extends Schema {
 					type: 'STRING',
 					mode: 'NULLABLE',
 				},
+				{
+					name: 'raw_data',
+					type: 'STRING',
+					mode: 'NULLABLE',
+				},
 			],
 		};
 	}
