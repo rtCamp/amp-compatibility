@@ -50,7 +50,7 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
 ## Infrastructure
 
-![GCP Infrastructure](https://user-images.githubusercontent.com/25586785/106999402-23f18a00-67ac-11eb-940e-7117e5fde5c5.png)
+![GCP Infrastructure](https://user-images.githubusercontent.com/8168027/108815329-47a13680-75da-11eb-8e29-8e4432413e1f.jpg)
 
 
 ## Local environment setup.
