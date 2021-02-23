@@ -140,15 +140,17 @@ node ace synthetic-data:start
 
 **Options**
 
-| Options               | Description                                                                                                                                                         | Usage                                                     |
-|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
-| --only-themes         | To generate synthetic data only for themes.                                                                                                                         | node ace synthetic-data:start --only-themes               |
-| --only-plugins        | To generate synthetic data only for plugins.                                                                                                                        | node ace synthetic-data:start --only-plugins              |
-| --limit               | The number of themes/plugins need to add to the queue and process.                                                                                                  | node ace synthetic-data:start --limit=1000                |
-| --number-of-instance  | The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 )                                                               | node ace synthetic-data:start --number-of-instance=5      |
-| --concurrency         | The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) | node ace synthetic-data:start --concurrency=30            |
-| --vm-name             | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine" |
-| --prevent-vm-deletion | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion       |
+| Options                 | Description                                                                                                                                                         | Usage                                                       |
+|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------|
+| --only-themes           | To generate synthetic data only for themes.                                                                                                                         | node ace synthetic-data:start --only-themes                 |
+| --only-plugins          | To generate synthetic data only for plugins.                                                                                                                        | node ace synthetic-data:start --only-plugins                |
+| --plugin-active-install | Active installs criteria for plugins to run synthetic data. The plugin must have more or equal active install to test. "0" means all the plugins. (Default=0)       | node ace synthetic-data:start --plugin-active-install=10000 |
+| --theme-active-install  | Active installs criteria for themes to run synthetic data. The themes must have more or equal active install to test. "0" means all the plugins. (Default=0)        | node ace synthetic-data:start  --theme-active-install=1000  |
+| --limit                 | The number of themes/plugins need to add to the queue and process.                                                                                                  | node ace synthetic-data:start --limit=1000                  |
+| --number-of-instance    | The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 )                                                               | node ace synthetic-data:start --number-of-instance=5        |
+| --concurrency           | The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) | node ace synthetic-data:start --concurrency=30              |
+| --vm-name               | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine"   |
+| --prevent-vm-deletion   | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion         |
 
 
 ### 5. Dashboard
