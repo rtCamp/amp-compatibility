@@ -2,7 +2,7 @@
 	<ul class="pagination justify-content-center">
 		@if(previousPage)
 			<li class="page-item">
-				<a class="page-link" href="{{baseUrl}}/page/{{previousPage}}" tabindex="-1">Previous</a>
+				<a class="page-link" href="{{baseUrl}}/page/{{previousPage}}/{{queryString}}" tabindex="-1">Previous</a>
 			</li>
 		@else
 			<li class="page-item disabled">
@@ -14,12 +14,12 @@
 			<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">...</a></li>
 		@endif
 
-		@each( page in range( showPages.from, showPages.to ) )
+		@each( page in range( showPages.from, showPages.to + 1 ) )
 
 		@if( currentPage === page )
 			<li class="page-item active" aria-current="page"><a class=" page-link" href="#">{{page}}</a></li>
 		@else
-			<li class="page-item"><a class="page-link" href="{{baseUrl}}/page/{{page}}">{{page}}</a></li>
+			<li class="page-item"><a class="page-link" href="{{baseUrl}}/page/{{page}}/{{queryString}}">{{page}}</a></li>
 		@endif
 
 		@endeach
@@ -30,7 +30,7 @@
 
 		@if(nextPage)
 			<li class="page-item">
-				<a class="page-link" href="{{baseUrl}}/page/{{nextPage}}" tabindex="-1">Next</a>
+				<a class="page-link" href="{{baseUrl}}/page/{{nextPage}}/{{queryString}}" tabindex="-1">Next</a>
 			</li>
 		@else
 			<li class="page-item disabled">

@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -38,19 +38,26 @@ class GlobalViewData {
 
 		}
 
+		const queryParams = new URLSearchParams( ( request.get() || {} ) );
+		const queryString = queryParams.toString() ? '?' + queryParams.toString() : '';
+
 		View.global( 'dashboardMenuItems', dashboardMenuItems );
 		View.global( 'dashboardActivePage', dashboardActivePage );
 		View.global( 'params', params );
+		View.global( 'queryParams', request.get() );
+		View.global( 'queryString',queryString );
+
 		View.global( 'snackCaseToString', ( string ) => {
 			return string.replace( /_+/g, ' ' );
 		} );
+
 
 		/**
 		 * Templates.
 		 */
 		View.global( 'renderPagination', Templates.renderPagination );
 
-		await next()
+		await next();
 	}
 
 	/**
@@ -60,12 +67,12 @@ class GlobalViewData {
 	 */
 	async wsHandle( { request }, next ) {
 		// call next to advance the request
-		await next()
+		await next();
 	}
 
 	getDashboardMenuItems( request ) {
 
-		let currentRequest = request.url()
+		let currentRequest = request.url();
 		currentRequest = currentRequest.toString().toLowerCase();
 
 		return {
@@ -106,8 +113,14 @@ class GlobalViewData {
 					},
 				},
 			},
+			verifySyntheticData: {
+				title: 'Verify Synthetic Data',
+				icon: '',
+				url: '/admin/verify-synthetic-data',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-synthetic-data' ) ),
+			}
 		};
 	}
 }
 
-module.exports = GlobalViewData
+module.exports = GlobalViewData;
