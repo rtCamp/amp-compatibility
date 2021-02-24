@@ -46,8 +46,8 @@ jobs:
     # This is a temp fix.
     - name: Update extension mapping
       run: |
-          mkdir -p /opt/workspace/amp-compatibility-server/
-          ln -sn /tmp/creds /opt/workspace/amp-compatibility-server/gcp.json
+          mkdir -p "$GITHUB_WORKSPACE/private"
+          cp /tmp/creds "$GITHUB_WORKSPACE/private/gcp.json"
           node ace extension:mapping:update
 
     - name: Deploy to App Engine
