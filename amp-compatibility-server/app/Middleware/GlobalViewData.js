@@ -113,11 +113,11 @@ class GlobalViewData {
 					},
 				},
 			},
-			verifySyntheticData: {
-				title: 'Verify Synthetic Data',
+			verifyExtensions: {
+				title: 'Verify Extensions',
 				icon: '',
-				url: '/admin/verify-synthetic-data',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-synthetic-data' ) ),
+				url: '/admin/verify-extensions',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-extensions' ) ),
 			}
 		};
 	}

@@ -1,5 +1,5 @@
 window.addEventListener( 'DOMContentLoaded', function () {
-	const verifySyntheticData = {
+	const verifyExtensions = {
 
 		/**
 		 * Init function.
@@ -35,7 +35,7 @@ window.addEventListener( 'DOMContentLoaded', function () {
 
 			this.disabled = true;
 
-			jQuery.post( '/admin/verify-synthetic-data', {
+			jQuery.post( '/admin/verify-extensions', {
 				extensionVersionSlug: extensionDetail.extension_version_slug,
 				isVerified: isVerified,
 			}, ( data ) => {
@@ -65,5 +65,5 @@ window.addEventListener( 'DOMContentLoaded', function () {
 
 	};
 
-	verifySyntheticData.init();
+	verifyExtensions.init();
 } );

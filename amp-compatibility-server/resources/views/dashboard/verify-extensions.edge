@@ -21,7 +21,10 @@
 			<thead>
 			<tr>
 				@each( ( value, key ) in items[0] )
-				@if( 'extension_version_slug' !== key )
+				@if( 'extension_version_slug' === key )
+				@elseif( 'error_count' === key || 'active_installs' === key )
+					<th scope="col" class="text-end">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+				@else
 					<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
 				@endif
 				@endeach
@@ -32,6 +35,8 @@
 			<tr data-extension="{{toJSON(item)}}">
 				@each( ( value, key ) in item )
 				@if( 'extension_version_slug' === key )
+				@elseif( 'error_count' === key || 'active_installs' === key )
+					<td align="right">{{value ? value : 0}}</td>
 				@elseif( 'is_verified' === key )
 					<td align="center">
 						<input class="extension-verify-checkbox"
@@ -51,5 +56,5 @@
 @endsection
 
 @section('script')
-	{{ script('js/verify-synthetic-data') }}
+	{{ script('js/verify-extensions') }}
 @endsection
