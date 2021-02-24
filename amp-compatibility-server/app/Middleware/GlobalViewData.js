@@ -38,12 +38,19 @@ class GlobalViewData {
 
 		}
 
+		const queryParams = new URLSearchParams( ( request.get() || {} ) );
+		const queryString = queryParams.toString() ? '?' + queryParams.toString() : '';
+
 		View.global( 'dashboardMenuItems', dashboardMenuItems );
 		View.global( 'dashboardActivePage', dashboardActivePage );
 		View.global( 'params', params );
+		View.global( 'queryParams', request.get() );
+		View.global( 'queryString',queryString );
+
 		View.global( 'snackCaseToString', ( string ) => {
 			return string.replace( /_+/g, ' ' );
 		} );
+
 
 		/**
 		 * Templates.

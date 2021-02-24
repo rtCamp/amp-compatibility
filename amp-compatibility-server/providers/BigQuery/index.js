@@ -71,6 +71,26 @@ class BigQuery {
 		return hadError ? response : true;
 	}
 
+	async getDatasetInfo() {
+
+		if ( _.isEmpty( this.config.dataset ) ) {
+			return false;
+		}
+
+		const table = '`' + `${ this.config.projectId }.${ this.config.dataset }` + '`.__TABLES__';
+		const query = `SELECT *, (size_bytes/1000000000) AS size_in_gb FROM ${table} LIMIT 1000;`;
+
+		const items = await this.query( query );
+		const response = {};
+
+		for ( const index in items ) {
+			const item = items[ index ];
+			response[ item.table_id ] = item;
+		}
+
+		return response;
+	}
+
 	/**
 	 * To create table in BigQuery.
 	 *

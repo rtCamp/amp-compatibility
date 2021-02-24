@@ -2,8 +2,48 @@
 
 @section('page')
 	<div>
+		<div>
 
+			<form class="row flex-row-reverse" method="GET">
+				<div class="col-md-3">
+					<div class="input-group mb-3">
+						<input type="search" class="form-control" name="s" value="{{searchString}}">
+						<button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+					</div>
+				</div>
+			</form>
+		</div>
 
+		<table class="table table-hover mt-4">
+			<thead>
+			<tr>
+				@each( ( value, key ) in items[0] )
+				@if( 'extension_version_slug' !== key )
+					<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+				@endif
+				@endeach
+			</tr>
+			</thead>
+			<tbody>
+			@each( item in items )
+			<tr>
+				@each( ( value, key ) in item )
+				@if( 'extension_version_slug' === key )
+				@elseif( 'is_verified' === key )
+					<td align="center">
+						<input id="{{item.extension_version_slug}}"
+							   type="checkbox" {{ 'true' === value ? 'checked' : '' }} />
+					</td>
+				@else
+					<td>{{value ? value : ' - '}}</td>
+				@endif
+				@endeach
+			</tr>
+			@endeach
+			</tbody>
+		</table>
+
+		{{{renderPagination(pagination)}}}
 	</div>
 @endsection
 

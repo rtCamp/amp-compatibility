@@ -27,7 +27,7 @@ class Templates {
 		options.nextPage = ( options.currentPage < options.totalPage ) ? options.currentPage + 1 : false;
 		options.previousPage = ( 1 < options.currentPage ) ? options.currentPage - 1 : false;
 
-		options.showLimit = 5;
+		options.showLimit = 3;
 		options.showPages = {
 			from: ( 1 <= options.currentPage - options.showLimit ) ? options.currentPage - options.showLimit : 1,
 			to: ( options.totalPage >= ( options.currentPage + options.showLimit ) ) ? options.currentPage + options.showLimit : options.totalPage,
