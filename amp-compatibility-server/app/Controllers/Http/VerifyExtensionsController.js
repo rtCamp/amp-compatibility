@@ -16,7 +16,7 @@ const { validateAll } = use( 'Validator' );
 
 const _ = require( 'underscore' );
 
-class VerifySyntheticDataController {
+class VerifyExtensionsController {
 
 	/**
 	 * To render synthetic data verification page.
@@ -38,7 +38,7 @@ class VerifySyntheticDataController {
 
 		const offset = ( params.paged > 1 ) ? ( params.paged * params.perPage ) : 0;
 		const pagination = {
-			baseUrl: `/admin/verify-synthetic-data`,
+			baseUrl: `/admin/verify-extensions`,
 			total: 0,
 			perPage: params.perPage,
 			currentPage: params.paged,
@@ -51,7 +51,7 @@ class VerifySyntheticDataController {
 
 		let query = '';
 		let queryObject = {
-			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified',
+			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified',
 			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
 				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
 				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
@@ -89,7 +89,7 @@ class VerifySyntheticDataController {
 		const count = await BigQuery.query( query );
 		pagination.total = count.length || 0;
 
-		return view.render( 'dashboard/verify-synthetic-data', { items, pagination, searchString: params.s } );
+		return view.render( 'dashboard/verify-extensions', { items, pagination, searchString: params.s } );
 	}
 
 	/**
@@ -150,4 +150,4 @@ class VerifySyntheticDataController {
 
 }
 
-module.exports = VerifySyntheticDataController;
+module.exports = VerifyExtensionsController;

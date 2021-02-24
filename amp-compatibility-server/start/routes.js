@@ -42,10 +42,10 @@ Route.group( () => {
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
 	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
 
-	Route.get( '/verify-synthetic-data/', 'VerifySyntheticDataController.index' );
-	Route.get( '/verify-synthetic-data/page/:paged', 'VerifySyntheticDataController.index' );
+	Route.get( '/verify-extensions/', 'VerifyExtensionsController.index' );
+	Route.get( '/verify-extensions/page/:paged', 'VerifyExtensionsController.index' );
 
-	Route.post( '/verify-synthetic-data/', 'VerifySyntheticDataController.update' );
+	Route.post( '/verify-extensions/', 'VerifyExtensionsController.update' );
 
 } ).prefix( 'admin' ).middleware( 'auth' );
 
