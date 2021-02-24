@@ -33,6 +33,7 @@ jobs:
           echo "$SERVER_CA"  | base64 -d > private/server-ca.pem
           echo "$CLIENT_CRT" | base64 -d > private/client-cert.pem
           echo "$CLIENT_KEY" | base64 -d > private/client-key.pem
+          echo "$GCP_SA_KEY" > private/gcp.json
       env:
         ENV: ${{ secrets.ENV }}
         SERVER_CA: ${{ secrets.SERVER_CA }}
@@ -45,10 +46,7 @@ jobs:
     # TODO: Move extension mapping to redis cache
     # This is a temp fix.
     - name: Update extension mapping
-      run: |
-          mkdir -p "$GITHUB_WORKSPACE/private"
-          cp /tmp/creds "$GITHUB_WORKSPACE/private/gcp.json"
-          node ace extension:mapping:update
+      run: node ace extension:mapping:update
 
     - name: Deploy to App Engine
       run: gcloud app deploy --promote -q
