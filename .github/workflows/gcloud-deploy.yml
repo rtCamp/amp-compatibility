@@ -33,12 +33,13 @@ jobs:
           echo "$SERVER_CA"  | base64 -d > private/server-ca.pem
           echo "$CLIENT_CRT" | base64 -d > private/client-cert.pem
           echo "$CLIENT_KEY" | base64 -d > private/client-key.pem
-          echo "$GCP_SA_KEY" > private/gcp.json
+          echo "$GCP_SA_KEY" | base64 -d > private/gcp.json
       env:
         ENV: ${{ secrets.ENV }}
         SERVER_CA: ${{ secrets.SERVER_CA }}
         CLIENT_CRT: ${{ secrets.CLIENT_CRT }}
         CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
     - name: Install modules and asset build
       run: npm i && npm run prod
