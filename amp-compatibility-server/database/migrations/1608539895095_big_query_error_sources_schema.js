@@ -67,13 +67,13 @@ class BigQueryErrorSourcesSchema extends Schema {
 				{
 					name: 'hook',
 					type: 'STRING',
-					mode: 'REQUIRED',
+					mode: 'NULLABLE',
 					description: 'WordPress hook e.g. init',
 				},
 				{
 					name: 'priority',
 					type: 'INTEGER',
-					mode: 'REQUIRED',
+					mode: 'NULLABLE',
 					description: 'e.g. 10',
 				},
 				{
@@ -130,6 +130,11 @@ class BigQueryErrorSourcesSchema extends Schema {
 				},
 				{
 					name: 'shortcode',
+					type: 'STRING',
+					mode: 'NULLABLE',
+				},
+				{
+					name: 'raw_data',
 					type: 'STRING',
 					mode: 'NULLABLE',
 				},

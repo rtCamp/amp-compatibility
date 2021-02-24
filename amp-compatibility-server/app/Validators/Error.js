@@ -69,6 +69,7 @@ class Error extends Base {
 		return {
 			error_slug: 'slug',
 			node_attributes: 'to_json',
+			attributes: 'to_json',
 			element_attributes: 'to_json',
 			url: 'to_url',
 		};

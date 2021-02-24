@@ -14,7 +14,7 @@ class BigQueryBase {
 	 * @returns {string} Table name.
 	 */
 	static get table() {
-		return ''
+		return '';
 	}
 
 	/**
@@ -82,7 +82,7 @@ class BigQueryBase {
 	 * @returns {number}
 	 */
 	static get maxRowToSave() {
-		return 50000;
+		return 10000;
 	}
 
 	/**
