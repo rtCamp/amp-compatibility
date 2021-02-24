@@ -40,7 +40,7 @@ class WordPressSite {
 		}
 
 		await FileSystem.assureDirectoryExists( logFilePath );
-		const command = `bash -x ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } 2>&1 | tee -a ${ logFilePath }`;
+		const command = `bash -x ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } --amp-source=${ args.ampSource } 2>&1 | tee -a ${ logFilePath }`;
 
 		let response = {};
 		try {

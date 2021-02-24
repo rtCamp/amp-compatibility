@@ -57,6 +57,10 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 		let result = '';
 		let response = {};
 
+		job.data = _.defaults( job.data, {
+			ampSource: 'wporg',
+		} );
+
 		result = await siteInstance.runTest( job.data ) || {};
 
 		try {
