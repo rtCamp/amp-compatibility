@@ -12,10 +12,22 @@ const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
+const { validateAll } = use( 'Validator' );
+
 const _ = require( 'underscore' );
 
 class VerifySyntheticDataController {
 
+	/**
+	 * To render synthetic data verification page.
+	 *
+	 * @param {object} ctx
+	 * @param {View} view ctx.view
+	 * @param {Request} request ctx.request
+	 * @param {object} params ctx.params
+	 *
+	 * @return {Promise<Route|String|*>}
+	 */
 	async index( { view, request, params } ) {
 
 		params = _.defaults( params, {
@@ -79,6 +91,63 @@ class VerifySyntheticDataController {
 
 		return view.render( 'dashboard/verify-synthetic-data', { items, pagination, searchString: params.s } );
 	}
+
+	/**
+	 * POST request handler to update verify flag for synthetic data of the extension.
+	 *
+	 * @param {object} ctx
+	 * @param {Request} request ctx.request
+	 *
+	 * @return {Promise<{data, status: string}|{data: *, status: string}>}
+	 */
+	async update( { request } ) {
+
+		const postData = request.post();
+		let response = {};
+
+		const rules = {
+			extensionVersionSlug: 'required|string',
+			isVerified: 'required|boolean',
+		};
+
+		const messages = {
+			'extensionVersionSlug.required': 'Please provide extension version slug.',
+			'isVerified.required': 'Please provide is verified or not.',
+		};
+
+		const validation = await validateAll( postData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+
+		postData.isVerified = postData.isVerified.toLowerCase();
+
+		const item = {
+			extension_version_slug: postData.extensionVersionSlug,
+			is_verified: ( 'true' === postData.isVerified ),
+		};
+
+		try {
+			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
+
+			await BigQuery.query( updateQuery );
+			response = {
+				status: 'ok',
+			};
+		} catch ( exception ) {
+			response = {
+				status: 'ok',
+				data: exception,
+			};
+		}
+
+		return response;
+	}
+
 }
 
 module.exports = VerifySyntheticDataController;

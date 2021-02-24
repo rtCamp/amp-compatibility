@@ -94,7 +94,7 @@ class AuthController {
 	 */
 	async logout( { auth, response } ) {
 
-		await auth.logout()
+		await auth.logout();
 		response.redirect( '/login', 302 );
 	}
 

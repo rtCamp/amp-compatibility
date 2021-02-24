@@ -114,7 +114,7 @@ class GlobalViewData {
 				},
 			},
 			verifySyntheticData: {
-				title: 'Adhoc Synthetic Data Queue',
+				title: 'Verify Synthetic Data',
 				icon: '',
 				url: '/admin/verify-synthetic-data',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-synthetic-data' ) ),

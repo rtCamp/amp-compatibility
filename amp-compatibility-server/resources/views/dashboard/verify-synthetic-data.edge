@@ -4,12 +4,15 @@
 	<div>
 		<div>
 
-			<form class="row flex-row-reverse" method="GET">
+			<form class="row" method="GET">
+				<div id="messageContainer" class="col-md-9">
+				</div>
 				<div class="col-md-3">
 					<div class="input-group mb-3">
 						<input type="search" class="form-control" name="s" value="{{searchString}}">
 						<button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
 					</div>
+					<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
 				</div>
 			</form>
 		</div>
@@ -25,14 +28,14 @@
 			</tr>
 			</thead>
 			<tbody>
-			@each( item in items )
-			<tr>
+			@each( ( item, index ) in items )
+			<tr data-extension="{{toJSON(item)}}">
 				@each( ( value, key ) in item )
 				@if( 'extension_version_slug' === key )
 				@elseif( 'is_verified' === key )
 					<td align="center">
-						<input id="{{item.extension_version_slug}}"
-							   type="checkbox" {{ 'true' === value ? 'checked' : '' }} />
+						<input class="extension-verify-checkbox"
+							   type="checkbox" {{ true === value ? 'checked' : '' }} />
 					</td>
 				@else
 					<td>{{value ? value : ' - '}}</td>
@@ -48,4 +51,5 @@
 @endsection
 
 @section('script')
+	{{ script('js/verify-synthetic-data') }}
 @endsection

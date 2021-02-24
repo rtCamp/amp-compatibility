@@ -45,6 +45,8 @@ Route.group( () => {
 	Route.get( '/verify-synthetic-data/', 'VerifySyntheticDataController.index' );
 	Route.get( '/verify-synthetic-data/page/:paged', 'VerifySyntheticDataController.index' );
 
+	Route.post( '/verify-synthetic-data/', 'VerifySyntheticDataController.update' );
+
 } ).prefix( 'admin' ).middleware( 'auth' );
 
 /**
