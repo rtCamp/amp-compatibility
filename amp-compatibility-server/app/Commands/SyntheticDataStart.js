@@ -34,7 +34,8 @@ class SyntheticDataStart extends Command {
 		 { --number-of-instance=@value : The number of instances needs to create for the synthetic data process. ( Min=1, Max=100, Default=1 ) }
 		 { --concurrency=@value : The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) }
 		 { --vm-name=@value : Virtual machine name. ( Default=synthetic-data-generator ) }
-		 { --prevent-vm-deletion : To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.. }`;
+		 { --prevent-vm-deletion : To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.. }
+		 { --force: To generate synthetic data for extensions even if data is already exists. }`;
 	}
 
 	/**
@@ -84,6 +85,7 @@ class SyntheticDataStart extends Command {
 			vmName: ( ! _.isEmpty( options.vmName ) && _.isString( options.vmName ) ) ? options.vmName : 'synthetic-data-generator',
 
 			preventVmDeletion: ( true === options.preventVmDeletion ),
+			force: ( true === options.force ),
 		};
 
 	}
@@ -105,6 +107,17 @@ class SyntheticDataStart extends Command {
 		Logger.level = 'debug';
 
 		this.parseOptions( options );
+
+		if ( this.options.force ) {
+			let answare = await this.ask( 'Forcing generating synthetic data for extensions will remove any previous job information related to those extensions.\n' +
+										  'Are you sure you want to continue with that? [Y/N] : ' );
+
+			answare = answare || '';
+			answare = answare.toString().toLowerCase();
+			if ( ! [ 'y', 'yes' ].includes( answare ) ) {
+				exit( 1 );
+			}
+		}
 
 		// Refill queue with new tasks.
 		this.info( 'Fetching synthetic data jobs.' );
@@ -333,6 +346,10 @@ class SyntheticDataStart extends Command {
 					theme: '',
 					ampSource: 'wporg',
 				};
+
+				if ( this.options.force ) {
+					await SyntheticDataQueueController.queue.removeJob( job.domain );
+				}
 
 				if ( 'plugin' === jobData.type ) {
 					job.plugins = jobData.slug + ':' + jobData.version;

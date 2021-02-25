@@ -39,6 +39,17 @@ class SyntheticDataController extends Base {
 	}
 
 	/**
+	 * To get jobs ID.
+	 *
+	 * @param {Object} jobData Job data.
+	 *
+	 * @returns {String} Job ID.
+	 */
+	static getJobID( jobData ) {
+		return jobData.domain || '';
+	}
+
+	/**
 	 * Action before starting worker.
 	 *
 	 * @param {Object} options Options pass in startWorker.
