@@ -151,6 +151,7 @@ node ace synthetic-data:start
 | --concurrency           | The number of jobs that need to run concurrently on each instance. (This number of site will create at a time on secondary server.) ( Min=1, Max=120, Default=100 ) | node ace synthetic-data:start --concurrency=30              |
 | --vm-name               | Virtual machine name. ( Default=synthetic-data-generator )                                                                                                          | node ace synthetic-data:start --vm-name="Virtual Machine"   |
 | --prevent-vm-deletion   | To prevent Compute engine instance to terminal. It will only prevent if there is only one instance.                                                                 | node ace synthetic-data:start --prevent-vm-deletion         |
+| --force                 | To generate synthetic data for extensions even if data is already exists.                                                                                           | node ace synthetic-data:start --force                       |
 
 
 ### 5. Dashboard
