@@ -22,6 +22,15 @@ class Taxonomies extends Base {
 	 */
 	protected function get_taxonomies() {
 
+		// TODO: This seems slightly problematic, it would be better to find a solution which
+		// doesn't require manual exclusions, as doing that would be impossible for all the
+		// different plugins and configurations out there.
+		//
+		// Maybe we could do something along the lines of also checking for each public taxonomy
+		// whether it also has at least one public post type assigned? I'd argue that a post type
+		// really shouldn't be public if it shouldn't appear in the frontend.
+		// If a taxonomy is public but doesn't have any post types associated, it shouldn't appear
+		// in the frontend anyways.
 		$taxonomies = get_taxonomies( [ 'public' => true ] );
 		$exclude    = [
 			'amp_validation_error',

@@ -14,6 +14,8 @@
 define( 'AMP_WP_DUMMY_DATA_GENERATOR_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) ); // @todo Why not just __DIR__?
 define( 'AMP_WP_DUMMY_DATA_GENERATOR_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 
+// TODO: Would be great to document what this does. I'm curious, why is it actually needed?
+// Wouldn't one piece of dummy content per different template be sufficient?
 if ( ! defined( 'AMP_WP_DUMMY_DATA_GENERATOR_LIMIT' ) ) {
 	define( 'AMP_WP_DUMMY_DATA_GENERATOR_LIMIT', 1 );
 }

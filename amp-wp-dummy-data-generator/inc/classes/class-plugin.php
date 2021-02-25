@@ -21,6 +21,12 @@ class Plugin {
 	 */
 	protected function __construct() {
 
+		// TODO: While the plugin doesn't currently appear to have test coverage, adding hooks
+		// in a constructor is generally discouraged as it causes side effects beyond instantiating
+		// the class.
+		// I suggest to generally decouple adding hooks from the constructor (same in the other
+		// class instantiations), e.g. by making `setup_hooks()` public and calling it after
+		// creating the new instance.
 		$this->setup_hooks();
 
 		// Load plugin classes.

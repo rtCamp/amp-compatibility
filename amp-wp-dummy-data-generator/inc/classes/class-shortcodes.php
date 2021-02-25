@@ -158,6 +158,11 @@ class Shortcodes {
 				$markup = "[$shortcode_tag src='https://youtu.be/zEmtfA8FETc']";
 				break;
 			default:
+				// TODO: I guess that will cause many false positives as some shortcodes might just
+				// fail when not receiving the required attributes. It's probably all we can do
+				// here, since there is no specification of a shortcode's schema in WordPress.
+				// Unless a shortcode was using one of these separate tools like "Shortcake", but
+				// that's unlikely for the majority.
 				$markup = "[$shortcode_tag]";
 				break;
 		}
