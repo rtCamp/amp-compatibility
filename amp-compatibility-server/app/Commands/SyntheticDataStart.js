@@ -331,6 +331,7 @@ class SyntheticDataStart extends Command {
 					type: jobData.type,
 					plugins: '',
 					theme: '',
+					ampSource: 'wporg',
 				};
 
 				if ( 'plugin' === jobData.type ) {

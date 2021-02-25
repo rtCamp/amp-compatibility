@@ -87,7 +87,7 @@ testing@amp-comp.com" > answers.txt
 	rm wo answers.txt
 
 	# Install basic nginx and mysql
-	wo stack install --nginx --mysql --php73 --wpcli
+	wo stack install --nginx --mysql --php73 --wpcli --composer
 	rm /etc/nginx/conf.d/stub_status.conf /etc/nginx/sites-enabled/22222
 
 # Return 403 for default server block.

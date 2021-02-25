@@ -172,6 +172,7 @@ class DashboardController {
 	async addAdhocSyntheticQueueFetch( { view, request, auth } ) {
 
 		const data = {};
+		const ampSource = request.input( 'amp_source' );
 		const theme = request.input( 'theme' );
 		let plugins = _.filter( request.input( 'plugins' ), ( value ) => {
 			return ( _.isObject( value ) && ! _.isEmpty( value.name ) );
@@ -186,6 +187,7 @@ class DashboardController {
 		const job = {
 			domain: domain,
 			email: auth.user.email,
+			ampSource: ampSource,
 		};
 
 		if ( ! _.isEmpty( plugins ) ) {
