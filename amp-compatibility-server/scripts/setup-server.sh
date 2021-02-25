@@ -122,6 +122,7 @@ catch_workers_output = yes
 EOF
 
 	wo stack restart --php
+	wo stack install --composer
 }
 
 function setup_node() {
