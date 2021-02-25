@@ -292,9 +292,12 @@ class SyntheticDataStart extends Command {
 		let query = `SELECT extension_versions.extension_version_slug, extension_versions.type, extension_versions.slug, extension_versions.version
 			FROM ${ versionTable } AS extension_versions
 			INNER JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug
-			WHERE ( extension_versions.has_synthetic_data != TRUE OR extension_versions.has_synthetic_data IS NULL )
-				AND extensions.wporg = TRUE 
+			WHERE extensions.wporg = TRUE 
 			`;
+
+		if ( ! this.options.force ) {
+			query += ' AND ( extension_versions.has_synthetic_data != TRUE OR extension_versions.has_synthetic_data IS NULL ) ';
+		}
 
 		let extensionClause = [];
 
@@ -324,7 +327,7 @@ class SyntheticDataStart extends Command {
 
 		}
 
-		query += ' ORDER BY extensions.active_installs DESC';
+		query += ' ORDER BY extensions.active_installs DESC, extension_versions.slug ASC ';
 
 		if ( this.options.limit ) {
 			query += ` LIMIT ${ this.options.limit }`;
