@@ -116,8 +116,10 @@ class DashboardController {
 				job.progress = queueJob.progress.toString();
 			}
 
-			if ( 'failed' === params.status ) {
-				job.reason = queueJob.options.stacktraces || [];
+			if ( [ 'failed', 'succeeded' ].includes( params.status ) &&
+				 [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue )
+			) {
+				job.logs = queueJob.options._logs || [];
 			}
 
 			jobs.push( job );

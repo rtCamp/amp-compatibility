@@ -109,8 +109,10 @@ class SyntheticDataStart extends Command {
 		this.parseOptions( options );
 
 		if ( this.options.force ) {
-			let answare = await this.ask( 'Forcing generating synthetic data for extensions will remove any previous job information related to those extensions.\n' +
-										  'Are you sure you want to continue with that? [Y/N] : ' );
+			let answare = await this.ask(
+				'Forcing generating synthetic data for extensions will remove any previous job information related to those extensions.\n' +
+				'Are you sure you want to continue with that? [Y/N] : ',
+			);
 
 			answare = answare || '';
 			answare = answare.toString().toLowerCase();
