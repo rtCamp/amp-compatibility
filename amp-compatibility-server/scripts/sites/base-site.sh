@@ -4,6 +4,19 @@ base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 site_name="base-site"
 source "$base_dir/functions.sh"
 
+function update_amp_plugin() {
+
+	## GitHub version of AMP plugin
+	github_amp_path="$sites_root/repos/github-amp"
+	rm -rf "$github_amp_path"
+
+	git clone git@github.com:ampproject/amp-wp.git "$github_amp_path"
+
+	cd "$github_amp_path"
+	composer install && npm install && npm run build:prod
+
+}
+
 function setup_base_data() {
 
 	setup_base_site
@@ -30,6 +43,8 @@ function setup_base_data() {
 
 	cd_site
 	mv "wp-content/themes/treville" "$sites_root/repos"
+
+	update_amp_plugin
 
 	[[ "mac" != "$os" ]] && chown -R www-data: /var/www
 

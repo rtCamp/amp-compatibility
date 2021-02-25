@@ -2,6 +2,7 @@
 
 base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 preserve_site="false"
+amp_source="wporg"
 
 for i in "$@"; do
 	case $i in
@@ -15,6 +16,10 @@ for i in "$@"; do
 		;;
 	-t=* | --theme=*)
 		theme="${i#*=}"
+		shift
+		;;
+	--amp-source=*)
+		amp_source="${i#*=}"
 		shift
 		;;
 	--preserve-site)
@@ -57,7 +62,13 @@ function setup_site() {
 
 	cd_site
 
-	plugin_dirs=(amp amp-wp-dummy-data-generator wordpress-importer block-unit-test coblocks)
+	if [[ "github" == "$amp_source" ]]; then
+		ln -sn "$sites_root/repos/github-amp" "$(get_site_path)/wp-content/plugins/amp"
+	else
+		ln -sn "$sites_root/repos/amp" "$(get_site_path)/wp-content/plugins/amp"
+	fi
+
+	plugin_dirs=(amp-wp-dummy-data-generator wordpress-importer block-unit-test coblocks)
 	for plugin_dir in "${plugin_dirs[@]}"; do
 		ln -sn "$sites_root/repos/$plugin_dir" "$(get_site_path)/wp-content/plugins/$plugin_dir"
 	done
