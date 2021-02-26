@@ -132,7 +132,8 @@ class SyntheticDataController extends Base {
 		let result = '';
 		let response = {};
 
-		const jobData = _.defaults( job.data, {
+		let jobData = _.clone( job.data );
+		jobData = _.defaults( jobData, {
 			logFile: logFilePath,
 		} );
 

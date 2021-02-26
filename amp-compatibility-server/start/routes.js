@@ -27,24 +27,35 @@ Route.get( 'logout', 'AuthController.logout' );
  */
 Route.group( () => {
 
+	/**
+	 * Dashboard.
+	 */
 	Route.get( '/', 'DashboardController.index' );
 
-	Route.get( '/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)', 'DashboardController.renderQueue' );
+	/**
+	 * Queue pages.
+	 */
+	Route.get( '/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)', 'QueueController.index' );
 	Route.get(
 		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
-		'DashboardController.renderQueue'
+		'QueueController.index'
 	);
 	Route.get(
 		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)/page/:paged',
-		'DashboardController.renderQueue'
+		'QueueController.index'
 	);
+	Route.post(
+		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
+		'QueueController.update'
+	);
+	Route.get( '/adhoc-synthetic-queue/add', 'QueueController.addAdhocSyntheticQueue' );
+	Route.post( '/adhoc-synthetic-queue/add', 'QueueController.addAdhocSyntheticQueueFetch' );
 
-	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
-	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
-
+	/**
+	 * Extension verification page.
+	 */
 	Route.get( '/verify-extensions/', 'VerifyExtensionsController.index' );
 	Route.get( '/verify-extensions/page/:paged', 'VerifyExtensionsController.index' );
-
 	Route.post( '/verify-extensions/', 'VerifyExtensionsController.update' );
 
 } ).prefix( 'admin' ).middleware( 'auth' );

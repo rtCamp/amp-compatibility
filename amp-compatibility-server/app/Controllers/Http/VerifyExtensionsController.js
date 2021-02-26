@@ -58,7 +58,7 @@ class VerifyExtensionsController {
 				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
 			where: 'WHERE extension_versions.has_synthetic_data = TRUE',
 			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.is_verified',
-			orderby: 'ORDER BY extensions.active_installs DESC',
+			orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
 			limit: `LIMIT ${ params.perPage } OFFSET ${ offset }`,
 		};
 
