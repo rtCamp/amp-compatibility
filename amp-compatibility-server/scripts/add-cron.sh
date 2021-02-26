@@ -4,9 +4,11 @@
 
 # Execution: bash add-cron.sh
 
+REPO_ROOT="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/../../" >/dev/null 2>&1 && pwd )"
+
 CRONTAB_CONFIG=(
 	# Path of the application to update working directory for cron execution.
-	"HOME=/opt/workspace/amp-compatibility-server/current"
+	"HOME=$REPO_ROOT/amp-compatibility-server"
 )
 
 CRONS=(
