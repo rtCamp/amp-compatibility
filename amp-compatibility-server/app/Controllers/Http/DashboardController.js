@@ -122,6 +122,16 @@ class DashboardController {
 				job.logs = queueJob.options._logs || [];
 			}
 
+			if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
+				job.actions = {
+					retry: queueJob.id,
+				};
+			} else if ( [ 'waiting' ].includes( params.status ) ) {
+				job.actions = {
+					remove: queueJob.id,
+				};
+			}
+
 			jobs.push( job );
 		}
 

@@ -39,6 +39,11 @@ Route.group( () => {
 		'DashboardController.renderQueue'
 	);
 
+	Route.post(
+		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
+		'QueueController.update'
+	);
+
 	Route.get( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueue' );
 	Route.post( '/adhoc-synthetic-queue/add', 'DashboardController.addAdhocSyntheticQueueFetch' );
 

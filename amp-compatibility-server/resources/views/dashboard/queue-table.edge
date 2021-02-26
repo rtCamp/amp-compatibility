@@ -3,6 +3,7 @@
 @section('page')
 
 	<div>
+		<div id="messageContainer"></div>
 		<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
 			@each( ( name, key ) in tabs )
@@ -41,7 +42,9 @@
 						<td>
 							<ul class="list-group list-group-flush mt-0 mb-0">
 								@each( plugin in value )
-								<li class="list-group-item bg-transparent">{{plugin.name}} {{ elIf( '($self)', plugin.version, plugin.version ) }}</li>
+								<li class="list-group-item bg-transparent">
+									{{plugin.name}} {{ elIf( '($self)', plugin.version, plugin.version ) }}
+								</li>
 								@endeach
 							</ul>
 						</td>
@@ -56,11 +59,22 @@
 								<li class="list-group-item bg-transparent">
 									<strong>Try {{tryNo}}</strong>:&nbsp;{{data.message}}
 									@if( data.logFile )
-										&nbsp;<a target="_blank" href="https://storage.cloud.google.com/{{data.logFile}}">Log</a>
+										<a target="_blank" href="https://storage.cloud.google.com/{{data.logFile}}">
+											Log
+										</a>
 									@endif
 								</li>
 								@endeach
 							</ul>
+						</td>
+					@elseif( 'actions' === key )
+						<td>
+							@each( ( jobID, action ) in value )
+								<button type="button" class="btn btn-sm btn-secondary btn-actions" data-action="{{action}}"
+										data-jobid="{{jobID}}">
+									{{ upperFirst( snackCaseToString( action ) ) }}
+								</button>
+							@endeach
 						</td>
 					@else
 						<td>{{value ? value : ' - '}}</td>
@@ -76,4 +90,8 @@
 
 		@endif
 	</div>
+@endsection
+
+@section('script')
+	{{ script('js/queue-table') }}
 @endsection
