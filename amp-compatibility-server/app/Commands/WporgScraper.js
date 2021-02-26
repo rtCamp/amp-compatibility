@@ -12,10 +12,12 @@ const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
 // Helpers
 const Utility = use( 'App/Helpers/Utility' );
+const Cache = use( 'App/Helpers/Cache' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Stopwatch = use( 'App/Helpers/Stopwatch' );
 const Logger = use( 'Logger' );
 const Helpers = use( 'Helpers' );
+const BigQuery = use( 'App/BigQuery' );
 
 // Utilities
 const { exit } = require( 'process' );
@@ -129,6 +131,8 @@ class WporgScraper extends Command {
 	 * @return void
 	 */
 	async handle( args, flags ) {
+
+		Logger.level = 'debug';
 
 		const perPage = parseInt( flags.perPage ) || 100;
 		const allowedBrowse = [ 'popular', 'featured', 'updated', 'new' ];
@@ -327,10 +331,10 @@ class WporgScraper extends Command {
 		}
 
 		const response = {
-			extensions: await ExtensionModel.saveMany( extensions, this.saveOptions ),
-			authors: await AuthorModel.saveMany( authors, this.saveOptions ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, this.saveOptions ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, this.saveOptions ),
+			extensions: await this.saveExtensions( extensions, this.saveOptions ),
+			authors: await AuthorModel.saveMany( authors, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
+			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
+			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
 		};
 
 		return response;
@@ -403,13 +407,44 @@ class WporgScraper extends Command {
 		}
 
 		const response = {
-			extensions: await ExtensionModel.saveMany( extensions, this.saveOptions ),
-			authors: await AuthorModel.saveMany( authors, this.saveOptions ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, this.saveOptions ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, this.saveOptions ),
+			extensions: await this.saveExtensions( extensions, this.saveOptions ),
+			authors: await AuthorModel.saveMany( authors, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
+			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
+			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
 		};
 
 		return response;
+	}
+
+	/**
+	 * Wrapper function to update extensions.
+	 *
+	 * @param {Array} extensions List of extensions.
+	 * @param {Object} options Save options.
+	 *
+	 * @return {Promise<*>}
+	 */
+	async saveExtensions( extensions, options ) {
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
+		let slugs = [];
+
+		for ( const index in extensions ) {
+			slugs.push( extensions[ index ].extension_slug );
+			await Cache.delete( extensions[ index ].extension_slug, ExtensionModel.table );
+		}
+
+		slugs = _.map( slugs, ExtensionVersionModel._prepareValueForDB );
+		const updateQuery = `DELETE FROM ${ table } WHERE ${ ExtensionModel.primaryKey } IN ( ${ slugs.join( ', ' ) } );`;
+
+		try {
+			await BigQuery.query( updateQuery );
+		} catch ( exception ) {
+			console.log( exception );
+		}
+
+		return await ExtensionModel.saveMany( extensions, options );
+
 	}
 
 	/**

@@ -538,7 +538,7 @@ class BigQueryBase {
 					code: exception.code,
 					errors: exception.errors,
 					response: exception.response,
-				}
+				};
 			}
 
 		}
@@ -686,7 +686,7 @@ class BigQueryBase {
 		if ( 'UUID' === value ) {
 			dbValue = 'GENERATE_UUID()';
 		} else if ( 'string' === typeof value ) {
-			dbValue = `'${ value }'`;
+			dbValue = `"${ value.toString().replace(/"/g, '\'') }"`;
 		} else if ( 'boolean' === typeof value ) {
 			dbValue = ( value ) ? 'true' : 'false';
 		}
