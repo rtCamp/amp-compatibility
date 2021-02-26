@@ -11,13 +11,9 @@ CRONTAB_CONFIG=(
 
 CRONS=(
 	# Run every day at 12AM
-	"0 0 * * * node ace wporg:scraper --use-stream >> logs/scrapper-cron.log 2>&1"
-	# Run every day at 1AM
-	"* * * * * node ace extension:mapping:update >> logs/extension-mapping-update-cron.log 2>&1"
-	# Run every day at 2AM
-	"0 2 * * * node ace cache:update >> logs/cache-update-cron.log 2>&1"
+	"0 0 * * * node ace cache:update && node ace wporg:scraper --use-stream --browse=updated && node ace extension:mapping:update >> logs/cron/scrapper.log 2>&1"
 	# Run at 4AM every Saturday
-	"0 4 * * 6 node ace synthetic-data:start --plugin-active-install=10000 --theme-active-install=1000 >> logs/synthetic-data-cron.log 2>&1"
+	"0 4 * * 6 node ace synthetic-data:start --plugin-active-install=10000 --theme-active-install=1000 >> logs/cron/synthetic-data-cron.log 2>&1"
 )
 
 # Do not edit below this line.
