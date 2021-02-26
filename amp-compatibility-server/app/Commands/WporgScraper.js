@@ -431,7 +431,6 @@ class WporgScraper extends Command {
 
 		for ( const index in extensions ) {
 			slugs.push( extensions[ index ].extension_slug );
-			await Cache.delete( extensions[ index ].extension_slug, ExtensionModel.table );
 		}
 
 		slugs = _.map( slugs, ExtensionVersionModel._prepareValueForDB );
@@ -439,6 +438,10 @@ class WporgScraper extends Command {
 
 		try {
 			await BigQuery.query( updateQuery );
+
+			for ( const index in extensions ) {
+				await Cache.delete( extensions[ index ].extension_slug, ExtensionModel.table );
+			}
 		} catch ( exception ) {
 			console.log( exception );
 		}
