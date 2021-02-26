@@ -7,6 +7,9 @@ const Env = use( 'Env' );
 
 class StorageExtended {
 
+	/**
+	 * Construct method.
+	 */
 	constructor() {
 		this.storage = new Storage();
 
@@ -15,6 +18,11 @@ class StorageExtended {
 		this.createBucket( this.bucketName );
 	}
 
+	/**
+	 * Get list of available buckets.
+	 *
+	 * @return {Promise<[]>} List of bucket names.
+	 */
 	async getBucketList() {
 
 		let bucketNames = [];
@@ -27,6 +35,13 @@ class StorageExtended {
 		return bucketNames;
 	}
 
+	/**
+	 * Create bucket for the project if not exists.
+	 *
+	 * @param {String} bucketName Bucket name.
+	 *
+	 * @return {Promise<boolean|Bucket>} True if bucket is created or exists. Otherwise False.
+	 */
 	async createBucket( bucketName ) {
 
 		const existingBuckets = await this.getBucketList();
@@ -39,15 +54,22 @@ class StorageExtended {
 			return true;
 		}
 
-		const [ bucket ] = await this.storage.createBucket( bucketName );
+		await this.storage.createBucket( bucketName );
 
-		return bucket;
+		return true;
 	}
 
+	/**
+	 * Upload file to project's bucket.
+	 *
+	 * @param {String} filePath Full path of the file.
+	 *
+	 * @return {Promise<string|boolean>} Relative file path of uploaded file.
+	 */
 	async uploadFile( filePath ) {
 
 		if ( ! this.bucketName ) {
-			return false;
+			return '';
 		}
 
 		const appRoot = Helpers.appRoot() + '/';
@@ -60,6 +82,7 @@ class StorageExtended {
 			},
 		} );
 
+		return `${ this.bucketName }/${ destination }`;
 	}
 
 }

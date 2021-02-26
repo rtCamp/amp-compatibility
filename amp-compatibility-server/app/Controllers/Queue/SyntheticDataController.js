@@ -4,6 +4,9 @@ const Base = use( 'App/Controllers/Queue/Base' );
 const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
 const BigQuery = use( 'App/BigQuery' );
+const Utility = use( 'App/Helpers/Utility' );
+const FileSystem = use( 'App/Helpers/FileSystem' );
+const Storage = use( 'Storage' );
 
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
@@ -32,10 +35,10 @@ class SyntheticDataController extends Base {
 	/**
 	 * How many times the job should be automatically retried in case of failure.
 	 *
-	 * @returns {number}
+	 * @returns {int}
 	 */
 	static get retries() {
-		return 5;
+		return 2;
 	}
 
 	/**
@@ -117,24 +120,59 @@ class SyntheticDataController extends Base {
 		this.site = job.data.domain || '';
 		Logger.info( ' Site: %s | Job ID: %s started.', this.site, job.id );
 
-		const currentTry = ( this.retries - job.options.retries ) + 1;
-		const siteInstance = new WordPressSite( { currentTry: currentTry } );
+		job.options._logs = job.options._logs || {};
+
+		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
+		const currentTry = ( parseInt( this.retries ) - parseInt( job.options.retries ) );
+		const logFileSuffix = ( currentTry ) ? '-retry-' + currentTry : '';
+		const logFilePath = `${ Utility.logPath() }/synthetic-data/${ date }/${ this.site }${ logFileSuffix }.log`;
+
+		const siteInstance = new WordPressSite();
+		let storageLogFile = '';
 		let result = '';
 		let response = {};
+
+		const jobData = _.defaults( job.data, {
+			logFile: logFilePath,
+		} );
 
 		job.reportProgress( 10 );
 
 		try {
-			result = await siteInstance.runTest( job.data ) || {};
+			result = await siteInstance.runTest( jobData ) || {};
 			result = result.stdout || '';
+
+			if ( FileSystem.isExists( logFilePath ) ) {
+				storageLogFile = await Storage.uploadFile( logFilePath );
+			}
+
 		} catch ( exception ) {
 			console.error( exception );
+
+			/**
+			 * Unexpected error came while running the job.
+			 */
+			job.options._logs[ currentTry ] = {
+				status: 'fail',
+				message: 'Error during running the test.',
+			};
+
 			throw `Try ${ currentTry } : Error during running the test.`;
 		}
 
 		job.reportProgress( 90 );
 
+		/**
+		 * Check if job was able to send AMP data or not.
+		 */
 		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+
+			job.options._logs[ currentTry ] = {
+				status: 'fail',
+				message: 'Fail to send AMP data.',
+				logFile: storageLogFile,
+			};
+
 			throw `Try ${ currentTry } : Fail to send AMP data.`;
 		}
 
@@ -152,6 +190,16 @@ class SyntheticDataController extends Base {
 
 		job.reportProgress( 100 );
 		Logger.info( ' Site: %s | Job ID: %s completed.', this.site, job.id );
+
+		/**
+		 * Job Completed.
+		 */
+		job.options._logs[ currentTry ] = {
+			status: 'ok',
+			message: 'Completed',
+			logFile: storageLogFile,
+		};
+
 		return { status: 'ok', data: { result: result, response: response } };
 	}
 }
