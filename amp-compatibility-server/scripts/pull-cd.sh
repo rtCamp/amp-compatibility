@@ -44,6 +44,7 @@ function post_update_runs() {
 	cd "$REPO_ROOT/amp-compatibility-server"
 	npm i
 	npm run prod
+	export PM2_HOME="$HOME/.pm2"
 	pm2 restart ecosystem.config.js
 	bash "$REPO_ROOT/amp-compatibility-server/scripts/add-cron.sh"
 }
