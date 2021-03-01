@@ -204,6 +204,7 @@ class ComputeEngine {
 		await this.executeCommand( `sed -i 's/NODE_ENV=production/NODE_ENV=development/g' /root/amp-compatibility/amp-compatibility-server/.env` );
 		await this.executeCommand( `mkdir -p /opt/workspace/amp-compatibility-server` );
 		await this.copyFileToRemote( Env.get( 'GOOGLE_APPLICATION_CREDENTIALS', '' ), '/opt/workspace/amp-compatibility-server' );
+		await this.copyFileToRemote( `${projectRoot}/private`, '/opt/workspace/amp-compatibility-server/private' );
 
 		/**
 		 * Copy log file from remote server (secondary instance) to primary instance.
