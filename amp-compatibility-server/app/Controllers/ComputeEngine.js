@@ -202,7 +202,7 @@ class ComputeEngine {
 		await this.executeCommand( `bash -x /root/setup-server.sh > ${ secondaryInstanceLogFilePath } 2>&1` );
 		await this.copyFileToRemote( projectRoot + '.env', '/root/amp-compatibility/amp-compatibility-server/' );
 		await this.executeCommand( `sed -i 's/NODE_ENV=production/NODE_ENV=development/g' /root/amp-compatibility/amp-compatibility-server/.env` );
-		await this.copyFileToRemote( `${projectRoot}/private`, '/root/amp-compatibility/amp-compatibility-server/private' );
+		await this.copyFileToRemote( `${projectRoot}/private`, '/root/amp-compatibility/amp-compatibility-server' );
 		await this.executeCommand( `mkdir -p /opt/workspace/amp-compatibility-server` );
 		await this.copyFileToRemote( Env.get( 'GOOGLE_APPLICATION_CREDENTIALS', '' ), '/opt/workspace/amp-compatibility-server' );
 
