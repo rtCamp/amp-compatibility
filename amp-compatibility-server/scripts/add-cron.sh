@@ -12,6 +12,8 @@ CRONTAB_CONFIG=(
 )
 
 CRONS=(
+	# Run every 2mins
+	"*/2 * * * * bash scripts/pull-ci.sh  > logs/cron/pull-ci.log 2>&1"
 	# Run every day at 12AM
 	"0 0 * * * node ace cache:update && node ace wporg:scraper --use-stream --browse=updated > logs/cron/scrapper.log 2>&1 && node ace extension:mapping:update"
 	# Run at 4AM every Saturday
