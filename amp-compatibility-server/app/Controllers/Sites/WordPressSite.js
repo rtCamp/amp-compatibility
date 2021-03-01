@@ -19,15 +19,17 @@ class WordPressSite {
 	async runTest( args ) {
 
 		let projectRoot = Helpers.appRoot();
-		let logFilePath = Utility.logPath();
 
 		projectRoot += projectRoot.endsWith( '/' ) ? '' : '/';
 		const bashFilePath = `${ projectRoot }scripts/sites/wp-site-run-test.sh`;
 
 		await Utility.sleep( Utility.random( 1, 10 ) );
 
-		await FileSystem.assureDirectoryExists( logFilePath );
-		const command = `bash -x ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } --amp-source=${ args.ampSource } 2>&1 | tee -a ${ args.logFile }`;
+		if ( args.logFile ) {
+			await FileSystem.assureDirectoryExists( args.logFile );
+		}
+
+		const command = `bash ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } --amp-source=${ args.ampSource } 2>&1 | tee -a ${ args.logFile }`;
 
 		let response = {};
 		try {
