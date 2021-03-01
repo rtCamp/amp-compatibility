@@ -9,6 +9,7 @@ REPO_ROOT="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/../../" >/dev/null 2>&1 &&
 CRONTAB_CONFIG=(
 	# Path of the application to update working directory for cron execution.
 	"HOME=$REPO_ROOT/amp-compatibility-server"
+	"PM2_HOME=/root/.pm2"
 )
 
 CRONS=(
