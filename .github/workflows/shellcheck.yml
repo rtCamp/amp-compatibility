@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+name: Shellcheck
+jobs:
+  lint:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Compatibility Server Shellcheck
+        uses: azohra/shell-linter@latest
+        with:
+          path: "amp-compatibility-server/scripts"
+          severity: "error"
+      - name: Run Dummy Data Script Shellcheck
+        uses: azohra/shell-linter@latest
+        with:
+          path: "amp-wp-dummy-data-generator/data"
+          severity: "warning"
