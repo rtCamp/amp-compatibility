@@ -301,14 +301,18 @@ class Widgets {
 				$param_type = strtolower( trim( $input->getAttribute( 'type' ) ) );
 			}
 
-			if ( in_array( $param_type, [
-				'hidden',
-				'password',
-				'submit',
-				'reset',
-				'file',
-				'datetime-local',
-			], true ) ) {
+			if ( in_array(
+				$param_type,
+				[
+					'hidden',
+					'password',
+					'submit',
+					'reset',
+					'file',
+					'datetime-local',
+				],
+				true
+			) ) {
 				continue;
 			}
 

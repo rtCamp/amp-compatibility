@@ -122,7 +122,6 @@ class Taxonomies extends Base {
 		$singular_name   = ( ! empty( $labels->singular_name ) ) ? $labels->singular_name : $taxonomy;
 		$terms           = [];
 
-
 		for ( $index = 1; $index <= $limit; $index ++ ) {
 
 			$term = "$index: $singular_name";

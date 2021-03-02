@@ -54,7 +54,7 @@ class Shortcodes {
 		}
 
 		foreach ( $shortcode_tags as $shortcode_tag => $callback ) {
-			$shortcode_content = "<div><h3>$shortcode_tag</h3> " . $this->get_shortcode_markup( $shortcode_tag ) . " </div>";
+			$shortcode_content = "<div><h3>$shortcode_tag</h3> " . $this->get_shortcode_markup( $shortcode_tag ) . ' </div>';
 
 			$content .= '<br/>' . $shortcode_content;
 		}
@@ -109,7 +109,6 @@ class Shortcodes {
 					$markup         = "[$shortcode_tag ids='$attachment_ids']";
 				}
 				break;
-
 
 			case 'playlist':
 				$args           = [

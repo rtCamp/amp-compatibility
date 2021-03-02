@@ -241,10 +241,14 @@ class Blocks extends Base {
 					return array_shift( $data['enum'] );
 				}
 				if ( ! empty( $data['source'] ) && 'attribute' === $data['source'] ) {
-					if ( ! empty( $data['attribute'] ) && in_array( $data['attribute'], array(
+					if ( ! empty( $data['attribute'] ) && in_array(
+						$data['attribute'],
+						array(
 							'src',
 							'href',
-						), true ) ) {
+						),
+						true
+					) ) {
 						if ( false !== strpos( $data['selector'], 'audio' ) ) {
 							return 'https://www.w3schools.com/tags/horse.mp3';
 						}
@@ -278,7 +282,6 @@ class Blocks extends Base {
 	 *               with the latter being either an associative array of the
 	 *               same shape, or an indexed array of strings.
 	 * @since 1.0.0
-	 *
 	 */
 	private function generate_block_attribute_html( array $data, $value ) {
 
@@ -352,7 +355,7 @@ class Blocks extends Base {
 				$attr = substr( $attr, 0, strlen( $attr - 1 ) );
 				if ( strpos( $attr, '=' ) ) { // Set value for attribute.
 					list( $attr, $value ) = explode( '=', $attr, 2 );
-					$acc[ $attr ] = trim( $value, '"\'' );
+					$acc[ $attr ]         = trim( $value, '"\'' );
 				} else { // Assume boolean attribute.
 					$acc[ $attr ] = true;
 				}
@@ -362,7 +365,7 @@ class Blocks extends Base {
 
 		if ( false !== strpos( $selector, '#' ) ) {
 			list( $selector, $id ) = explode( '#', $selector, 2 );
-			$attrs['id'] = $id;
+			$attrs['id']           = $id;
 		}
 
 		if ( false !== strpos( $selector, '.' ) ) {

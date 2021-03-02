@@ -127,15 +127,19 @@ class Posts extends Base {
 
 		// Find associated taxonomies.
 		$taxonomy_terms = [];
-		$taxonomies     = get_taxonomies( [
-			'object_type' => [ $post_type ],
-		] );
+		$taxonomies     = get_taxonomies(
+			[
+				'object_type' => [ $post_type ],
+			]
+		);
 
 		foreach ( $taxonomies as $taxonomy ) {
-			$taxonomy_terms[ $taxonomy ] = get_terms( [
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => false,
-			] );
+			$taxonomy_terms[ $taxonomy ] = get_terms(
+				[
+					'taxonomy'   => $taxonomy,
+					'hide_empty' => false,
+				]
+			);
 		}
 
 		$taxonomy_terms = array_filter( $taxonomy_terms );
@@ -167,12 +171,14 @@ class Posts extends Base {
 				}
 			}
 
-			$existing_posts = get_posts( [
-				'title'       => $post_title,
-				'post_type'   => $post_type,
-				'numberposts' => 1,
-				'fields'      => 'ids',
-			] );
+			$existing_posts = get_posts(
+				[
+					'title'       => $post_title,
+					'post_type'   => $post_type,
+					'numberposts' => 1,
+					'fields'      => 'ids',
+				]
+			);
 
 			if ( ! empty( $existing_posts[0] ) && 0 < intval( $existing_posts[0] ) ) {
 				$post_id = $existing_posts[0];

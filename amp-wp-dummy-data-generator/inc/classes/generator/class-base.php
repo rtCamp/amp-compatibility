@@ -56,9 +56,12 @@ abstract class Base {
 
 		$args = wp_parse_args( $args, $defaults );
 
-		$args['meta_input'] = array_merge( $args['meta_input'], [
-			self::GENERATED_FLAG => 'true',
-		] );
+		$args['meta_input'] = array_merge(
+			$args['meta_input'],
+			[
+				self::GENERATED_FLAG => 'true',
+			]
+		);
 
 		$post_id = wp_insert_post( wp_slash( $args ), true );
 
