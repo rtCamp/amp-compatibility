@@ -5,7 +5,7 @@
  * @package amp-wp-dummy-data-generator
  */
 
-namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
+namespace AMP_WP_Dummy_Data_Generator\Inc\CLI;
 
 use function WP_CLI\Utils\get_flag_value;
 

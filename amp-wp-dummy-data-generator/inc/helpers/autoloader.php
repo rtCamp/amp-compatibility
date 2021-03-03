@@ -57,7 +57,7 @@ function autoloader( $resource = '' ) {
 			case 'blocks':
 			case 'meta-boxes':
 			case 'widgets':
-			case 'wp-cli':
+			case 'cli':
 			case 'generator':
 				/**
 				 * If there is class name provided for specific directory then load that.

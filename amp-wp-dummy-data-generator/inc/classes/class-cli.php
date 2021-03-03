@@ -10,11 +10,9 @@ namespace AMP_WP_Dummy_Data_Generator\Inc;
 use AMP_WP_Dummy_Data_Generator\Inc\Traits\Singleton;
 
 /**
- * Class WP_CLI
- *
- * TODO: I recommend renaming this to avoid confusion. Let it be CLI or just anything other than having the same name as WP_CLI.
+ * Class CLI
  */
-class WP_CLI {
+class CLI {
 
 	use Singleton;
 
@@ -27,7 +25,7 @@ class WP_CLI {
 			return;
 		}
 
-		\WP_CLI::add_command( 'amp-wp-dummy-data-generator', \AMP_WP_Dummy_Data_Generator\Inc\WP_CLI\Commands::class );
+		\WP_CLI::add_command( 'amp-wp-dummy-data-generator', \AMP_WP_Dummy_Data_Generator\Inc\CLI\Commands::class );
 
 	}
 }

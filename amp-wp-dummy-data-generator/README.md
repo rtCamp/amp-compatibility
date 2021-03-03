@@ -30,7 +30,7 @@ pre and post import scripts to be executed before and after import.
 ### [./inc/classes/generator/](./inc/classes/generator)
 Contains all content generator classes.
 
-### [./inc/classes/wp-cli/class-commands.php](./inc/classes/wp-cli/class-commands.php)
+### [./inc/classes/cli/class-commands.php](inc/classes/cli/class-commands.php)
 Define all helper WP CLI command for [bash script](./start.sh)
 
 
