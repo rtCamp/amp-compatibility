@@ -81,10 +81,10 @@ abstract class Base {
 		}
 
 		$users = get_users(
-			array( // @todo Please update all PHP files to use the square bracket syntax.
+			[
 				'number' => 1,
 				'role'   => 'administrator',
-			)
+			]
 		);
 
 		if ( ! empty( $users ) ) {

@@ -211,7 +211,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 			return [];
 		}
 
-		$data = array();
+		$data = [];
 
 		$handle = fopen( $filename, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 
@@ -324,7 +324,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	 *
 	 * @return string|bool Written filename on success, false on failure.
 	 */
-	protected function write_to_csv( $file = '', $column_headers = array(), $data = array(), $callback = null, $fopen_mode = 'w' ) {
+	protected function write_to_csv( $file = '', $column_headers = [], $data = [], $callback = null, $fopen_mode = 'w' ) {
 
 		if ( ! is_string( $file ) || empty( $file ) ) {
 			return false;

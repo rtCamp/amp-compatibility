@@ -16,7 +16,7 @@ class Blocks extends Base {
 
 	const PAGE_SLUG = 'amp-wp-dummy-data-generator-blocks';
 
-	const SELF_CLOSING_TAGS = array( 'img', 'br' );
+	const SELF_CLOSING_TAGS = [ 'img', 'br' ];
 
 	/**
 	 * Blocks associative array to populate with generated blocks, keyed by block type.
@@ -130,12 +130,12 @@ class Blocks extends Base {
 	 */
 	private function generate_block( \WP_Block_Type $block_type ) {
 
-		$block = array(
+		$block = [
 			'blockName'    => $block_type->name,
 			'attrs'        => [],
 			'innerBlocks'  => [],
 			'innerContent' => [],
-		);
+		];
 
 		// Populate block attrs and innerContent.
 		$html = [];
@@ -210,7 +210,7 @@ class Blocks extends Base {
 				return new \stdClass();
 			case 'array':
 				if ( isset( $data['items'] ) ) {
-					return array( $this->generate_block_attribute_value( $slug, $data['items'] ) );
+					return [ $this->generate_block_attribute_value( $slug, $data['items'] ) ];
 				}
 
 				return [];
@@ -243,10 +243,10 @@ class Blocks extends Base {
 				if ( ! empty( $data['source'] ) && 'attribute' === $data['source'] ) {
 					if ( ! empty( $data['attribute'] ) && in_array(
 						$data['attribute'],
-						array(
+						[
 							'src',
 							'href',
-						),
+						],
 						true
 					) ) {
 						if ( false !== strpos( $data['selector'], 'audio' ) ) {
@@ -301,10 +301,10 @@ class Blocks extends Base {
 		foreach ( $nested as $index => $partial_selector ) {
 			list( $tag_name, $attrs ) = $this->parse_selector( $partial_selector );
 
-			$current[ $tag_name ] = array(
+			$current[ $tag_name ] = [
 				'attrs'     => $attrs,
 				'innerHTML' => [],
-			);
+			];
 
 			// If final nested element, fill it with attribute value accordingly.
 			if ( $index === count( $nested ) - 1 ) {
@@ -380,7 +380,7 @@ class Blocks extends Base {
 			$tag_name = 'div';
 		}
 
-		return array( $tag_name, $attrs );
+		return [ $tag_name, $attrs ];
 	}
 
 	/**

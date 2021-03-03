@@ -58,7 +58,7 @@ function autoloader( $resource = '' ) {
 			case 'meta-boxes':
 			case 'widgets':
 			case 'wp-cli':
-			case 'generator': // TODO: There is a phpcs complaint here from PSR2.ControlStructures.SwitchDeclaration.TerminatingComment.
+			case 'generator':
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.
@@ -68,6 +68,7 @@ function autoloader( $resource = '' ) {
 					$file_name = sprintf( 'class-%s', trim( strtolower( $path[2] ) ) );
 					break;
 				}
+				// Need to run default, when if condition fails above.
 			default:
 				$directory = 'classes';
 				$file_name = sprintf( 'class-%s', trim( strtolower( $path[1] ) ) );

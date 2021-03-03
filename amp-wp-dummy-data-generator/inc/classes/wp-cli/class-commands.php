@@ -49,13 +49,14 @@ class Commands extends Base {
 	 */
 	private function get_data_dirs( $slug ) {
 
-		$return_locations = array();
-		$search_locations = array(
-			'/data/wporg/plugins/',
-			'/data/wporg/themes/',
-			'/data/premium/plugins/',
-			'/data/premium/themes/',
-		);
+		$return_locations = [];
+		$search_locations =
+			[
+				'/data/wporg/plugins/',
+				'/data/wporg/themes/',
+				'/data/premium/plugins/',
+				'/data/premium/themes/',
+			];
 		foreach ( $search_locations as $search_location ) {
 			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;
 
@@ -75,7 +76,7 @@ class Commands extends Base {
 	 */
 	private function get_data_dir_core() {
 
-		$return_locations = array();
+		$return_locations = [];
 		$maybe_data_dir   = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
 		if ( is_dir( $maybe_data_dir ) ) { // @todo Why would this never be true?
 			$return_locations[] = $maybe_data_dir;
@@ -93,9 +94,9 @@ class Commands extends Base {
 	 *
 	 * @return string[] Import files list.
 	 */
-	private function get_import_files_single( $slug, $import_files = array() ) {
+	private function get_import_files_single( $slug, $import_files = [] ) {
 
-		$return_import_files = array();
+		$return_import_files = [];
 
 		if ( 'core' === $slug ) {
 			$data_dirs = $this->get_data_dir_core();
@@ -126,10 +127,10 @@ class Commands extends Base {
 	 *
 	 * @return array Array of script files list.
 	 */
-	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
+	private function get_pre_post_script( $slug, $script_files = [], $pre_post = 'pre' ) {
 		// @todo This last arg is not docummented and it seems misnamed. The method is "get_pre_post_script but then the argument is called "$pre_post" which seems it can be either "pre" or "post", but being a string it could be anything else too? Given the usage, it seems $before_after would be more appropriate. If it shouldn't be anything else, should it not rather be a bool? It can be like wp_add_inline_script() in this way.
 
-		$return_path = array();
+		$return_path = [];
 		$data_dirs   = $this->get_data_dirs( $slug );
 
 		if ( ! empty( $data_dirs ) ) {
@@ -186,7 +187,7 @@ class Commands extends Base {
 
 		$filename = 'before' === $type ? 'pre' : 'post';
 
-		$script_files = array();
+		$script_files = [];
 
 		/**
 		 * Themes
@@ -245,7 +246,7 @@ class Commands extends Base {
 
 		$this->extract_args( $assoc_args );
 
-		$import_files = array();
+		$import_files = [];
 
 		if ( empty( $this->exclude_default ) ) {
 			/**

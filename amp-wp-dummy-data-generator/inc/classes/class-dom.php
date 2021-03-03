@@ -7,6 +7,9 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc;
 
+/**
+ * Helper class to traverse through HTML DOM.
+ */
 class Dom {
 
 	/**
