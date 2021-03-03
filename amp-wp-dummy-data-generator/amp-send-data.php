@@ -114,9 +114,9 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 		// Print the data.
 		$print = strtolower( trim( $is_print ) );
 		if ( 'json' === $print ) {
-			echo wp_json_encode( $data ) . PHP_EOL; // @todo Should be echo instead of print_r().
+			echo wp_json_encode( $data ) . PHP_EOL;
 		} elseif ( 'json-pretty' === $print ) {
-			echo wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL; // @todo Should be echo instead of print_r().
+			echo wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL;
 		} else {
 			print_r( $data );
 		}
@@ -215,7 +215,7 @@ class AMP_Prepare_Data {
 			'site_info'                  => static::get_site_info(),
 			'plugins'                    => static::get_plugin_info(),
 			'themes'                     => static::get_theme_info(),
-			'errors'                     => array_values( static::get_errors() ),
+			'errors'                     => array_values( $amp_urls['errors'] ),
 			// TODO: Per above, eliminate in favor of sending all information in urls.
 			'error_sources'              => array_values( $amp_urls['error_sources'] ),
 			// TODO: Per above, eliminate in favor of sending all information in urls.
@@ -627,6 +627,7 @@ class AMP_Prepare_Data {
 		}
 
 		return [
+			'errors'                     => $error_data,
 			'error_sources'              => $all_sources, // @todo Per above, I believe this method can be eliminated.
 			'amp_validated_environments' => $all_amp_validated_environments,
 			'urls'                       => $amp_invalid_urls,
