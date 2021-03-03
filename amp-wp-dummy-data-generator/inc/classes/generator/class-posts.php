@@ -122,7 +122,8 @@ class Posts extends Base {
 		$templates        = ( ! empty( $templates ) && is_array( $templates ) ) ? array_keys( $templates ) : [];
 
 		// Adjust the limit according the post types and it's template.
-		$limit = AMP_WP_DUMMY_DATA_GENERATOR_LIMIT + count( $templates );
+		$limit = 1;
+		$limit = $limit + count( $templates );
 		$limit = $post_type_object->hierarchical ? $limit * 2 : $limit;
 
 		// Find associated taxonomies.

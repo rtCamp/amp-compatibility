@@ -117,7 +117,8 @@ class Taxonomies extends Base {
 		}
 
 		$taxonomy_object = get_taxonomy( $taxonomy );
-		$limit           = $taxonomy_object->hierarchical ? AMP_WP_DUMMY_DATA_GENERATOR_LIMIT * 2 : AMP_WP_DUMMY_DATA_GENERATOR_LIMIT;
+		$limit           = 1;
+		$limit           = $taxonomy_object->hierarchical ? $limit * 2 : $limit;
 		$labels          = get_taxonomy_labels( $taxonomy_object );
 		$singular_name   = ( ! empty( $labels->singular_name ) ) ? $labels->singular_name : $taxonomy;
 		$terms           = [];
