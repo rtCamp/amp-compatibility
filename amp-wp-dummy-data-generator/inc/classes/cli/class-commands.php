@@ -389,5 +389,4 @@ class Commands extends Base {
 
 		return $use_block_editor;
 	}
-
 }

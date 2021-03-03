@@ -56,5 +56,4 @@ class Plugin {
 
 		return '/%postname%/';
 	}
-
 }

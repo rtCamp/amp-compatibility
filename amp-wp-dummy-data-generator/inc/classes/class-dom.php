@@ -52,5 +52,4 @@ class Dom {
 
 		return $this->xpath->query( $query );
 	}
-
 }

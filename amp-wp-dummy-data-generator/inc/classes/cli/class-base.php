@@ -421,6 +421,4 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 		}
 
 	}
-
-
 }
