@@ -30,6 +30,7 @@
 		<exclude name="WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get" />
 		<exclude name="WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_path_get_page_by_path" />
 		<exclude name="WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown" />
+		<exclude name="WordPressVIPMinimum.Functions.RestrictedFunctions.get_page_by_title_get_page_by_title" />
 	</rule>
 
 	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
