@@ -121,7 +121,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 
 		// Log message to log file if a log file.
 		if ( ! empty( $this->log_file ) ) {
-			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
+			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents,WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
 		}
 
 		if ( ! empty( $this->logs ) ) {
