@@ -54,7 +54,7 @@ class Taxonomies extends Base {
 		$terms      = [];
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating terms for %d taxonomy...' : 'Generating terms for %d taxonomies...', $count ),
+			sprintf( 1 === $count ? 'Generating terms for %d taxonomy...' : 'Generating terms for %d taxonomies...', $count ),
 			$count
 		);
 
@@ -77,7 +77,7 @@ class Taxonomies extends Base {
 		$count      = count( $taxonomies );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting terms for %d taxonomy...' : 'Deleting terms for %d taxonomies...', $count ),
+			sprintf( 1 === $count ? 'Deleting terms for %d taxonomy...' : 'Deleting terms for %d taxonomies...', $count ),
 			$count
 		);
 

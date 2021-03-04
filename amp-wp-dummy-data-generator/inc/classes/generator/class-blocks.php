@@ -54,7 +54,7 @@ class Blocks extends Base {
 		$this->blocks    = [];
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating %d block...' : 'Generating %d blocks...', $count ),
+			sprintf( 1 === $count ? 'Generating %d block...' : 'Generating %d blocks...', $count ),
 			$count
 		);
 
@@ -106,7 +106,7 @@ class Blocks extends Base {
 		$count = count( $block_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting %d block...' : 'Deleting %d blocks...', $count ),
+			sprintf( 1 === $count ? 'Deleting %d block...' : 'Deleting %d blocks...', $count ),
 			$count
 		);
 
@@ -307,7 +307,7 @@ class Blocks extends Base {
 			];
 
 			// If final nested element, fill it with attribute value accordingly.
-			if ( $index === count( $nested ) - 1 ) {
+			if ( count( $nested ) - 1 === $index ) {
 				switch ( $data['source'] ) {
 					case 'attribute':
 						$current[ $tag_name ]['attrs'][ $data['attribute'] ] = $value;

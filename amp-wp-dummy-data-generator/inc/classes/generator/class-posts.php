@@ -48,7 +48,7 @@ class Posts extends Base {
 		$count      = count( $post_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating posts for %d post type...' : 'Generating posts for %d post types...', $count ),
+			sprintf( 1 === $count ? 'Generating posts for %d post type...' : 'Generating posts for %d post types...', $count ),
 			$count
 		);
 
@@ -71,7 +71,7 @@ class Posts extends Base {
 		$count      = count( $post_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting posts for %d post type...' : 'Deleting posts for %d post types...', $count ),
+			sprintf( 1 === $count ? 'Deleting posts for %d post type...' : 'Deleting posts for %d post types...', $count ),
 			$count
 		);
 
