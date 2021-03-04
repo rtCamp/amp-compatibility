@@ -41,6 +41,15 @@
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found" />
 	</rule>
 
+	<rule ref="WordPress.NamingConventions.ValidVariableName">
+		<properties>
+			<property name="customPropertiesWhitelist" type="array">
+				<element value="tagName" />
+				<element value="childNodes" />
+			</property>
+		</properties>
+	</rule>
+
 	<!-- Prevent false positives for translator comments by adjusting the threshold for commented out code. -->
 	<rule ref="Squiz.PHP.CommentedOutCode">
 		<properties>
