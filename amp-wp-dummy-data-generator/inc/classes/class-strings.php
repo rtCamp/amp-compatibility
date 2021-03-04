@@ -23,8 +23,8 @@ class Strings {
 		$last_segment = strtolower( $last_segment );
 
 		if ( 'ies' === substr( $last_segment, - 3 ) ||
-			 'es' === substr( $last_segment, - 2 ) ||
-			 's' === substr( $last_segment, - 1 )
+			'es' === substr( $last_segment, - 2 ) ||
+			's' === substr( $last_segment, - 1 )
 		) {
 			return true;
 		}
