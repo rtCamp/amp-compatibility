@@ -156,6 +156,8 @@ class QueueController {
 	 */
 	async addAdhocSyntheticQueueFetch( { view, request, auth } ) {
 
+		const user = await auth.getUser();
+		const prefix = request.input( 'prefix' ) || user.username;
 		const data = {};
 		const ampSource = request.input( 'amp_source' );
 		const theme = request.input( 'theme' );
@@ -168,10 +170,15 @@ class QueueController {
 			return view.render( 'dashboard/add-adhoc-synthetic', data );
 		}
 
-		const domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );
+		let domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );
+
+		if ( prefix ) {
+			domain = `${ prefix.trim() }-${ domain }`;
+		}
+
 		const job = {
 			domain: domain,
-			email: auth.user.email,
+			email: user.email,
 			ampSource: ampSource,
 		};
 
