@@ -28,7 +28,9 @@
 				<thead>
 				<tr>
 					@each( ( value, key ) in jobs[0] )
-					<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+					@if( 'id' !== key)
+						<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+					@endif
 					@endeach
 				</tr>
 				</thead>
@@ -76,6 +78,7 @@
 								</button>
 							@endeach
 						</td>
+					@elseif( 'id' === key )
 					@else
 						<td>{{value ? value : ' - '}}</td>
 					@endif

@@ -67,6 +67,8 @@ class QueueController {
 			const queueJob = queueJobs[ index ];
 			let job = {};
 
+			job.id = queueJob.id;
+
 			if ( [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue ) ) {
 
 				job.domain = `${ queueJob.data.domain }.local`;

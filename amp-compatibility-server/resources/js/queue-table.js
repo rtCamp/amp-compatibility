@@ -41,6 +41,7 @@ window.addEventListener( 'DOMContentLoaded', function () {
 
 				if ( 'ok' === data.status ) {
 					messageElement.classList.add( 'text-success' );
+					jQuery(`[data-jobid="${jobID}"]`).remove();
 				} else {
 					messageElement.classList.add( 'text-danger' );
 					this.disabled = false;
