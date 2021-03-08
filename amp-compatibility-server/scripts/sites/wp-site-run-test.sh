@@ -64,6 +64,8 @@ function setup_site() {
 
 	if [[ "github" == "$amp_source" ]]; then
 		ln -sn "$sites_root/repos/github-amp" "$(get_site_path)/wp-content/plugins/amp"
+	elif [ "wporg" != "$amp_source" ] && [ "github" != "$amp_source" ]; then
+		wp plugin install "$amp_source" --activate
 	else
 		ln -sn "$sites_root/repos/amp" "$(get_site_path)/wp-content/plugins/amp"
 	fi
