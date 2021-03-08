@@ -175,7 +175,7 @@ class SyntheticDataStart extends Command {
 				instance.executeCommand(
 					`cd $HOME/amp-compatibility/amp-compatibility-server && ` +
 					`mkdir -p ${ logDirPath } && ` +
-					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee -a ${ secondaryInstanceLogFilePath }`,
+					`node ace worker:start --name=synthetic-data --concurrency=${ this.options.concurrency } 2>&1 | tee ${ secondaryInstanceLogFilePath }`,
 				).then( async () => {
 
 					Logger.info( `%s : Synthetic data jobs finished.`, instanceName );
