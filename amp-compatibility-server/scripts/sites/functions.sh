@@ -1,29 +1,25 @@
 #!/usr/bin/env bash
 
 ### Machine IP.
-machine_ip="127.0.0.1"
-
-wp_admin_user="rtcamp"
-wp_admin_password="goodwork"
-wp_admin_email="rtbot@rtcamp.com"
+export machine_ip="127.0.0.1"
 
 ### Find operating system.
 check_os="$(uname -s)"
 case "${check_os}" in
-	Linux*)     os=linux;;
-	Darwin*)    os=mac;;
-	*)          os="UNKNOWN:${check_os}"
+	Linux*)     export os=linux;;
+	Darwin*)    export os=mac;;
+	*)          export os="UNKNOWN:${check_os}"
 esac
 
 ### Site Root according to environment.
 if [[ "mac" == "$os" ]]; then
-	sites_root="$HOME/Sites"
-	environment='dev'
-	site_domain="$site_name.test"
+	export sites_root="$HOME/Sites"
+	export environment='dev'
+	export site_domain="$site_name.test"
 else
-	sites_root='/var/www'
-	environment='prod'
-	site_domain="$site_name.local"
+	export sites_root='/var/www'
+	export environment='prod'
+	export site_domain="$site_name.local"
 fi
 
 ### Extend global wp command.
@@ -66,7 +62,7 @@ function create_site() {
 	if [[ "mac" == "$os" ]]; then
 		wp valet new "$site_name"
 	else
-		wo site create "$site_domain" --wp
+		wo site create "$site_domain" --wp --php74
 	fi
 }
 
@@ -111,7 +107,7 @@ function setup_base_site() {
 	## Set wp-configs.
 	tmp_path="$(get_site_path)/tmp"
 	mkdir -p "$tmp_path"
-	wp config set WP_TEMP_DIR $tmp_path --add=true --type=constant
+	wp config set WP_TEMP_DIR "$tmp_path" --add=true --type=constant
 
 	## Activate deactivate plugins.
 	wp plugin deactivate nginx-helper

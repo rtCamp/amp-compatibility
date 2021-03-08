@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-site_name="base-site"
+export site_name="base-site"
 source "$base_dir/functions.sh"
 
 function update_amp_plugin() {
