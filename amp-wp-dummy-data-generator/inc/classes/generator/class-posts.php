@@ -80,6 +80,8 @@ class Posts extends Base {
 				'posts_per_page' => -1,
 				'post_type'      => $post_type,
 				'post_status'    => 'any',
+				// This is synthetic data generation, we can ignore slow_db_query_meta_query.
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'meta_query'     => [
 					[
 						'key'   => self::GENERATED_FLAG,

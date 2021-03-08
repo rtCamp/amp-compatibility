@@ -125,6 +125,8 @@ class Commands extends Base {
 	 *
 	 * @param array  $script_files Array of scripts already listed to be executed.
 	 *
+	 * @param string $pre_post     Whether the scripts we need are pre or post DB import.
+	 *
 	 * @return array Array of script files list.
 	 */
 	private function get_pre_post_script( $slug, $script_files = [], $pre_post = 'pre' ) {

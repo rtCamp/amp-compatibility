@@ -86,6 +86,8 @@ class Taxonomies extends Base {
 				'fields'     => 'ids',
 				'taxonomy'   => $taxonomy,
 				'meta_key'   => self::GENERATED_FLAG,
+				// This is synthetic data generation, we can ignore slow_db_query_meta_query.
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'meta_value' => 'true',
 				'hide_empty' => false,
 			];
