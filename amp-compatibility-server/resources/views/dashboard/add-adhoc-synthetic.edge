@@ -81,17 +81,31 @@
 		<div class="form-group row">
 			<label for="amp_source" class="col-sm-2 col-form-label">AMP Plugin Source</label>
 			<div class="col-sm-10">
-				<div class="input-group mb-2">
-					<label for="amp_source_wporg">
-						<input type="radio" id="amp_source_wporg" name="amp_source" value="wporg" checked>&nbsp;
-						WordPress.org
-					</label>
-					&nbsp;&nbsp;
-					<label for="amp_source_github">
-						<input type="radio" id="amp_source_github" name="amp_source" value="github">&nbsp;
-						GitHub
-					</label>
-				</div>
+				<ul class="list-group list-group-flush mt-0 mb-0 list-unstyled">
+					<li>
+						<label for="amp_source_wporg">
+							<input type="radio" id="amp_source_wporg" name="amp_source" value="wporg" checked>&nbsp;
+							WordPress.org
+						</label>
+					</li>
+					<li>
+						<label for="amp_source_github">
+							<input type="radio" id="amp_source_github" name="amp_source" value="github">&nbsp;
+							GitHub
+						</label>
+					</li>
+					<li>
+						<label for="amp_source_other">
+							<input type="radio" id="amp_source_other" name="amp_source" value="other">&nbsp;
+							Other
+							&nbsp;&nbsp;
+							<div class="input-group input-group-sm mt-2">
+								<input type="url" id="amp_source_url" name="amp_source_url" class="form-control" disabled placeholder="https://storage.googleapis.com/ampwp_github_artifacts/refs/heads/develop/dev/amp.zip">
+							</div>
+
+						</label>
+					</li>
+				</ul>
 			</div>
 		</div>
 

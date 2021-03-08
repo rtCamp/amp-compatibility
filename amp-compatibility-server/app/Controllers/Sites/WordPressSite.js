@@ -29,7 +29,7 @@ class WordPressSite {
 			await FileSystem.assureDirectoryExists( args.logFile );
 		}
 
-		const command = `bash ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } --amp-source=${ args.ampSource } 2>&1 | tee -a ${ args.logFile }`;
+		const command = `bash ${ bashFilePath } --domain=${ args.domain } --plugins=${ args.plugins } --theme=${ args.theme } --amp-source="${ args.ampSource }" 2>&1 | tee ${ args.logFile }`;
 
 		let response = {};
 		try {

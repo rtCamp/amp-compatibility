@@ -85,6 +85,10 @@ class QueueController {
 
 			}
 
+			if ( 'adhoc-synthetic-queue' === params.queue) {
+				job.AMP_source = queueJob.data.ampSource;
+			}
+
 			if ( 'active' === params.status ) {
 				job.progress = queueJob.progress.toString();
 			}
@@ -159,7 +163,8 @@ class QueueController {
 		const user = await auth.getUser();
 		const prefix = request.input( 'prefix' ) || user.username;
 		const data = {};
-		const ampSource = request.input( 'amp_source' );
+		let ampSource = request.input( 'amp_source' );
+		const ampSourceURL = request.input( 'amp_source_url' );
 		const theme = request.input( 'theme' );
 		let plugins = _.filter( request.input( 'plugins' ), ( value ) => {
 			return ( _.isObject( value ) && ! _.isEmpty( value.name ) );
@@ -168,6 +173,15 @@ class QueueController {
 		if ( _.isEmpty( theme ) && _.isEmpty( plugins ) ) {
 			data.errorNotification = 'Please provide either theme or plugins.';
 			return view.render( 'dashboard/add-adhoc-synthetic', data );
+		}
+
+		if ( 'other' === ampSource && _.isEmpty( ampSourceURL ) ) {
+			data.errorNotification = 'Please provide URL for AMP plugin.';
+			return view.render( 'dashboard/add-adhoc-synthetic', data );
+		}
+
+		if ( 'other' === ampSource ) {
+			ampSource = ampSourceURL;
 		}
 
 		let domain = 'adhoc-synthetic-data-' + Utility.getCurrentDateTime().replace( / |:/g, '-' );

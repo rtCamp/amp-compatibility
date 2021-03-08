@@ -58,6 +58,36 @@ window.addEventListener( 'DOMContentLoaded', function ( event ) {
 				this.preparePluginRow();
 			} );
 
+			this.bindEvents();
+
+		},
+
+		/**
+		 * To bind all the events.
+		 *
+		 * @return void
+		 */
+		bindEvents: function () {
+
+			jQuery( '[name="amp_source"]' ).on( 'change', this.onAMPSourceChange );
+
+		},
+
+		/**
+		 * Callback function of change event of amp plugin source.
+		 *
+		 * @return void
+		 */
+		onAMPSourceChange: function () {
+
+			const ampSource = $( this ).val();
+
+			if ( 'other' === ampSource ) {
+				$( '#amp_source_url' ).removeAttr( 'disabled' );
+			} else {
+				$( '#amp_source_url' ).attr( 'disabled', 'true' );
+			}
+
 		},
 
 		/* duplicate plugin removal code */

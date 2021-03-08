@@ -52,6 +52,14 @@
 						</td>
 					@elseif( 'theme' === key && size( value ) )
 						<td>{{value[0].name}} {{ elIf( '($self)', value[0].version, value[0].version ) }}</td>
+					@elseif( 'AMP_source' === key )
+						<td>
+							@if( 'wporg' === value || 'github' === value )
+								{{value}}
+							@else
+								<a href="{{value}}" target="_blank" title="{{value}}">Other</a>
+							@endif
+						</td>
 					@elseif( 'progress' === key )
 						<td>{{value ? value + '%' : ' - '}}</td>
 					@elseif( 'logs' === key )
