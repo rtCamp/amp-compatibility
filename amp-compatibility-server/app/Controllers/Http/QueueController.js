@@ -85,6 +85,10 @@ class QueueController {
 
 			}
 
+			if ( 'adhoc-synthetic-queue' === params.queue) {
+				job.AMP_source = queueJob.data.ampSource;
+			}
+
 			if ( 'active' === params.status ) {
 				job.progress = queueJob.progress.toString();
 			}
