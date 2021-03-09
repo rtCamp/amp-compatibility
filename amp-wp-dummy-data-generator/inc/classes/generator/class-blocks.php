@@ -407,11 +407,16 @@ class Blocks extends Base {
 					continue;
 				}
 
-				if ( is_string( $value ) && empty( $value ) ) {
+				if ( is_string( $value ) && ! empty( $value ) ) {
+					$result .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
 					continue;
 				}
 
-				$result .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
+				// Handles the case where we have multiple classes as an array for a given tag and the header attribute.
+				if ( is_array( $value ) && ! empty( $value ) ) {
+					$result .= ' ' . $attr . '="' . esc_attr( implode( ' ', $value ) ) . '"';
+				}
+
 			}
 
 			if ( in_array( $tag_name, static::SELF_CLOSING_TAGS, true ) ) {
