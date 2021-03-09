@@ -31,14 +31,6 @@ class Navigations {
 	 */
 	protected function setup_hooks() {
 
-		// TODO: I originally handled this via the database too, to match the real-world setup,
-		// where these locations are assigned and stored via database.
-		//
-		// Using a filter definitely simplifies the implementation, but I originally intentionally
-		// decided against this, since there may potentially be nuances to the behavior when using
-		// a filter instead.
-		//
-		// Just wanted to make sure this has been taken into consideration.
 		add_filter( 'theme_mod_nav_menu_locations', [ $this, 'add_navigation_menus' ] );
 	}
 

@@ -256,7 +256,6 @@ class AMP_Prepare_Data {
 
 		$loopback_status = '';
 
-		// TODO: Is this necessary? We're synthetic after all.
 		if ( class_exists( 'Health_Check_Loopback' ) ) {
 			$loopback_status = \Health_Check_Loopback::can_perform_loopback();
 			$loopback_status = ( ! empty( $loopback_status->status ) ) ? $loopback_status->status : '';
@@ -692,7 +691,6 @@ class AMP_Prepare_Data {
 
 		foreach ( $pending_stylesheet_indices as $i ) {
 
-			// @todo Add information about amp-key frames as well.
 			if ( ! isset( $stylesheets[ $i ]['group'] ) || 'amp-custom' !== $stylesheets[ $i ]['group'] || ! empty( $stylesheets[ $i ]['duplicate'] ) ) {
 				continue;
 			}
