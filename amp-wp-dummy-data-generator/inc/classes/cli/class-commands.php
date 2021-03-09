@@ -130,7 +130,7 @@ class Commands extends Base {
 	 * @return array Array of script files list.
 	 */
 	private function get_pre_post_script( $slug, $script_files = [], $pre_post = 'pre' ) {
-		// @todo This last arg is not docummented and it seems misnamed. The method is "get_pre_post_script but then the argument is called "$pre_post" which seems it can be either "pre" or "post", but being a string it could be anything else too? Given the usage, it seems $before_after would be more appropriate. If it shouldn't be anything else, should it not rather be a bool? It can be like wp_add_inline_script() in this way.
+		// @todo This last arg is not documented and it seems misnamed. The method is "get_pre_post_script but then the argument is called "$pre_post" which seems it can be either "pre" or "post", but being a string it could be anything else too? Given the usage, it seems $before_after would be more appropriate. If it shouldn't be anything else, should it not rather be a bool? It can be like wp_add_inline_script() in this way.
 
 		$return_path = [];
 		$data_dirs   = $this->get_data_dirs( $slug );

@@ -9,7 +9,11 @@ Install this plugin in WordPress installation, And run below command from curren
 bash ./start.sh
 ```
 
-TODO: What about documenting use of `cleanup.sh`?
+## Once the data generation is complete, run the below command to clean up the environment.
+
+```bash
+bash ./cleanup.sh
+```
 TODO: See also my not in start.sh about using a WP-CLI wrapper command for start.sh instead of using Bash. 
 
 ## WP-CLI Commands
@@ -19,7 +23,10 @@ TODO: See also my not in start.sh about using a WP-CLI wrapper command for start
 wp amp-send-data
 ```
 
-TODO: What about documenting `wp configure-amp-site`?
+#### To configure AMP plugin and set default options/settings.
+```bash
+wp configure-amp-site
+```
 
 ## Directory/File Info
 

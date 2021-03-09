@@ -48,7 +48,6 @@ function configure_amp_site() {
 	/**
 	 * To update amp option.
 	 * User must have manage_options capabilities.
-	 * TODO: The AMP plugin needs to refactor the options management to eliminate the need for this.
 	 */
 	add_filter(
 		'user_has_cap',

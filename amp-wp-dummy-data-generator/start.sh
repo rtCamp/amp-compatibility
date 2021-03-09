@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# NOTE: As opposed to being a bash script this could instead be a WP-CLI command that makes calls to WP_CLI::run_command() for WP-CLI commands and then system() calls for scripts. This would be faster and would keep everything in PHP rather than having to pass data back and forth between PHP and Bash.
-
 plugin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 exclude_default_flag=""
