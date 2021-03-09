@@ -1,1 +1,1 @@
-Premium plugins will go in this directory.
+Commercial plugins will go in this directory.

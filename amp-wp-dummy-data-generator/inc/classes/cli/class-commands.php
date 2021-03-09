@@ -54,8 +54,8 @@ class Commands extends Base {
 			[
 				'/data/wporg/plugins/',
 				'/data/wporg/themes/',
-				'/data/premium/plugins/',
-				'/data/premium/themes/',
+				'/data/commercial/plugins/',
+				'/data/commercial/themes/',
 			];
 		foreach ( $search_locations as $search_location ) {
 			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;

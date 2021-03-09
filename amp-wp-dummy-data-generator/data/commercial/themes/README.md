@@ -1,1 +1,1 @@
-Premium themes will go in this directory.
+Commercial themes will go in this directory.

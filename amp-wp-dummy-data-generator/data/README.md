@@ -8,11 +8,11 @@ _All `.xml` and `.wxr` files in the directory `data/wporg/core/` will get import
 
 ```
 data
-├── premium
+├── commercial
 │   ├── plugins
-│   │   └── my-premium-plugin
+│   │   └── my-commercial-plugin
 │   └── themes
-│       └── my-premium-theme
+│       └── my-commercial-theme
 └── wporg
     ├── core
     ├── plugins
@@ -28,10 +28,8 @@ TODO: Should the sample data be actually committed to the repo as opposed to bei
 ### Directory `wporg` ###
 Contains dummy data files for plugins and themes available on WordPress.org
 
-### Directory `premium` ###
-Contains dummy data files for premium plugins and themes
-
-TODO: Probably better to use "commercial" rather than "premium", since in my experience so called "premium" themes/plugins are often _worse_ in quality than non-commercial ones. WordPress.org uses the term "commercial" to describe these as well: https://wordpress.org/themes/commercial/
+### Directory `commercial` ###
+Contains dummy data files for commercial plugins and themes
 
 *The slug of the plugin/theme name must match the directory name here*
 
