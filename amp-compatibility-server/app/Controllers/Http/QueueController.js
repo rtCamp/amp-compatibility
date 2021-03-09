@@ -67,6 +67,7 @@ class QueueController {
 			const queueJob = queueJobs[ index ];
 			let job = {};
 
+			let site_domain = '';
 			job.id = queueJob.id;
 
 			if ( [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue ) ) {
@@ -74,6 +75,8 @@ class QueueController {
 				job.domain = `${ queueJob.data.domain }.local`;
 				job.plugins = Utility.parseSyntheticExtensionParam( queueJob.data.plugins );
 				job.theme = Utility.parseSyntheticExtensionParam( queueJob.data.theme );
+
+				site_domain = job.domain;
 
 			} else if ( 'request-queue' === params.queue ) {
 
@@ -83,6 +86,7 @@ class QueueController {
 				job.error_sources_count = queueJob.data.error_sources ? _.size( queueJob.data.error_sources ) : 0;
 				job.urls_count = queueJob.data.urls ? _.size( queueJob.data.urls ) : 0;
 
+				site_domain = job.site_url;
 			}
 
 			if ( 'adhoc-synthetic-queue' === params.queue) {
@@ -99,14 +103,23 @@ class QueueController {
 				job.logs = queueJob.options._logs || [];
 			}
 
-			if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
-				job.actions = {
-					retry: queueJob.id,
-				};
-			} else if ( [ 'waiting' ].includes( params.status ) ) {
-				job.actions = {
-					remove: queueJob.id,
-				};
+			switch ( params.status ) {
+				case 'succeeded':
+					job.actions = {
+						retry: queueJob.id,
+						report: `https://datastudio.google.com/reporting/33e24fa4-a3e3-49ff-b2e1-8ba235a7424f/page/pb40B?params=%7B%22df230%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${ site_domain }%22%7D `,
+					};
+					break;
+				case 'failed':
+					job.actions = {
+						retry: queueJob.id,
+					};
+					break;
+				case 'waiting':
+					job.actions = {
+						remove: queueJob.id,
+					};
+					break;
 			}
 
 			jobs.push( job );
