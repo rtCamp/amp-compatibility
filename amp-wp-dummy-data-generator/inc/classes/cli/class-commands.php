@@ -76,11 +76,7 @@ class Commands extends Base {
 	 */
 	private function get_data_dir_core() {
 
-		$return_locations = [];
-		$maybe_data_dir   = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
-		if ( is_dir( $maybe_data_dir ) ) { // @todo Why would this never be true?
-			$return_locations[] = $maybe_data_dir;
-		}
+		$return_locations[] = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
 
 		return $return_locations;
 	}

@@ -131,7 +131,6 @@ abstract class Base {
 			return $users[0];
 		}
 
-		// @todo Probably better to throw an exception.
 		// Edge-case, probably never.
 		\WP_CLI::error(
 			'There appears to not be any administrator account on your site.'

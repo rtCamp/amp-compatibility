@@ -142,10 +142,6 @@ class Blocks extends Base {
 		foreach ( $block_type->get_attributes() as $slug => $data ) {
 			$value = $this->generate_block_attribute_value( $slug, $data );
 
-			if ( isset( $data['selector'] ) ) {
-				$selector = explode( ',', $data['selector'] )[0]; // @todo The $selector variable is not used.
-			}
-
 			$source = isset( $data['source'] ) ? $data['source'] : 'comment';
 			switch ( $source ) {
 				case 'attribute':
