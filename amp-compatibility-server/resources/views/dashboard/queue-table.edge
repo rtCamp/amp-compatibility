@@ -29,7 +29,7 @@
 				<tr>
 					@each( ( value, key ) in jobs[0] )
 					@if( 'id' !== key)
-						<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+						<th scope="col" class="col-{{key}}">{{ upperFirst( snackCaseToString( key ) ) }}</th>
 					@endif
 					@endeach
 				</tr>
