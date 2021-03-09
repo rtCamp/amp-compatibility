@@ -76,7 +76,17 @@ function configure_amp_site() {
 	}
 }
 
-// @todo Please add phpdoc.
+/**
+ * Sends data to our endpoint where we queue it for further analysis.
+ *
+ * @param string[] $args       Not Used.
+ * @param string[] $assoc_args Associative array of arguments passed to the CLI command.
+ *
+ * @return null
+ *
+ * @throws \Exception When the AMP plugin is not active.
+ *
+ */
 function amp_send_data( $args = [], $assoc_args = [] ) {
 
 	verify_amp_plugin_active();
