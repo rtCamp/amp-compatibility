@@ -79,11 +79,15 @@
 						</td>
 					@elseif( 'actions' === key )
 						<td>
-							@each( ( jobID, action ) in value )
-								<button type="button" class="btn btn-sm btn-secondary btn-actions" data-action="{{action}}"
-										data-jobid="{{jobID}}">
-									{{ upperFirst( snackCaseToString( action ) ) }}
-								</button>
+							@each( ( value, action ) in value )
+								@if( 'report' == action )
+									<a href="{{value}}" class="btn btn-sm btn-primary btn-actions" target="_blank">{{ upperFirst( snackCaseToString( action ) ) }}</a>
+								@else
+									<button type="button" class="btn btn-sm btn-primary btn-actions" data-action="{{action}}"
+											data-jobid="{{value}}">
+										{{ upperFirst( snackCaseToString( action ) ) }}
+									</button>
+								@endif
 							@endeach
 						</td>
 					@elseif( 'id' === key )
