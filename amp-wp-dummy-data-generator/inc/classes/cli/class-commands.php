@@ -84,13 +84,11 @@ class Commands extends Base {
 	/**
 	 * Returns array of import files for a given plugin or theme.
 	 *
-	 * @param string   $slug         Name of plugin or theme.
-	 *
-	 * @param string[] $import_files Array of files already listed to be imported.
+	 * @param string $slug Name of plugin or theme.
 	 *
 	 * @return string[] Import files list.
 	 */
-	private function get_import_files_single( $slug, $import_files = [] ) {
+	private function get_import_file_paths( $slug ) {
 
 		$return_import_files = [];
 
@@ -109,39 +107,33 @@ class Commands extends Base {
 			}
 		}
 
-		$return_import_files = array_merge( $import_files, $return_import_files );
-
 		return $return_import_files;
 	}
 
 	/**
 	 * Returns path for pre or post import scripts for a given plugin or theme.
 	 *
-	 * @param string $slug         Name of plugin or theme.
+	 * @param string $slug     Name of plugin or theme.
 	 *
-	 * @param array  $script_files Array of scripts already listed to be executed.
-	 *
-	 * @param string $pre_post     Whether the scripts we need are pre or post DB import.
+	 * @param string $pre_post Whether the scripts we need are pre or post DB import.
 	 *
 	 * @return array Array of script files list.
 	 */
-	private function get_pre_post_script( $slug, $script_files = [], $pre_post = 'pre' ) {
-		// @todo This last arg is not documented and it seems misnamed. The method is "get_pre_post_script but then the argument is called "$pre_post" which seems it can be either "pre" or "post", but being a string it could be anything else too? Given the usage, it seems $before_after would be more appropriate. If it shouldn't be anything else, should it not rather be a bool? It can be like wp_add_inline_script() in this way.
+	private function get_script_paths( $slug, $pre_post = 'pre' ) {
 
-		$return_path = [];
-		$data_dirs   = $this->get_data_dirs( $slug );
+		$return_paths = [];
+		$data_dirs    = $this->get_data_dirs( $slug );
 
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
 				$pre_post_glob = glob( "{$data_dir}/{$pre_post}.sh" );
 				if ( ! empty( $pre_post_glob ) ) {
-					$return_path = $pre_post_glob; // @todo If $data_dirs has more than one item in it, then some scripts will get lost. Only the last one will be returned. Shouldn't this rather be doing `$return_path = array_merge( $return_path, $pre_post_glob )`? I suppose it would be unusually for there to be multiple matches. If that is the case, then it should `break` here.
+					$return_paths = array_merge( $pre_post_glob, $return_paths );
 				}
 			}
 		}
-		$return_path = array_merge( $script_files, $return_path ); // @todo I think it makes more sense to not do the merging inside here. It can be done in the caller.
 
-		return $return_path;
+		return $return_paths;
 	}
 
 	/**
@@ -192,11 +184,11 @@ class Commands extends Base {
 		 */
 		$active_theme_object = wp_get_theme();
 		$active_theme        = $active_theme_object->get_stylesheet();
-		$script_files        = $this->get_pre_post_script( $active_theme, $script_files, $filename );
+		$script_files        = array_merge( $this->get_script_paths( $active_theme, $filename ), $script_files );
 
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
-			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename ); // @todo Shouldn't this be merged with the child theme $script_files above? Or actually I see the merge is being done _inside_ the function. I think it would be better to just return the array and do the array_merge at this level.
+			$script_files = array_merge( $this->get_script_paths( $parent_theme, $filename ), $script_files );
 		}
 
 		/**
@@ -206,7 +198,7 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename ); // @todo See note above for how I think the array_merge() should be done here rather than passing $script_files into the method.
+			$script_files = array_merge( $this->get_script_paths( $active_plugin, $filename ), $script_files );
 		}
 
 		if ( ! empty( $script_files ) ) {
@@ -250,10 +242,10 @@ class Commands extends Base {
 			/**
 			 * WordPress default sample data.
 			 */
-			$import_files = $this->get_import_files_single( 'core', $import_files ); // @todo For each call to get_import_files_single in this method I think its better to do the array_merge() in the caller function.
+			$import_files = array_merge( $this->get_import_file_paths( 'core' ), $import_files );
 
 			if ( self::is_gutenberg_active() ) {
-				$import_files = $this->get_import_files_single( 'gutenberg', $import_files );
+				$import_files = array_merge( $this->get_import_file_paths( 'gutenberg' ), $import_files );
 			}
 		}
 
@@ -262,11 +254,11 @@ class Commands extends Base {
 		 */
 		$active_theme_object = wp_get_theme();
 		$active_theme        = $active_theme_object->get_stylesheet();
-		$import_files        = $this->get_import_files_single( $active_theme, $import_files );
+		$import_files        = array_merge( $this->get_import_file_paths( $active_theme ), $import_files );
 
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
-			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
+			$import_files = array_merge( $this->get_import_file_paths( $parent_theme ), $import_files );
 		}
 
 		/**
@@ -276,7 +268,7 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-			$import_files = $this->get_import_files_single( $active_plugin, $import_files );
+			$import_files = array_merge( $this->get_import_file_paths( $active_plugin ), $import_files );
 		}
 
 		if ( ! empty( $import_files ) ) {
