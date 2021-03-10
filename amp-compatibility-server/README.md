@@ -10,8 +10,14 @@ The AMP compatibility server is a Node JS application based on the [AdonisJS] fr
 
 ```bash
 git clone git@github.com:rtCamp/amp-compatibility.git
-cd amp-compatibility-server
+cd amp-compatibility/amp-compatibility-server
 npm install
+```
+
+**Install Adonis CLI (For development only)**
+
+```bash
+npm i -g @adonisjs/cli
 ```
 
 ### 2. Configure environment variables.
