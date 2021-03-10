@@ -70,7 +70,7 @@ jobs:
              | sed 1,5d
           )
           [[ -n "$OLD_VERSIONS" ]] \
-            && gcloud app versions delete --quiet "$OLD_VERSIONS" \
+            && gcloud app versions delete --quiet $OLD_VERSIONS \
             || echo 'No old versions to delete. Less than 5 latest versions present.'
 
     - name: Cleanup
