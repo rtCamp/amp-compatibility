@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
-if [[ -f ~/.bash_aliases ]]; then
-	. ~/.bash_aliases
+if [[ "$CI" == "true" ]]; then
+	set -ex
 fi
 
 log_info1() {
-
-	declare desc="log info1 formatter"
 	echo "-----> $*"
 }
 
 log_info2() {
-
-	declare desc="log info2 formatter"
 	echo "=====> $*"
 }
 
@@ -79,15 +75,15 @@ function install_dependencies() {
 function setup_wo() {
 
 	wget -qO wo wops.cc
-	# git config --global user.email "testing@amp-comp.com"
-	# git config --global user.name "amp-comp"
+	git config --global user.email "testing@amp-comp.com"
+	git config --global user.name "amp-comp"
 	echo "amp-comp
 testing@amp-comp.com" > answers.txt
 	bash wo < answers.txt
 	rm wo answers.txt
 
 	# Install basic nginx and mysql
-	wo stack install --nginx --mysql --php73 --wpcli --composer
+	wo stack install --nginx --mysql --php74 --wpcli --composer
 	rm /etc/nginx/conf.d/stub_status.conf /etc/nginx/sites-enabled/22222
 
 # Return 403 for default server block.
@@ -98,7 +94,8 @@ server {
 }
 EOF
 
-cat <<EOF > /etc/php/7.3/fpm/pool.d/www.conf
+if [[ "$CI" != "true" ]]; then
+	cat <<EOF > /etc/php/7.3/fpm/pool.d/www.conf
 [www-php73]
 user = www-data
 group = www-data
@@ -120,8 +117,8 @@ listen.mode = 0660
 listen.backlog = 32768
 catch_workers_output = yes
 EOF
-
 	wo stack restart --php
+fi
 }
 
 function setup_node() {
@@ -140,17 +137,22 @@ function setup_node() {
 function add_gh_pub_key() {
 
 	# add github's public key
-	echo "|1|qPmmP7LVZ7Qbpk7AylmkfR0FApQ=|WUy1WS3F4qcr3R5Sc728778goPw= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /root/.ssh/known_hosts
+	echo "|1|qPmmP7LVZ7Qbpk7AylmkfR0FApQ=|WUy1WS3F4qcr3R5Sc728778goPw= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> "$HOME/.ssh/known_hosts"
 }
 
 function setup_repo() {
 
-	GITHUB_REPOSITORY="$1"
-	repo_data=(${GITHUB_REPOSITORY//\// })
-	cd "$HOME"
-	if [[ ! -d "${repo_data[1]}" ]]; then
-		REMOTE_REPO="git@github.com:$GITHUB_REPOSITORY.git"
-		git clone "$REMOTE_REPO"
+	if [[ "$CI" == "true" ]]; then
+		mv "$GITHUB_WORKSPACE" "$HOME/amp-compatibility"
+		mkdir -p "$GITHUB_WORKSPACE"
+	else
+		GITHUB_REPOSITORY="$1"
+		repo_data=("${GITHUB_REPOSITORY//\// }")
+		cd "$HOME"
+		if [[ ! -d "${repo_data[1]}" ]]; then
+			REMOTE_REPO="git@github.com:$GITHUB_REPOSITORY.git"
+			git clone "$REMOTE_REPO"
+		fi
 	fi
 }
 
@@ -181,7 +183,7 @@ function main() {
 
 	bootstrap
 	install_dependencies
-	add_gh_pub_key
+	[[ "$CI" != "true" ]] && add_gh_pub_key
 	setup_repo "rtCamp/amp-compatibility"
 	setup_local_repo
 	move_dummy_data_repo

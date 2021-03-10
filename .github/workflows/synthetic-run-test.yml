@@ -1,0 +1,31 @@
+on: pull_request
+
+name: Synthetic data run test
+jobs:
+  test:
+    name: Synthetic data run test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Determine test run
+      id: diff
+      run: |
+        RUN=false
+        if [[ "$GITHUB_BASE_REF" ]]; then
+          # Pull Request
+          git fetch origin $GITHUB_BASE_REF --depth=1
+          DIFF=$( git diff --name-only "origin/$GITHUB_BASE_REF" "$GITHUB_SHA" )
+          for path in $DIFF; do
+            if [[ "$path" == "amp-wp-dummy-data-generator/data/"* ]]; then
+              RUN=true
+              break
+            fi
+          done
+        fi
+        echo "::set-output name=run::$( echo "$RUN")"
+
+    - name: Run synthetic-data job
+      if: env.RUN == 'true'
+      uses: docker://rtcamp/synthetic-run-test
+      env:
+        RUN: ${{ steps.diff.outputs.run }}
