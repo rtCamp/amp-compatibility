@@ -101,7 +101,7 @@ class Commands extends Base {
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
 				$import_files_glob = glob( "{$data_dir}/*.{xml,XML,wxr,WXR}", GLOB_BRACE );
-				if ( false !== $import_files ) {
+				if ( false !== $import_files_glob ) {
 					$return_import_files = array_merge( $return_import_files, $import_files_glob );
 				}
 			}
