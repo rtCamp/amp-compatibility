@@ -27,16 +27,6 @@ abstract class Base {
 	}
 
 	/**
-	 * Deletes all generated content.
-	 *
-	 * @todo As noted in cleanup.sh, I think we can avoid needing to worry about cleanup by just restoring a DB dump after the run completes.
-	 *
-	 * @return void
-	 */
-	public function clear() {
-	}
-
-	/**
 	 * Generates a post.
 	 *
 	 * @param array $args  {
