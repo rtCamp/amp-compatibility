@@ -46,7 +46,7 @@ class GlobalViewData {
 		View.global( 'params', params );
 		View.global( 'queryParams', request.get() );
 		View.global( 'queryString',queryString );
-
+		View.global( 'parseInt', parseInt );
 		View.global( 'snackCaseToString', ( string ) => {
 			return string.replace( /_+/g, ' ' );
 		} );
