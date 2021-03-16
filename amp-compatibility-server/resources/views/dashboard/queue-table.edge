@@ -67,7 +67,7 @@
 							<ul class="list-group list-group-flush mt-0 mb-0">
 								@each( ( data, tryNo ) in value )
 								<li class="list-group-item bg-transparent">
-									<strong>Try {{tryNo}}</strong>:&nbsp;{{data.message}}
+									<strong>Try {{tryNo + 1}}</strong>:&nbsp;{{data.message}}
 									@if( data.logFile )
 										<a target="_blank" href="https://storage.cloud.google.com/{{data.logFile}}">
 											Log
