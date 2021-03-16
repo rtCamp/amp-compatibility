@@ -287,6 +287,7 @@ class QueueController {
 				const jobData = _.clone( job.data );
 
 				if ( 'synthetic-queue' === queueName ) {
+					await queueObject.queue.removeJob( postData.jobID );
 					await AdhocSyntheticDataQueueController.createJob( jobData );
 				} else {
 					await queueObject.queue.removeJob( postData.jobID );
