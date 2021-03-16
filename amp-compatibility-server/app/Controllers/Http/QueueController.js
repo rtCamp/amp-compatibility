@@ -246,22 +246,18 @@ class QueueController {
 
 		const postData = request.post();
 		const queueName = params.queue || 'request-queue';
-		let queue = false;
 		let queueObject = false;
 		let message = '';
 
 		switch ( queueName ) {
 			case 'synthetic-queue':
-				queue = SyntheticDataQueueController.queue;
 				queueObject = SyntheticDataQueueController;
 				break;
 			case 'adhoc-synthetic-queue':
-				queue = AdhocSyntheticDataQueueController.queue;
 				queueObject = AdhocSyntheticDataQueueController;
 				break;
 			case 'request-queue':
 			default:
-				queue = RequestQueueController.queue;
 				queueObject = RequestQueueController;
 				break;
 		}
@@ -288,10 +284,14 @@ class QueueController {
 		switch ( postData.action ) {
 			case 'retry':
 				const job = await queueObject.queue.getJob( postData.jobID );
-
 				const jobData = _.clone( job.data );
-				await queueObject.queue.removeJob( postData.jobID );
-				await queueObject.createJob( jobData );
+
+				if ( 'synthetic-queue' === queueName ) {
+					await AdhocSyntheticDataQueueController.createJob( jobData );
+				} else {
+					await queueObject.queue.removeJob( postData.jobID );
+					await queueObject.createJob( jobData );
+				}
 
 				message = `Job ${ postData.jobID } has been added again in the queue`;
 				break;
