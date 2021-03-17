@@ -9,13 +9,6 @@ Install this plugin in WordPress installation, And run below command from curren
 bash ./start.sh
 ```
 
-## Once the data generation is complete, run the below command to clean up the environment.
-
-```bash
-bash ./cleanup.sh
-```
-TODO: See also my not in start.sh about using a WP-CLI wrapper command for start.sh instead of using Bash. 
-
 ## WP-CLI Commands
 
 #### To send AMP validation data.
