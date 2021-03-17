@@ -27,8 +27,6 @@ function wp() {
 	php "$wp_path" $url_flag --allow-root "$@"
 }
 
-# TODO: First thing is a backup should be taken of the database and make a tarball of the current uploaded files. To facilitate running this on an existing development site, it should be able to be non-destructive.
-
 if [[ "" == $(wp user list --field=ID) ]]; then
 	# TODO: This should normally not be needed since no site should have zero users.
 	wp user create admin admin@example.com --role=administrator --user_pass=admin
