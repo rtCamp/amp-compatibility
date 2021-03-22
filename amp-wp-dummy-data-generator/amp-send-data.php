@@ -404,7 +404,6 @@ class AMP_Prepare_Data {
 	 * To get list of AMP errors.
 	 *
 	 * @return array List of errors.
-	 * @todo Per above, I believe this method can be eliminated.
 	 */
 	protected static function get_errors() {
 
@@ -481,7 +480,7 @@ class AMP_Prepare_Data {
 		// To store all AMP validated URls
 		$amp_invalid_urls = [];
 
-		$error_data      = static::get_errors(); // TODO: The errors are also being returned by static::get_data(). Also, the error data is already embedded inside the post_content (redundantly). Therefore, this could probably be skipped in favor of obtaining it when looping over the validated URLs below.
+		$error_data      = static::get_errors();
 		$plugin_info     = static::get_plugin_info();
 		$theme_info      = static::get_theme_info();
 		$plugin_versions = [];
@@ -627,7 +626,7 @@ class AMP_Prepare_Data {
 
 		return [
 			'errors'                     => $error_data,
-			'error_sources'              => $all_sources, // @todo Per above, I believe this method can be eliminated.
+			'error_sources'              => $all_sources,
 			'amp_validated_environments' => $all_amp_validated_environments,
 			'urls'                       => $amp_invalid_urls,
 		];
