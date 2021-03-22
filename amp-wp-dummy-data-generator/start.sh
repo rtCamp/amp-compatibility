@@ -27,11 +27,6 @@ function wp() {
 	php "$wp_path" $url_flag --allow-root "$@"
 }
 
-if [[ "" == $(wp user list --field=ID) ]]; then
-	# TODO: This should normally not be needed since no site should have zero users.
-	wp user create admin admin@example.com --role=administrator --user_pass=admin
-fi
-
 setup_site() {
 	wp rewrite flush
 	wp cache flush
