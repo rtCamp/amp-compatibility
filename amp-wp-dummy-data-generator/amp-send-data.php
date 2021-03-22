@@ -450,12 +450,6 @@ class AMP_Prepare_Data {
 			$error_data[ $error_term->slug ] = $error_detail;
 		}
 
-		/**
-		 * Remove duplicate data.
-		 * TODO: This should not be needed because $error_data is keyed by $error_term->slug which is itself an md5 slug of the original validation error data.
-		 */
-		$error_data = array_map( 'unserialize', array_unique( array_map( 'serialize', $error_data ) ) );
-
 		return $error_data;
 	}
 
