@@ -46,7 +46,7 @@ actions_before_importing() {
 
 	# CLI commands.
 	scripts=$(wp amp-wp-dummy-data-generator get_scripts --type=before $exclude_default_flag)
-	IFS='|' read -ra scripts_array <<< "$scripts" # TODO: See comment in class-commands.php where I think it would be preferable to let the IFS be a newline.
+	IFS='|' read -ra scripts_array <<< "$scripts"
 
 	for script in "${scripts_array[@]}"; do
 		bash $script
@@ -60,7 +60,7 @@ import_data() {
 	# Import data from XML file.
 	import_files=$(wp amp-wp-dummy-data-generator get_import_files $exclude_default_flag)
 
-	IFS='|' read -ra import_files_array <<< "$import_files" # TODO: See comment above about newline IFS.
+	IFS='|' read -ra import_files_array <<< "$import_files"
 
 	for import_file in "${import_files_array[@]}"; do
 		wp import --authors=create $import_file
@@ -76,7 +76,7 @@ actions_after_importing() {
 
 	# CLI commands
 	scripts=$(wp amp-wp-dummy-data-generator get_scripts --type=after $exclude_default_flag)
-	IFS='|' read -ra scripts_array <<< "$scripts" # TODO: See comment above about newline IFS.
+	IFS='|' read -ra scripts_array <<< "$scripts"
 
 	for script in "${scripts_array[@]}"; do
 		bash $script

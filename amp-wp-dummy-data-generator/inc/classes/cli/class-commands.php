@@ -202,7 +202,7 @@ class Commands extends Base {
 		}
 
 		if ( ! empty( $script_files ) ) {
-			$this->write_log( implode( '|', $script_files ) ); // @todo Why not rather implode with "\n"?
+			$this->write_log( implode( '|', $script_files ) );
 		}
 
 	}
@@ -272,7 +272,7 @@ class Commands extends Base {
 		}
 
 		if ( ! empty( $import_files ) ) {
-			$this->write_log( implode( '|', $import_files ) ); // @todo See note above about concatenating with newline.
+			$this->write_log( implode( '|', $import_files ) );
 		}
 
 	}
