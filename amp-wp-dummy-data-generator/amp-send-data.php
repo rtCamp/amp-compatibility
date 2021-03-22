@@ -212,22 +212,13 @@ class AMP_Prepare_Data {
 
 		$amp_urls = static::get_amp_urls();
 
-		// TODO: It seems certain data is being repeatedly sent here. The obtaining of the information could be simplified in this way:
-		// - Skip having a separate get_errors() call which sends all the errors together.
-		// - Skip sending all error sources separately.
-		// - Instead, send all the information together with the validated URL. So the POST body would be a list of URL objects,
-		//   each which contain all the errors, and each error has all their sources.
-		//   Then at the time of injestion on the server, it can process each URL with all of its errors and their sources--URL by URL.
-		//   I believe this would simplify both obtaining the validation data as well as injeting it on the server.
 		$request_data = [
 			'site_url'                   => static::get_home_url(),
 			'site_info'                  => static::get_site_info(),
 			'plugins'                    => static::get_plugin_info(),
 			'themes'                     => static::get_theme_info(),
 			'errors'                     => array_values( $amp_urls['errors'] ),
-			// TODO: Per above, eliminate in favor of sending all information in urls.
 			'error_sources'              => array_values( $amp_urls['error_sources'] ),
-			// TODO: Per above, eliminate in favor of sending all information in urls.
 			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
 			'urls'                       => array_values( $amp_urls['urls'] ),
 		];
