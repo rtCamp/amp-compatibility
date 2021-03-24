@@ -89,12 +89,12 @@ class GlobalViewData {
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/request-queue' ) ),
 			},
 			syntheticQueue: {
-				title: 'Synthetic Data Queue',
+				title: 'Synthetic Queue',
 				url: '/admin/synthetic-queue',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/synthetic-queue' ) ),
 			},
 			adhocSyntheticQueue: {
-				title: 'Adhoc Synthetic Data Queue',
+				title: 'Adhoc Synthetic Queue',
 				icon: '',
 				url: '/admin/adhoc-synthetic-queue',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
