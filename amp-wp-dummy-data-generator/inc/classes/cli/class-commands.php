@@ -307,10 +307,6 @@ class Commands extends Base {
 		$this->extract_args( $assoc_args );
 
 		foreach ( $this->generators as $generator ) {
-			$generator->clear();
-		}
-
-		foreach ( $this->generators as $generator ) {
 			$generator->generate();
 		}
 
