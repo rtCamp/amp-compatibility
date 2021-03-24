@@ -12,9 +12,9 @@
 
 		<div class="col-md-4">
 			<ul class="list-group">
-				<li class="list-group-item active" aria-current="true">{{queue.name}}</li>
+				<li class="list-group-item active" aria-current="true">{{ upperFirst( snackCaseToString( queue.name ) )}}</li>
 				@each( ( number, status ) in queue.health )
-				<li class="list-group-item">{{status}} <span class="badge bg-secondary float-end">{{number || 0}}</span>
+				<li class="list-group-item">{{ upperFirst( snackCaseToString( status ) ) }} <span class="badge bg-secondary float-end">{{number || 0}}</span>
 				</li>
 				@endeach
 			</ul>

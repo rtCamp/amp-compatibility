@@ -36,7 +36,7 @@ class DashboardController {
 
 		for ( const index in queueControllers ) {
 			data.queues.push( {
-				name: queueControllers[ index ].queueName,
+				name: queueControllers[ index ].queueName.replace('data_', ''),
 				health: await queueControllers[ index ].queue.checkHealth(),
 			} );
 		}
