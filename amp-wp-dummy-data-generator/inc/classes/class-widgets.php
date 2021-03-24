@@ -19,19 +19,11 @@ class Widgets {
 	const SIDEBAR_ID = 'amp-wp-dummy-data-generator';
 
 	/**
-	 * Construct method.
-	 */
-	protected function __construct() {
-
-		$this->setup_hooks();
-	}
-
-	/**
 	 * To setup action and filters.
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		// TODO: Instead of registering a custom sidebar, it might be more appropriate to rely on
 		// the real sidebars used by the theme or any plugins (potentially in addition to this

@@ -17,19 +17,11 @@ class Shortcodes {
 	use Singleton;
 
 	/**
-	 * Construct method.
-	 */
-	protected function __construct() {
-
-		$this->setup_hooks();
-	}
-
-	/**
 	 * To setup action and filters.
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		/**
 		 * Filters

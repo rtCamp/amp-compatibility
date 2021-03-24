@@ -21,14 +21,6 @@ class Plugin {
 	 */
 	protected function __construct() {
 
-		// TODO: While the plugin doesn't currently appear to have test coverage, adding hooks
-		// in a constructor is generally discouraged as it causes side effects beyond instantiating
-		// the class.
-		// I suggest to generally decouple adding hooks from the constructor (same in the other
-		// class instantiations), e.g. by making `setup_hooks()` public and calling it after
-		// creating the new instance.
-		$this->setup_hooks();
-
 		// Load plugin classes.
 		Widgets::get_instance();
 		Shortcodes::get_instance();
@@ -42,9 +34,12 @@ class Plugin {
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		add_filter( 'pre_option_permalink_structure', [ $this, 'update_posts_permastructs' ] );
+		Widgets::get_instance()->setup_hooks();
+		Shortcodes::get_instance()->setup_hooks();
+		Navigations::get_instance()->setup_hooks();
 	}
 
 	/**
