@@ -524,6 +524,7 @@ class RequestController extends Base {
 		const itemsToInsert = [];
 		const relationshipItemsToInsert = [];
 		let insertedAmpValidatedUrl = [];
+		let pageURLChunks = [];
 
 		const saveOptions = {
 			allowUpdate: false,
@@ -544,15 +545,31 @@ class RequestController extends Base {
 				css_size_after: item.css_size_after,
 				css_size_excluded: item.css_size_excluded,
 				css_budget_percentage: item.css_budget_percentage,
+				site_request_id: this.job.data.uuid,
 			};
 
 			itemsToInsert.push( preparedItem );
 
 		}
 
+		let pageURLs = _.pluck( itemsToInsert, 'page_url' );
+		pageURLs = _.map( pageURLs, sanitizor.toUrl );
+		pageURLs = _.uniq( pageURLs );
+		pageURLChunks = _.chunk( pageURLs, 1000 );
+
 		try {
 
-			response.ampValidatedUrl.delete = await AmpValidatedUrlModel.deleteRows( { site_url: siteUrl } );
+			const deleteResponse = [];
+			for( const index in pageURLChunks  ) {
+				const pageURLChunk = pageURLChunks[ index ];
+				deleteResponse[ index ] = await AmpValidatedUrlModel.deleteRows( {
+					site_url: siteUrl,
+					page_url: pageURLChunk,
+				} );
+			}
+
+			response.ampValidatedUrl.delete = deleteResponse;
+
 			response.ampValidatedUrl.insert = await AmpValidatedUrlModel.saveMany( itemsToInsert, saveOptions );
 
 			insertedAmpValidatedUrl = [
@@ -610,7 +627,17 @@ class RequestController extends Base {
 
 		try {
 
-			response.urlErrorRelationship.delete = await UrlErrorRelationshipModel.deleteRows( { site_url: siteUrl } );
+			const deleteResponse = [];
+			for( const index in pageURLChunks  ) {
+				const pageURLChunk = pageURLChunks[ index ];
+				deleteResponse[ index ] = await UrlErrorRelationshipModel.deleteRows( {
+					site_url: siteUrl,
+					page_url: pageURLChunk,
+				} );
+			}
+
+			response.ampValidatedUrl.delete = deleteResponse;
+
 			this.job.reportProgress( 80 );
 
 			response.urlErrorRelationship.insert = await UrlErrorRelationshipModel.saveMany( relationshipItemsToInsert, saveOptions );

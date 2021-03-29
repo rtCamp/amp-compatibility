@@ -565,7 +565,14 @@ class BigQueryBase {
 		const preparedField = this._prepareItemForDB( whereClaus );
 
 		for ( let key in preparedField ) {
-			whereFields.push( `${ key }=${ preparedField[ key ] }` );
+
+			if ( _.isArray( preparedField[ key ] ) ) {
+				let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
+				whereFields.push( `${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
+			} else {
+				whereFields.push( `${ key }=${ preparedField[ key ] }` );
+			}
+
 		}
 
 		const selectQuery = `SELECT ${ '`' + this.primaryKey + '`' } FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
@@ -686,7 +693,7 @@ class BigQueryBase {
 		if ( 'UUID' === value ) {
 			dbValue = 'GENERATE_UUID()';
 		} else if ( 'string' === typeof value ) {
-			dbValue = `"${ value.toString().replace(/"/g, '\'') }"`;
+			dbValue = `"${ value.toString().replace( /"/g, '\'' ) }"`;
 		} else if ( 'boolean' === typeof value ) {
 			dbValue = ( value ) ? 'true' : 'false';
 		}
@@ -819,7 +826,7 @@ class BigQueryBase {
 	 *
 	 * @return {Promise<string>}
 	 */
-	static async getUUID(){
+	static async getUUID() {
 		const query = 'SELECT GENERATE_UUID() AS uuid;';
 
 		const result = await BigQuery.query( query );
