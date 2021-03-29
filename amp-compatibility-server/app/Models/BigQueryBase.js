@@ -813,6 +813,23 @@ class BigQueryBase {
 
 		return items;
 	}
+
+	/**
+	 * Get UUID FROM BigQuery.
+	 *
+	 * @return {Promise<string>}
+	 */
+	static async getUUID(){
+		const query = 'SELECT GENERATE_UUID() AS uuid;';
+
+		const result = await BigQuery.query( query );
+
+		if ( _.isEmpty( result ) ) {
+			return '';
+		}
+
+		return result[ 0 ].uuid || '';
+	}
 }
 
 module.exports = BigQueryBase;

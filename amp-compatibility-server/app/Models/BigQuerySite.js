@@ -42,7 +42,7 @@ class BigQuerySite extends BigQueryBase {
 	 * @static
 	 */
 	static get updatedAtColumn() {
-		return 'updated_at'
+		return 'updated_at';
 	}
 
 }

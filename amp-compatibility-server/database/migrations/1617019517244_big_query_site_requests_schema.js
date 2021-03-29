@@ -41,7 +41,7 @@ class BigQuerySiteRequestsSchema extends Schema {
 					description: 'e.g. pending, success, fail',
 				},
 				{
-					name: 'created_on',
+					name: 'created_at',
 					type: 'DATETIME',
 					mode: 'REQUIRED',
 					description: 'creation data.',
