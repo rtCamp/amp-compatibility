@@ -69,4 +69,4 @@ class BigQuerySiteRequestsSchema extends Schema {
 	}
 }
 
-module.exports = BigQuerySiteRequestsSchema
+module.exports = BigQuerySiteRequestsSchema;
