@@ -3,6 +3,9 @@
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
+// Models
+const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+
 // Helpers
 const Logger = use( 'Logger' );
 
@@ -50,7 +53,6 @@ class RestController {
 		const siteUrl = requestData.site_url || '';
 		Logger.info( 'Site: %s', siteUrl );
 
-		const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 		let uuid = await SiteRequestModel.getUUID();
 		uuid = `ampwp-${ uuid }`;
 

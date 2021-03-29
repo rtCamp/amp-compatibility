@@ -13,6 +13,7 @@ const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
+const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
 // Helpers
 const Logger = use( 'Logger' );
@@ -57,6 +58,7 @@ class CacheUpdate extends Command {
 			SiteModel,
 			SiteToExtensionModel,
 			UrlErrorRelationshipModel,
+			SiteRequestModel,
 		];
 
 		for ( let index in models ) {
