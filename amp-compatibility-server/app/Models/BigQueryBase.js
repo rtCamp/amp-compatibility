@@ -179,6 +179,25 @@ class BigQueryBase {
 	}
 
 	/**
+	 * Get item from cached value by primary value.
+	 *
+	 * @param {String} primaryValue Primary key value.
+	 *
+	 * @return {Promise<object>}
+	 */
+	static async getItemByPrimaryKey( primaryValue ) {
+
+		// Bail out if row don't have primary value.
+		if ( false === primaryValue ) {
+			return {};
+		}
+
+		const encryptedStoredItem = await Cache.get( primaryValue, this.table );
+
+		return Encryption.decrypt( encryptedStoredItem );
+	}
+
+	/**
 	 * To check whether we need perform any action in BigQuery for this item or not
 	 * And if we need then what it will be? update or insert.
 	 *
@@ -565,7 +584,14 @@ class BigQueryBase {
 		const preparedField = this._prepareItemForDB( whereClaus );
 
 		for ( let key in preparedField ) {
-			whereFields.push( `${ key }=${ preparedField[ key ] }` );
+
+			if ( _.isArray( preparedField[ key ] ) ) {
+				let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
+				whereFields.push( `${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
+			} else {
+				whereFields.push( `${ key }=${ preparedField[ key ] }` );
+			}
+
 		}
 
 		const selectQuery = `SELECT ${ '`' + this.primaryKey + '`' } FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
@@ -686,7 +712,7 @@ class BigQueryBase {
 		if ( 'UUID' === value ) {
 			dbValue = 'GENERATE_UUID()';
 		} else if ( 'string' === typeof value ) {
-			dbValue = `"${ value.toString().replace(/"/g, '\'') }"`;
+			dbValue = `"${ value.toString().replace( /"/g, '\'' ) }"`;
 		} else if ( 'boolean' === typeof value ) {
 			dbValue = ( value ) ? 'true' : 'false';
 		}
@@ -812,6 +838,23 @@ class BigQueryBase {
 		} );
 
 		return items;
+	}
+
+	/**
+	 * Get UUID FROM BigQuery.
+	 *
+	 * @return {Promise<string>}
+	 */
+	static async getUUID() {
+		const query = 'SELECT GENERATE_UUID() AS uuid;';
+
+		const result = await BigQuery.query( query );
+
+		if ( _.isEmpty( result ) ) {
+			return '';
+		}
+
+		return result[ 0 ].uuid || '';
 	}
 }
 

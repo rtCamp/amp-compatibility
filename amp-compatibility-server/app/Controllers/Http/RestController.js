@@ -3,6 +3,9 @@
 const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
+// Models
+const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+
 // Helpers
 const Logger = use( 'Logger' );
 
@@ -50,9 +53,41 @@ class RestController {
 		const siteUrl = requestData.site_url || '';
 		Logger.info( 'Site: %s', siteUrl );
 
+		let uuid = await SiteRequestModel.getUUID();
+		uuid = `ampwp-${ uuid }`;
+
+		const item = {
+			site_request_id: uuid,
+			site_url: siteUrl,
+		};
+
+		const response = await SiteRequestModel.saveMany( [ item ], {
+			useStream: false,
+			allowUpdate: false,
+		} );
+
+		let insertCount = response.inserted.count || 0;
+		insertCount = parseInt( insertCount );
+
+		if ( 1 !== insertCount ) {
+			return {
+				status: 'fail',
+				data: {
+					message: 'Fail to generate UUID',
+				},
+			};
+		}
+
+		requestData.uuid = uuid;
+
 		await RequestQueueController.createJob( requestData );
 
-		return { status: 'ok' };
+		return {
+			status: 'ok',
+			data: {
+				uuid: uuid,
+			},
+		};
 	}
 
 }

@@ -23,6 +23,7 @@ class AmpValidatedUrl extends Base {
 			css_size_excluded: 'float|required',
 			css_budget_percentage: 'float|required',
 			updated_at: 'date|required',
+			site_request_id: 'string|required',
 		};
 	}
 
