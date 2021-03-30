@@ -179,6 +179,25 @@ class BigQueryBase {
 	}
 
 	/**
+	 * Get item from cached value by primary value.
+	 *
+	 * @param {String} primaryValue Primary key value.
+	 *
+	 * @return {Promise<object>}
+	 */
+	static async getItemByPrimaryKey( primaryValue ) {
+
+		// Bail out if row don't have primary value.
+		if ( false === primaryValue ) {
+			return {};
+		}
+
+		const encryptedStoredItem = await Cache.get( primaryValue, this.table );
+
+		return Encryption.decrypt( encryptedStoredItem );
+	}
+
+	/**
 	 * To check whether we need perform any action in BigQuery for this item or not
 	 * And if we need then what it will be? update or insert.
 	 *

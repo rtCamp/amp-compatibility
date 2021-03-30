@@ -45,7 +45,6 @@ class BigQuerySiteRequest extends BigQueryBase {
 		return SiteRequestValidator;
 	}
 
-
 	/**
 	 * Default values for each field.
 	 *

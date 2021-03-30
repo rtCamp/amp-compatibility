@@ -13,6 +13,7 @@ const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
+const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
@@ -76,6 +77,7 @@ class RequestController extends Base {
 		// Terminate the worker if all jobs are completed
 		this.queue.on( 'job succeeded', this.onJobSucceeded );
 		this.queue.on( 'job retrying', this.onJobRetrying );
+		this.queue.on( 'job failed', this.onJobFailed );
 
 		this.queue.on( 'job progress', ( jobId, progress ) => {
 			Logger.debug( `Site: ${ this.jobName } reported progress: ${ progress }%` );
@@ -83,10 +85,38 @@ class RequestController extends Base {
 
 	}
 
-	static onJobSucceeded( jobId, result ) {
+	/**
+	 * Callback function on success of the job.
+	 *
+	 * @param {String} jobId Job ID.
+	 * @param {Object} result Response from worker.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async onJobSucceeded( jobId, result ) {
 		Logger.info( 'Result: Site: %s | Job ID: %s', this.jobName, jobId );
+
+		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
+		storedItem.status = 'success';
+
+		await SiteRequestModel.saveMany( [ storedItem ] );
+
 		const preparedLog = this.prepareLog( result );
 		console.log( preparedLog );
+	}
+
+	/**
+	 * Callback function on failure of the job.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async onJobFailed() {
+
+		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
+		storedItem.status = 'fail';
+
+		await SiteRequestModel.saveMany( [ storedItem ] );
+
 	}
 
 	static onJobRetrying( jobId, error ) {
@@ -560,7 +590,7 @@ class RequestController extends Base {
 		try {
 
 			const deleteResponse = [];
-			for( const index in pageURLChunks  ) {
+			for ( const index in pageURLChunks ) {
 				const pageURLChunk = pageURLChunks[ index ];
 				deleteResponse[ index ] = await AmpValidatedUrlModel.deleteRows( {
 					site_url: siteUrl,
@@ -628,7 +658,7 @@ class RequestController extends Base {
 		try {
 
 			const deleteResponse = [];
-			for( const index in pageURLChunks  ) {
+			for ( const index in pageURLChunks ) {
 				const pageURLChunk = pageURLChunks[ index ];
 				deleteResponse[ index ] = await UrlErrorRelationshipModel.deleteRows( {
 					site_url: siteUrl,
