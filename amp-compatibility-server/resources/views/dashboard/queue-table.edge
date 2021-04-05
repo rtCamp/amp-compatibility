@@ -1,8 +1,21 @@
 @layout( 'dashboard/base' )
 
+@section('header_line')
+	@if( 'adhoc-synthetic-queue' === queue )
+		<a href="/admin/adhoc-synthetic-queue/add" title="Add Adhoc Request" class="btn btn-primary btn-sm m-2">
+			Add new
+		</a>
+	@endif
+@endsection
+
 @section('page')
 
 	<div>
+
+		<div class="p-1">
+			<p>{{{pageDescription}}}</p>
+		</div>
+
 		<div id="messageContainer"></div>
 		<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
@@ -80,14 +93,16 @@
 					@elseif( 'actions' === key )
 						<td>
 							@each( ( value, action ) in value )
-								@if( 'report' == action )
-									<a href="{{value}}" class="btn btn-sm btn-primary btn-actions" target="_blank">{{ upperFirst( snackCaseToString( action ) ) }}</a>
-								@else
-									<button type="button" class="btn btn-sm btn-primary btn-actions" data-action="{{action}}"
-											data-jobid="{{value}}">
-										{{ upperFirst( snackCaseToString( action ) ) }}
-									</button>
-								@endif
+							@if( 'report' == action )
+								<a href="{{value}}" class="btn btn-sm btn-primary btn-actions"
+								   target="_blank">{{ upperFirst( snackCaseToString( action ) ) }}</a>
+							@else
+								<button type="button" class="btn btn-sm btn-primary btn-actions"
+										data-action="{{action}}"
+										data-jobid="{{value}}">
+									{{ upperFirst( snackCaseToString( action ) ) }}
+								</button>
+							@endif
 							@endeach
 						</td>
 					@elseif( 'id' === key )
