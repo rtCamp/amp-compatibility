@@ -37,6 +37,7 @@ class QueueController {
 		params.status = params.status.toString().toLowerCase().trim();
 
 		let queue = false;
+		let pageDescription = '';
 		const jobs = [];
 		let page = {
 			start: ( params.paged * params.perPage ) - params.perPage,
@@ -50,6 +51,17 @@ class QueueController {
 		switch ( params.queue ) {
 			case 'synthetic-queue':
 				queue = SyntheticDataQueueController.queue;
+
+				const dow = 6;
+				const currentDate = new Date();
+
+				currentDate.setHours( 4 );
+				currentDate.setMinutes( 0 );
+				currentDate.setSeconds( 0 );
+				currentDate.setDate( currentDate.getDate() + ( dow + ( 7 - currentDate.getDay() ) ) % 7 );
+
+				console.log(currentDate);
+				pageDescription = `Next synthetic data will initiate on "<b>${ currentDate.toUTCString() }</b>"`;
 				break;
 			case 'adhoc-synthetic-queue':
 				queue = AdhocSyntheticDataQueueController.queue;
@@ -89,7 +101,7 @@ class QueueController {
 				site_domain = job.site_url;
 			}
 
-			if ( 'adhoc-synthetic-queue' === params.queue) {
+			if ( 'adhoc-synthetic-queue' === params.queue ) {
 				job.AMP_source = queueJob.data.ampSource;
 			}
 
@@ -133,6 +145,8 @@ class QueueController {
 		};
 
 		const data = {
+			pageDescription: pageDescription,
+			queue: params.queue,
 			tabs: {
 				active: 'Active',
 				waiting: 'Waiting',
