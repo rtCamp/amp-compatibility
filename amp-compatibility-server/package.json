@@ -48,6 +48,7 @@
 		"ssh-exec": "^2.0.0",
 		"typescript": "^4.1.3",
 		"underscore": "^1.12.0",
+		"uuid": "^3.4.0",
 		"wporg-api-client": "^1.0.1"
 	},
 	"devDependencies": {

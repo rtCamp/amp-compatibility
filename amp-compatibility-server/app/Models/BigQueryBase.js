@@ -272,6 +272,7 @@ class BigQueryBase {
 	 *                          {
 	 *                              useStream: To insert value as stream. Fast but with certain limitation. Reference - https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations
 	 *                              allowUpdate: Flag to perform update operation on record. By default true. If false. Record that already exists won't get updated.
+	 *                              skipCache: Flag to skip updating the local Redis cache. Local Redis cache is not available on APP Engine instances.
 	 *                          }
 	 *
 	 * @returns {Promise<Array>} True on success Otherwise False.
@@ -289,6 +290,7 @@ class BigQueryBase {
 		options = _.defaults( options, {
 			useStream: false,
 			allowUpdate: true,
+			skipCache: false,
 		} );
 
 		// Check for which item need to update or which need to insert.
@@ -388,10 +390,12 @@ class BigQueryBase {
 
 				const apiResponse = await this._executeQueries( insertQueries );
 
-				// Store that in cache.
-				for ( let index in itemsToInsert ) {
-					if ( _.isEmpty( apiResponse[ index ] ) ) {
-						await this.setCache( itemsToInsert[ index ] );
+				if ( false === options.skipCache ) {
+					// Store that in cache.
+					for ( let index in itemsToInsert ) {
+						if ( _.isEmpty( apiResponse[ index ] ) ) {
+							await this.setCache( itemsToInsert[ index ] );
+						}
 					}
 				}
 
@@ -417,10 +421,12 @@ class BigQueryBase {
 
 			let apiResponse = await this._executeQueries( updateQueries );
 
-			// Store that in cache.
-			for ( let index in itemsToUpdate ) {
-				if ( _.isEmpty( apiResponse[ index ] ) ) {
-					await this.setCache( itemsToUpdate[ index ] );
+			if ( false === options.skipCache ) {
+				// Store that in cache.
+				for ( let index in itemsToUpdate ) {
+					if ( _.isEmpty( apiResponse[ index ] ) ) {
+						await this.setCache( itemsToUpdate[ index ] );
+					}
 				}
 			}
 
