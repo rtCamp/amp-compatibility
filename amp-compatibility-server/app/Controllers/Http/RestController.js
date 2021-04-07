@@ -6,6 +6,8 @@ const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 // Models
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
+const Utility = use( 'App/Helpers/Utility' );
+
 // Helpers
 const Logger = use( 'Logger' );
 
@@ -65,17 +67,13 @@ class RestController {
 		const item = {
 			site_request_id: uuid,
 			site_url: siteUrl,
+			status: 'pending',
+			created_at: Utility.getCurrentDateTime(),
 		};
 
-		const response = await SiteRequestModel.saveSiteRequest( [ item ], {
-			allowUpdate: false,
-			skipCache: true,
-		} );
+		const response = await SiteRequestModel.saveSiteRequest( item);
 
-		let insertCount = response.inserted.count || 0;
-		insertCount = parseInt( insertCount );
-
-		if ( 1 !== insertCount ) {
+		if ( false === response ) {
 			return {
 				status: 'fail',
 				data: {

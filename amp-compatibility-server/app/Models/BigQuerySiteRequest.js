@@ -2,6 +2,7 @@
 
 const BigQueryBase = use( 'App/Models/BigQueryBase' );
 const SiteRequestValidator = use( 'App/Validators/SiteRequest' );
+const BigQuery = use( 'App/BigQuery' );
 
 class BigQuerySiteRequest extends BigQueryBase {
 
@@ -59,142 +60,16 @@ class BigQuerySiteRequest extends BigQueryBase {
 	/**
 	 * To save site request in BigQuery
 	 *
-	 * @param {Array} items List of items.
-	 * @param {Object} options Save options.
-	 *                          {
-	 *                              allowUpdate: Flag to perform update operation on record. By default true. If false. Record that already exists won't get updated.
-	 *                              skipCache: Flag to skip updating the local Redis cache. Local Redis cache is not available on APP Engine instances.
-	 *                          }
+	 * @param {Object} item Item to be insterted.
 	 *
 	 * @returns {Promise<Array>} True on success Otherwise False.
 	 */
-	static async saveSiteRequest( items, options = {} ) {
+	static async saveSiteRequest( item ) {
 
-		if ( _.isObject( items ) ) {
-			items = Object.values( items );
-		}
-
-		if ( ! _.isArray( items ) ) {
-			return [];
-		}
-
-		options = _.defaults( options, {
-			allowUpdate: true,
-			skipCache: true,
-		} );
-
-		// Check for which item need to update or which need to insert.
-		const requestedCount = items.length || 0;
-		const itemsToInsert = [];
-		const itemsToUpdate = [];
-		const invalidItems = [];
-		const itemsThatIgnored = [];
-		const itemsWithoutPrimaryValue = [];
-
-		for ( let index in items ) {
-			const currentItem = _.clone( items[ index ] );
-
-			items[ index ] = await this.prepareItem( items[ index ] );
-
-			if ( false === items[ index ] ) {
-				invalidItems.push( currentItem );
-			}
-
-		}
-
-		items = Utility.removeEmpty( items );
-
-		// Insert operations.
-		const response = {
-			table: this.table,
-			requestedCount: requestedCount,
-			itemWithoutPrimaryKey: {
-				count: itemsWithoutPrimaryValue.length,
-			},
-			inserted: {
-				count: itemsToInsert.length || 0,
-				itemIds: _.pluck( itemsToInsert, this.primaryKey ),
-				methodUsed: options.useStream ? 'stream' : 'default',
-				response: {},
-			},
-			updated: {
-				count: itemsToUpdate.length || 0,
-				allowUpdate: options.allowUpdate,
-				itemIds: _.pluck( itemsToUpdate, this.primaryKey ),
-				response: {},
-			},
-			invalid: {
-				count: invalidItems.length || 0,
-				itemIds: _.pluck( invalidItems, this.primaryKey ),
-				response: {},
-			},
-			ignored: {
-				count: itemsThatIgnored.length || 0,
-				itemIds: _.pluck( itemsThatIgnored, this.primaryKey ),
-				response: {},
-			},
-		};
-
-		/**
-		 * Insert operation.
-		 */
-		if ( !_.isEmpty( itemsToInsert ) ) {
-
-			// Generate update queries.
-			const insertQueries = [];
-
-			for ( let index in itemsToInsert ) {
-				const query = this.getInsertQuery( itemsToInsert[ index ] );
-				if ( query ) {
-					insertQueries.push( query );
-				}
-			}
-
-			const apiResponse = await this._executeQueries( insertQueries );
-
-			if ( false === options.skipCache ) {
-				// Store that in cache.
-				for ( let index in itemsToInsert ) {
-					if ( _.isEmpty( apiResponse[ index ] ) ) {
-						await this.setCache( itemsToInsert[ index ] );
-					}
-				}
-			}
-
-			response.inserted.response = apiResponse;
-
-		}
-
-		/**
-		 * Update operations.
-		 */
-		if ( ! _.isEmpty( itemsToUpdate ) && true === options.allowUpdate ) {
-
-			// Generate update queries.
-			const updateQueries = [];
-
-			for ( let index in itemsToUpdate ) {
-				const query = this.getUpdateQuery( itemsToUpdate[ index ] );
-				if ( query ) {
-					updateQueries.push( query );
-				}
-			}
-
-			let apiResponse = await this._executeQueries( updateQueries );
-
-			if ( false === options.skipCache ) {
-				// Store that in cache.
-				for ( let index in itemsToUpdate ) {
-					if ( _.isEmpty( apiResponse[ index ] ) ) {
-						await this.setCache( itemsToUpdate[ index ] );
-					}
-				}
-			}
-
-			response.updated.response = apiResponse;
-		}
-
+		const insertQuery = await this.getInsertQuery( item );
+		const response = await BigQuery.query( insertQuery );
 		return response;
+
 	}
 }
 
