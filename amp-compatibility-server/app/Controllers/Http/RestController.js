@@ -67,8 +67,7 @@ class RestController {
 			site_url: siteUrl,
 		};
 
-		const response = await SiteRequestModel.saveMany( [ item ], {
-			useStream: false,
+		const response = await SiteRequestModel.saveSiteRequest( [ item ], {
 			allowUpdate: false,
 			skipCache: true,
 		} );
