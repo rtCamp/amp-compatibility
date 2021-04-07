@@ -12,6 +12,9 @@ const Logger = use( 'Logger' );
 // Utilities
 const _ = require( 'underscore' );
 
+// For generating UUIDs
+const uuidv5 = require('uuid/v5');
+
 class RestController {
 
 	/**
@@ -53,7 +56,10 @@ class RestController {
 		const siteUrl = requestData.site_url || '';
 		Logger.info( 'Site: %s', siteUrl );
 
-		let uuid = await SiteRequestModel.getUUID();
+		// @Todo: Move namespace to environment file.
+		// This is just a random UUID, we're using as namespace
+		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
+		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
 		uuid = `ampwp-${ uuid }`;
 
 		const item = {
@@ -64,6 +70,7 @@ class RestController {
 		const response = await SiteRequestModel.saveMany( [ item ], {
 			useStream: false,
 			allowUpdate: false,
+			skipCache: true,
 		} );
 
 		let insertCount = response.inserted.count || 0;
