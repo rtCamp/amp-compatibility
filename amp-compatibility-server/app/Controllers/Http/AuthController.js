@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -77,6 +77,12 @@ class AuthController {
 
 			response.redirect( destination, false, 302 );
 		} catch ( error ) {
+
+			session.flash(
+				{
+					loginErrorMessage: 'We could not find your email address. Please try again with different email or contact site admin.',
+				},
+			);
 
 			return response.redirect( '/', false, 302 );
 		}
