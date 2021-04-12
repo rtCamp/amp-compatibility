@@ -43,7 +43,7 @@ class RedirectUnauthorizedUser {
 		session.put( 'original-destination', destination );
 
 		// redirect to login
-		return response.redirect( '/login', 302 );
+		return response.redirect( '/login', false, 302 );
 	}
 }
 

@@ -18,9 +18,10 @@ const Route = use( 'Route' );
 
 Route.on( '/' ).render( 'welcome' );
 
-Route.get( 'login', 'AuthController.renderLogin' );
-Route.post( 'login', 'AuthController.login' );
 Route.get( 'logout', 'AuthController.logout' );
+
+Route.get( 'authenticate/google', 'AuthController.authenticateGoogle' );
+Route.get( 'authenticated/google', 'AuthController.authenticatedGoogle' );
 
 /**
  * Admin Dashboard.

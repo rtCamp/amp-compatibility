@@ -7,8 +7,96 @@
 /** @typedef {import('@adonisjs/Session')} Session */
 
 const { validateAll } = use( 'Validator' );
+const User = use( 'App/Models/User' );
 
 class AuthController {
+
+	/**
+	 * To redirect to Google login.
+	 *
+	 * @param {object} ctx
+	 * @param {Object} ctx.ally
+	 * @param {Auth} ctx.auth
+	 * @param {Session} ctx.session
+	 * @param {Response} ctx.response
+	 *
+	 * @return {Promise<void>}
+	 */
+	async authenticateGoogle( { auth, session, response, ally } ) {
+
+		try {
+
+			await auth.check();
+
+			const destination = session.get( 'original-destination' ) || '/admin';
+
+			response.redirect( destination, false, 302 );
+
+		} catch ( error ) {
+
+			await ally.driver( 'google' ).redirect();
+		}
+
+	}
+
+	/**
+	 * Callback function when user is authorized from google.
+	 *
+	 * @param {object} ctx
+	 * @param {View} ctx.view
+	 * @param {Object} ctx.ally
+	 * @param {Auth} ctx.auth
+	 * @param {Session} ctx.session
+	 * @param {Response} ctx.response
+	 *
+	 * @return {Promise<void>}
+	 */
+	async authenticatedGoogle( { view, ally, auth, session, response } ) {
+
+		/**
+		 * If User is already login then redirect to admin dahboard.
+		 */
+		if ( null !== auth.user ) {
+
+			const destination = session.get( 'original-destination' ) || '/admin';
+
+			response.redirect( destination, false, 302 );
+
+			return;
+		}
+
+		try {
+
+			let googleUser = await ally.driver( 'google' ).getUser();
+
+			const user = await User.findBy( 'email', googleUser.getEmail() );
+
+			await auth.login( user );
+
+			const destination = session.get( 'original-destination' ) || '/admin';
+
+			response.redirect( destination, false, 302 );
+		} catch ( error ) {
+
+			return response.redirect( '/', false, 302 );
+		}
+
+	}
+
+	/**
+	 * To logout user.
+	 *
+	 * @param {object} ctx
+	 * @param {Auth} ctx.auth
+	 * @param {Response} ctx.response
+	 *
+	 * @return {Promise<void>}
+	 */
+	async logout( { auth, response } ) {
+
+		await auth.logout();
+		response.redirect( '/', false, 302 );
+	}
 
 	/**
 	 * To render login form.
@@ -28,8 +116,7 @@ class AuthController {
 
 			const destination = session.get( 'original-destination' ) || '/admin';
 
-			response.redirect( destination, 302 );
-			response.redirect( '/admin', 302 );
+			response.redirect( destination, false, 302 );
 
 		} catch ( error ) {
 			// Exception handling.
@@ -79,25 +166,10 @@ class AuthController {
 
 		const destination = session.get( 'original-destination' ) || '/admin';
 
-		response.redirect( destination, 302 );
+		response.redirect( destination, false, 302 );
 
-	}
-
-	/**
-	 * To logout user.
-	 *
-	 * @param {object} ctx
-	 * @param {Auth} ctx.auth
-	 * @param {Response} ctx.response
-	 *
-	 * @return {Promise<void>}
-	 */
-	async logout( { auth, response } ) {
-
-		await auth.logout();
-		response.redirect( '/login', 302 );
 	}
 
 }
 
-module.exports = AuthController
+module.exports = AuthController;

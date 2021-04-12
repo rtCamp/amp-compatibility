@@ -3,5 +3,18 @@
 @section( 'page' )
 	<div>
 		<h1 class="title">AMP WP</h1>
+		<div class="wp_google_login">
+			<div class="wp_google_login__button-container">
+
+				@loggedIn
+					<a class="wp_google_login__button" href="/admin">Go to dashboard</a>
+				@else
+					<a class="wp_google_login__button" href="/authenticate/google">
+						<span class="wp_google_login__google-icon"></span>
+						Log in with Google
+					</a>
+				@endloggedIn
+			</div>
+		</div>
 	</div>
 @endsection
