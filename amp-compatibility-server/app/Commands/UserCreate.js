@@ -2,6 +2,7 @@
 
 const { Command } = require( '@adonisjs/ace' );
 const User = use( 'App/Models/User' );
+const Utility = use( 'App/Helpers/Utility' );
 const { exit } = require( 'process' );
 
 class UserCreate extends Command {
@@ -11,9 +12,7 @@ class UserCreate extends Command {
 	 */
 	static get signature() {
 		return `user:create
-		 { --username=@value : Username of user. }
-		 { --email=@value : Email address of user. }
-		 { --password=@value : Password for user. }`;
+		 { --email=@value : Email address of user. }`;
 	}
 
 	/**
@@ -36,10 +35,13 @@ class UserCreate extends Command {
 	 */
 	async handle( args, options ) {
 
+		const email = options.email;
+		const username = email.substring( 0, email.indexOf( '@' ) );
+
 		const userData = {
-			username: options.username,
-			email: options.email,
-			password: options.password,
+			username: username,
+			email: email,
+			password: `${ username }-${ Utility.random( 10000, 10000 ) }`,
 		};
 
 		try {
