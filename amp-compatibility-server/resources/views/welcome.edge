@@ -2,6 +2,23 @@
 
 @section( 'page' )
 	<div>
-		<h1 class="title">AMP WP</h1>
+		<h1 class="title text-center">AMP WP</h1>
+		<div class="wp_google_login">
+			<div class="wp_google_login__button-container text-center">
+
+				@loggedIn
+					<a class="wp_google_login__button" href="/admin">Go to dashboard</a>
+				@else
+					<a class="wp_google_login__button " href="/authenticate/google">
+						<span class="wp_google_login__google-icon"></span>
+						Log in with Google
+					</a>
+				@endloggedIn
+			</div>
+		</div>
+		@if(flashMessage('loginErrorMessage'))
+			<small class="text-danger p-1">{{ flashMessage('loginErrorMessage') }}</small>
+		@endif
 	</div>
+
 @endsection
