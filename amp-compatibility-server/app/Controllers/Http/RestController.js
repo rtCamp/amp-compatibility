@@ -58,6 +58,8 @@ class RestController {
 		const siteUrl = requestData.site_url || '';
 		Logger.info( 'Site: %s', siteUrl );
 
+		const site_health_info = JSON.stringify( requestData.site_info ) || '';
+
 		// @Todo: Move namespace to environment file.
 		// This is just a random UUID, we're using as namespace
 		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
@@ -69,6 +71,7 @@ class RestController {
 			site_url: siteUrl,
 			status: 'pending',
 			created_at: Utility.getCurrentDateTime(),
+			site_health_info: site_health_info,
 		};
 
 		const response = await SiteRequestModel.saveSiteRequest( item);
