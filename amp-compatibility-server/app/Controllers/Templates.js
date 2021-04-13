@@ -39,6 +39,11 @@ class Templates {
 		return View.render( 'templates/pagination', options );
 	}
 
+	static renderTable( args ) {
+
+		return View.render( 'templates/table', args );
+	}
+
 }
 
 module.exports = Templates;

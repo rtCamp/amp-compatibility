@@ -51,11 +51,11 @@ class GlobalViewData {
 			return string.replace( /_+/g, ' ' );
 		} );
 
-
 		/**
 		 * Templates.
 		 */
 		View.global( 'renderPagination', Templates.renderPagination );
+		View.global( 'renderTable', Templates.renderTable );
 
 		await next();
 	}
@@ -118,6 +118,12 @@ class GlobalViewData {
 				icon: '',
 				url: '/admin/verify-extensions',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-extensions' ) ),
+			},
+			uuidReport: {
+				title: 'Report by UUID',
+				icon: '',
+				url: '/admin/report/uuid',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/report/uuid' ) ),
 			}
 		};
 	}
