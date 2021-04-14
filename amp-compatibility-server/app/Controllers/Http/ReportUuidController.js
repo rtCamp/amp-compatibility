@@ -5,7 +5,12 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
 
+const BigQuery = use( 'App/BigQuery' );
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+const ExtensionModel = use( 'App/Models/BigQueryExtension' );
+const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
 const _ = require( 'underscore' );
 
@@ -183,9 +188,7 @@ class ReportUuidController {
 			},
 		};
 
-		const pluginTableArgs = {
-			items: requestData.plugins,
-		};
+		const pluginTableArgs = await this.preparePluginTableArgs( requestData.plugins );
 
 		const urlTableArgs = {
 			items: requestData.urls,
@@ -213,6 +216,115 @@ class ReportUuidController {
 		} );
 	}
 
+	/**
+	 * To prepare args for plugin table.
+	 *
+	 * @param {Object} plugins List of plugins.
+	 *
+	 * @return {Promise<{valueCallback: function(*, *=): string, items: []}>}
+	 */
+	async preparePluginTableArgs( plugins ) {
+
+		const preparedList = {};
+
+		for ( const index in plugins ) {
+
+			const plugin = plugins[ index ];
+			const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
+				type: 'plugin',
+				slug: plugin.slug,
+				version: plugin.version,
+			} );
+
+			preparedList[ extensionVersionSlug ] = plugin;
+		}
+
+		const extensionVersionSlugs = _.keys( preparedList );
+		const preparedExtensionVersionSlugs = _.map( extensionVersionSlugs, ExtensionVersionModel._prepareValueForDB );
+
+		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
+		const errorSourceTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ErrorSourceModel.table }` + '`';
+		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
+		const urlErrorRelationshipTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ UrlErrorRelationshipModel.table }` + '`';
+
+		let query = '';
+		let queryObject = {
+			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extensions.latest_version, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified, extension_versions.has_synthetic_data',
+			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
+				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
+				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
+				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
+			where: `WHERE extension_versions.extension_version_slug IN ( ${ preparedExtensionVersionSlugs.join( ', ' ) } )`,
+			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.is_verified, extensions.latest_version, extension_versions.has_synthetic_data',
+		};
+
+		for ( const index in queryObject ) {
+			query += `\n ${ queryObject[ index ] }`;
+		}
+
+		const results = await BigQuery.query( query );
+		const preparedPluginList = [];
+
+		for ( const index in results ) {
+			const item = results[ index ];
+			const extensionVersionSlug = item.extension_version_slug;
+
+			const preparedItem = _.defaults( item, preparedList[ extensionVersionSlug ] );
+			preparedPluginList.push( {
+				name: preparedItem.name,
+				slug: preparedItem.slug,
+				version: {
+					version: preparedItem.version,
+					latest_version: preparedItem.latest_version || false,
+				},
+				error_count: preparedItem.error_count || 0,
+				has_synthetic_data: preparedItem.has_synthetic_data || false,
+				is_verified: !! preparedItem.is_verified,
+			} );
+
+		}
+
+		const pluginTableArgs = {
+			items: preparedPluginList,
+			valueCallback: ( key, value ) => {
+
+				switch ( key ) {
+					case 'version':
+
+						if ( value.latest_version ) {
+							if ( value.version === value.latest_version ) {
+								value = `<span class="text-success" title="Up to date with latest version.">${ value.version }</span>`;
+
+							} else {
+								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <small>(Latest version: ${ value.latest_version })</small>`;
+							}
+
+						} else {
+							value = `<span class="text-warning" title="Latest version info not available.">${ value.version }</span>`;
+						}
+
+						break;
+					case 'error_count':
+						value = `<span class="text-center">${ value ? value : '-' }</span>`;
+						break;
+					case 'has_synthetic_data':
+					case 'is_verified':
+						if ( value ) {
+							value = `<span class="text-success">Yes</span>`;
+						} else {
+							value = `<span class="text-danger">No</span>`;
+						}
+						break;
+					default:
+						break;
+				}
+
+				return value;
+			},
+		};
+
+		return pluginTableArgs;
+	}
 }
 
 module.exports = ReportUuidController;
