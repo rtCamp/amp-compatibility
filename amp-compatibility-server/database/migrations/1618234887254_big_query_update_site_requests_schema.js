@@ -22,6 +22,12 @@ class BigQuerySiteHealthSchema extends Schema {
 				mode: 'NULLABLE',
 				description: 'To store summarized request info in JSON format.',
 			},
+			{
+				name: 'error_log',
+				type: 'STRING',
+				mode: 'NULLABLE',
+				description: 'To store error log data.',
+			},
 		];
 
 		const table = SiteRequestModel.getBigQueryTable;
