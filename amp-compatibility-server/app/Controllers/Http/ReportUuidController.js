@@ -255,13 +255,13 @@ class ReportUuidController {
 
 		let query = '';
 		let queryObject = {
-			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extensions.latest_version, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified, extension_versions.has_synthetic_data',
+			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extensions.latest_version, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified, extension_versions.has_synthetic_data, extensions.wporg',
 			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
 				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
 				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
 				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
 			where: `WHERE extension_versions.extension_version_slug IN ( ${ preparedExtensionVersionSlugs.join( ', ' ) } )`,
-			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.is_verified, extensions.latest_version, extension_versions.has_synthetic_data',
+			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.is_verified, extensions.latest_version, extension_versions.has_synthetic_data, extensions.wporg',
 		};
 
 		for ( const index in queryObject ) {
@@ -278,7 +278,10 @@ class ReportUuidController {
 			const preparedItem = _.defaults( item, preparedList[ extensionVersionSlug ] );
 			preparedPluginList.push( {
 				name: preparedItem.name,
-				slug: preparedItem.slug,
+				slug: {
+					slug: preparedItem.slug,
+					is_wporg: preparedItem.wporg,
+				},
 				version: {
 					version: preparedItem.version,
 					latest_version: preparedItem.latest_version || false,
@@ -295,6 +298,15 @@ class ReportUuidController {
 			valueCallback: ( key, value ) => {
 
 				switch ( key ) {
+
+					case 'slug':
+						if ( value.is_wporg ) {
+							value = `<a href="https://wordpress.org/plugins/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
+						} else {
+							value = value.slug;
+						}
+
+						break;
 					case 'version':
 
 						if ( value.latest_version ) {
