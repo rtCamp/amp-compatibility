@@ -8,6 +8,24 @@ const Env = use( 'Env' );
 class Cache {
 
 	/**
+	 * Redis connection name.
+	 *
+	 * @return {String} Redis connection name.
+	 */
+	static get connectionName() {
+		return Env.get( 'REDIS_CONNECTION', 'local' );
+	}
+
+	/**
+	 * Redis connection object.
+	 *
+	 * @return {*} Redis connection object.
+	 */
+	static get connection() {
+		return Redis.connection( this.connectionName );
+	}
+
+	/**
 	 * To get cached data.
 	 *
 	 * @param {String} key Key name.
@@ -23,7 +41,7 @@ class Cache {
 			return '';
 		}
 
-		let response = await Redis.get( id );
+		let response = await this.connection.get( id );
 		response = Utility.maybeParseJSON( response );
 
 		return response;
@@ -61,7 +79,7 @@ class Cache {
 		}
 
 		try {
-			await Redis.set( id, data );
+			await this.connection.set( id, data );
 		} catch ( exception ) {
 			console.error( exception );
 		}
@@ -86,7 +104,7 @@ class Cache {
 		}
 
 		try {
-			await Redis.del( id );
+			await this.connection.del( id );
 		} catch ( exception ) {
 			console.error( exception );
 		}
@@ -108,7 +126,7 @@ class Cache {
 		}
 
 		try {
-			await Redis.del( group );
+			await this.connection.del( group );
 		} catch ( exception ) {
 			console.error( exception );
 		}
@@ -147,7 +165,7 @@ class Cache {
 	 * @returns {Promise<*>}
 	 */
 	static async flushdb() {
-		return await Redis.flushdb();
+		return await this.connection.flushdb();
 	}
 
 	/**
@@ -156,7 +174,7 @@ class Cache {
 	 * @returns {Promise<void>}
 	 */
 	static async close() {
-		return await Redis.quit( Env.get( 'REDIS_CONNECTION', 'local' ) );
+		return await Redis.quit( this.connectionName );
 	}
 
 	/**

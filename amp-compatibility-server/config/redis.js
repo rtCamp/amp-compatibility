@@ -39,6 +39,14 @@ module.exports = {
 		keyPrefix: Env.get( 'REDIS_KEYPREFIX', 'local' ),
 	},
 
+	global: {
+		host: Env.get( 'QUEUE_REDIS_HOST', '127.0.0.1' ),
+		port: Env.get( 'QUEUE_REDIS_PORT', 6379 ),
+		password: Env.get( 'QUEUE_REDIS_PASSWORD', null ),
+		db: 0,
+		keyPrefix: Env.get( 'REDIS_KEYPREFIX', 'local' ),
+	},
+
 	/*
 	|--------------------------------------------------------------------------
 	| cluster config
