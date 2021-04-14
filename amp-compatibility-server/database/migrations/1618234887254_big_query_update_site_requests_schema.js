@@ -1,18 +1,26 @@
-'use strict'
+'use strict';
 
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use( 'Schema' );
+
+// Models
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
 class BigQuerySiteHealthSchema extends Schema {
-	async up () {
+
+	/**
+	 * To create table.
+	 *
+	 * @return void
+	 */
+	async up() {
 
 		const columns = [
 			{
-				name: 'site_health_info',
+				name: 'raw_data',
 				type: 'STRING',
 				mode: 'NULLABLE',
-				description: 'Holds JSON string with all the site health info.',
+				description: 'To store summarized request info in JSON format.',
 			},
 		];
 
@@ -30,7 +38,12 @@ class BigQuerySiteHealthSchema extends Schema {
 
 	}
 
-	async down () {
+	/**
+	 * To drop table.
+	 *
+	 * @return void.
+	 */
+	async down() {
 
 	}
 }
