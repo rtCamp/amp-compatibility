@@ -893,13 +893,27 @@ class BigQueryBase {
 			const searchObject = [];
 
 			for ( let index in params.searchFields ) {
-				searchObject.push( `${this.table}.${ params.searchFields[ index ] } LIKE '%${ params.s }%'` );
+				searchObject.push( `${ this.table }.${ params.searchFields[ index ] } LIKE '%${ params.s }%'` );
 			}
 
 			queryObject.where += ` AND ( ${ searchObject.join( ' OR ' ) } ) `;
 		}
 
 		return queryObject;
+	}
+
+	static async getRow( primaryValue ) {
+
+		// Bail out if row don't have primary value.
+		if ( false === primaryValue ) {
+			return {};
+		}
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
+		const query = `SELECT * FROM ${ table } WHERE ${ this.primaryKey } = '${ primaryValue }';`;
+		const items = await BigQuery.query( query );
+
+		return items[ 0 ];
 	}
 
 	/**
@@ -945,7 +959,7 @@ class BigQueryBase {
 		}
 
 		const result = await BigQuery.query( query );
-		const total = result[0].count || 0;
+		const total = result[ 0 ].count || 0;
 
 		return total;
 	}

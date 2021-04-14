@@ -16,7 +16,11 @@
 		@each( ( item, index ) in items )
 		<tr>
 			@each( ( value, key ) in item )
+				@if( valueCallback )
 				<td scope="col" class="{{key}}">{{{ valueCallback( key, value )  }}}</td>
+				@else
+				<td scope="col" class="{{key}}">{{{  value }}}</td>
+				@endif
 			@endeach
 		</tr>
 		@endeach

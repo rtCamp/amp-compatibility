@@ -43,6 +43,8 @@ class ReportUuidController {
 		for ( const index in items ) {
 			items[ index ].created_at = items[ index ].created_at ? items[ index ].created_at.value : '';
 			delete ( items[ index ].created_on );
+			delete ( items[ index ].raw_data );
+			delete ( items[ index ].error_log );
 		}
 
 		const data = {
@@ -72,9 +74,89 @@ class ReportUuidController {
 		return view.render( 'dashboard/reports/uuid/list', data );
 	}
 
-	async show( { request, response, view } ) {
+	async show( { request, response, view, params } ) {
 
-		return view.render( 'dashboard/reports/uuid/show' );
+		const uuid = params.uuid;
+		const siteRequest = await SiteRequestModel.getRow( uuid );
+
+		const rawData = siteRequest.raw_data.trim();
+		const requestData = JSON.parse( rawData );
+		const allSiteInfo = requestData.site_info || {};
+
+		const requestInfo = {
+			uuid: uuid,
+			site_URL: siteRequest.site_url,
+			status: siteRequest.status,
+			urlCounts: 0,
+			errorCount: 0,
+			requestDate: siteRequest.created_at.value,
+		};
+
+		const siteInfo = {
+			site_url: siteRequest.site_url,
+			site_title: allSiteInfo.site_title,
+			php_version: allSiteInfo.php_version,
+			mysql_version: allSiteInfo.mysql_version,
+			wp_version: allSiteInfo.wp_version,
+			wp_language: allSiteInfo.wp_language,
+		};
+
+		const siteHealth = {
+			wp_https_status: allSiteInfo.wp_https_status,
+			object_cache_status: allSiteInfo.object_cache_status,
+			libxml_version: allSiteInfo.libxml_version,
+			is_defined_curl_multi: allSiteInfo.is_defined_curl_multi,
+			stylesheet_transient_caching: allSiteInfo.stylesheet_transient_caching,
+			loopback_requests: allSiteInfo.loopback_requests,
+		};
+
+		const ampSettings = {
+			amp_mode: allSiteInfo.amp_mode,
+			amp_version: allSiteInfo.amp_version,
+			amp_plugin_configured: allSiteInfo.amp_plugin_configured,
+			amp_all_templates_supported: allSiteInfo.amp_all_templates_supported,
+			amp_supported_post_types: allSiteInfo.amp_supported_post_types,
+			amp_supported_templates: allSiteInfo.amp_supported_templates,
+			amp_mobile_redirect: allSiteInfo.amp_mobile_redirect,
+			amp_reader_theme: allSiteInfo.amp_reader_theme,
+		};
+
+		const infoBoxList = {
+			requestInfo: {
+				title: 'Request Info',
+				items: requestInfo,
+				valueCallback: ( key, value ) => {
+
+				},
+			},
+			siteInfo: {
+				title: 'Site Info',
+				items: siteInfo,
+			},
+			siteHealth: {
+				title: 'Site Health',
+				items: siteHealth,
+			},
+			ampSettings: {
+				title: 'AMP Settings',
+				items: ampSettings,
+			},
+		};
+
+		const pluginTableArgs = {
+			items: requestData.plugins,
+		};
+
+		const urlTableArgs = {
+			items: requestData.urls,
+		};
+
+		return view.render( 'dashboard/reports/uuid/show', {
+			uuid,
+			infoBoxList,
+			pluginTableArgs,
+			urlTableArgs,
+		} );
 	}
 
 }
