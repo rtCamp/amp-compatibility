@@ -10,6 +10,7 @@ const Utility = use( 'App/Helpers/Utility' );
 
 // Helpers
 const Logger = use( 'Logger' );
+const BigQuery = use( 'App/BigQuery' );
 
 // Utilities
 const _ = require( 'underscore' );
@@ -76,7 +77,8 @@ class RestController {
 			error_log: requestData.error_log.contents || '',
 		};
 
-		const response = await SiteRequestModel.saveSiteRequest( item );
+		const insertQuery = this.getInsertQuery( item );
+		const response = await BigQuery.query( insertQuery );
 
 		if ( false === response ) {
 			return {
@@ -100,6 +102,28 @@ class RestController {
 	}
 
 	/**
+	 * To Get Insert query for site request.
+	 *
+	 * @param {Object} item Item object.
+	 *
+	 * @return {string} Insert query.
+	 */
+	getInsertQuery( item ) {
+
+		const rawData = item.raw_data;
+
+		delete ( item.raw_data );
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ SiteRequestModel.table }` + '`';
+		const preparedItem = SiteRequestModel._prepareItemForDB( item );
+		const keys = Object.keys( preparedItem ).join( ', ' );
+		const values = Object.values( preparedItem ).join( ', ' );
+		const query = `INSERT INTO ${ table } ( ${ keys }, raw_data ) VALUES ( ${ values }, '${ rawData }' );`;
+
+		return query;
+	}
+
+	/**
 	 * To summarize site request data to store in raw format
 	 *
 	 * @param {Object} requestData Request data.
@@ -118,6 +142,8 @@ class RestController {
 			slug: requestData.site_info.wp_active_theme.slug,
 			version: requestData.site_info.wp_active_theme.version,
 		};
+
+		delete ( summarizedData.site_info.wp_active_theme );
 
 		/**
 		 * Plugin summary.
@@ -143,7 +169,8 @@ class RestController {
 		for ( const index in requestData.urls ) {
 
 			const url = requestData.urls[ index ];
-			url.errorsCount = url.errors.length || 0;
+
+			url.errorsCount = _.size( url.errors ) || 0;
 
 			delete ( url.errors );
 

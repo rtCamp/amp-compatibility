@@ -1,0 +1,24 @@
+@layout( 'dashboard/base' )
+
+@section('page')
+
+	<div>
+		<div>
+			<form class="row" method="GET" action="/admin/report/uuid/">
+				<div id="messageContainer" class="col-md-9">
+				</div>
+				<div class="col-md-3">
+					<div class="input-group mb-3">
+						<input type="search" class="form-control" name="s" value="{{searchString}}">
+						<button id="searchButton" class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+					</div>
+					<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
+				</div>
+			</form>
+		</div>
+
+		{{{renderTable(tableArgs)}}}
+
+		{{{renderPagination(pagination)}}}
+	</div>
+@endsection

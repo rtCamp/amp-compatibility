@@ -59,6 +59,14 @@ Route.group( () => {
 	Route.get( '/verify-extensions/page/:paged', 'VerifyExtensionsController.index' );
 	Route.post( '/verify-extensions/', 'VerifyExtensionsController.update' );
 
+	/**
+	 * Report.
+	 */
+	Route.get( '/report/uuid/', 'ReportUuidController.index' );
+	Route.get( '/report/uuid/page/:paged', 'ReportUuidController.index' );
+
+	Route.get( '/report/uuid/:uuid', 'ReportUuidController.show' );
+
 } ).prefix( 'admin' ).middleware( 'auth' );
 
 /**

@@ -1,0 +1,15 @@
+<ul class="list-group info-box">
+	<li class="list-group-item bg-light" aria-current="true"><h5 class="mb-0">{{title}}</h5></li>
+	@each( ( value, key ) in items )
+	<li class="list-group-item d-flex">
+		<strong class="item-key">{{ upperFirst( snackCaseToString( key ) ) }}</strong>
+		<span class="item-value">
+			@if( valueCallback )
+				{{{valueCallback( key, value )}}}
+			@else
+				{{ value }}
+			@endif
+		</span>
+	</li>
+	@endeach
+</ul>

@@ -847,6 +847,124 @@ class BigQueryBase {
 	}
 
 	/**
+	 * To parse query arguments.
+	 *
+	 * @param {Object} args Page query parama.
+	 *
+	 * @return {{select: string, limit: string, orderby: string, from: string, where: string, groupby: string}}
+	 */
+	static parseQueryArgs( args ) {
+
+		const params = _.defaults( args, {
+			paged: 1,
+			perPage: 50,
+			s: '',
+			orderby: {},
+			searchFields: [],
+		} );
+
+		const paged = params.paged - 1;
+		const offset = paged * params.perPage;
+		const tableName = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
+
+		let queryObject = {
+			select: 'SELECT *',
+			from: `FROM ${ tableName } AS ${ this.table } `,
+			where: 'WHERE 1=1 ',
+			groupby: '',
+			orderby: '',
+			limit: `LIMIT ${ params.perPage } OFFSET ${ offset }`,
+		};
+
+		if ( params.orderby ) {
+			const orderByObject = [];
+
+			for ( let field in params.orderby ) {
+				orderByObject.push( `${ field } ${ params.orderby[ field ] }` );
+			}
+
+			queryObject.orderby = `ORDER BY ${ orderByObject.join( ', ' ) }`;
+		}
+
+		/**
+		 * Add clause for search.
+		 */
+		if ( params.s && params.searchFields ) {
+			const searchObject = [];
+
+			for ( let index in params.searchFields ) {
+				searchObject.push( `${ this.table }.${ params.searchFields[ index ] } LIKE '%${ params.s }%'` );
+			}
+
+			queryObject.where += ` AND ( ${ searchObject.join( ' OR ' ) } ) `;
+		}
+
+		return queryObject;
+	}
+
+	static async getRow( primaryValue ) {
+
+		// Bail out if row don't have primary value.
+		if ( false === primaryValue ) {
+			return {};
+		}
+
+		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
+		const query = `SELECT * FROM ${ table } WHERE ${ this.primaryKey } = '${ primaryValue }';`;
+		const items = await BigQuery.query( query );
+
+		return items[ 0 ];
+	}
+
+	/**
+	 * Get BigQuery from current table by args.
+	 *
+	 * @param {Object} args
+	 *
+	 * @return {Promise<*>}
+	 */
+	static async getRows( args ) {
+
+		let query = '';
+		const queryObject = this.parseQueryArgs( args );
+
+		for ( const index in queryObject ) {
+			query += `\n ${ queryObject[ index ] }`;
+		}
+
+		const items = await BigQuery.query( query );
+
+		return items;
+	}
+
+	/**
+	 * Get count from BigQuery table by args.
+	 *
+	 * @param {Object} args
+	 *
+	 * @return {Promise<*>}
+	 */
+	static async getCount( args ) {
+
+		let query = '';
+		const queryObject = this.parseQueryArgs( args );
+
+		queryObject.select = 'SELECT count(1) AS `count`';
+		delete queryObject.limit;
+		delete queryObject.orderby;
+		delete queryObject.groupby;
+
+		for ( const index in queryObject ) {
+			query += `\n ${ queryObject[ index ] }`;
+		}
+
+		const result = await BigQuery.query( query );
+		const total = result[ 0 ].count || 0;
+
+		return total;
+	}
+
+	/**
 	 * Get UUID FROM BigQuery.
 	 *
 	 * @return {Promise<string>}

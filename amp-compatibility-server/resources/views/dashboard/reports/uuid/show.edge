@@ -1,0 +1,29 @@
+@layout( 'dashboard/base' )
+
+@section('page')
+	<div>
+		<div class="row">
+			@each( setting in infoBoxList )
+			<div class="col-md-6 mt-4">
+				{{{ renderComponent( 'infobox', setting ) }}}
+			</div>
+			@endeach
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<h4>Active plugins</h4>
+				<hr/>
+				{{{ renderTable(pluginTableArgs) }}}
+			</div>
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<h4>Invalidate URLs</h4>
+				<hr/>
+				{{{ renderTable(urlTableArgs) }}}
+			</div>
+		</div>
+	</div>
+@endsection
