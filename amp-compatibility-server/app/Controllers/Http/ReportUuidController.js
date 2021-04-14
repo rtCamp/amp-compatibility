@@ -100,9 +100,9 @@ class ReportUuidController {
 					UUID: uuid,
 					site_URL: siteRequest.site_url,
 					status: siteRequest.status,
-					urlCounts: 0,
-					errorCount: 0,
-					requestDate: siteRequest.created_at.value,
+					URL_Counts: requestData.urls.length || 0,
+					// errorCount: 0,
+					request_Date: siteRequest.created_at.value,
 				},
 				valueCallback: ( key, value ) => {
 					switch ( key ) {
@@ -112,7 +112,7 @@ class ReportUuidController {
 						case 'site_URL':
 							value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 							break;
-						case 'requestDate':
+						case 'request_Date':
 							value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
 							break;
 					}
