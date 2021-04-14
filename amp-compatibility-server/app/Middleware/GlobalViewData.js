@@ -56,6 +56,7 @@ class GlobalViewData {
 		 */
 		View.global( 'renderPagination', Templates.renderPagination );
 		View.global( 'renderTable', Templates.renderTable );
+		View.global( 'renderComponent', Templates.renderComponent );
 
 		await next();
 	}

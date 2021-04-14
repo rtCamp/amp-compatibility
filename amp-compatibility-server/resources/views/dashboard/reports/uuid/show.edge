@@ -3,26 +3,18 @@
 @section('page')
 	<div>
 		<div class="row">
-			@each( ( setting ) in infoBoxList )
+			@each( setting in infoBoxList )
 			<div class="col-md-6 mt-4">
-				<ul class="list-group info-box">
-					<li class="list-group-item bg-light" aria-current="true"><h5 class="mb-0">{{setting.title}}</h5></li>
-					@each( ( value, key ) in setting.items )
-					<li class="list-group-item d-flex">
-						<strong class="item-key">{{ upperFirst( snackCaseToString( key ) ) }}</strong><span class="item-value">{{ value }}</span>
-					</li>
-					@endeach
-				</ul>
+				{{{ renderComponent( 'infobox', setting ) }}}
 			</div>
 			@endeach
-
 		</div>
 
 		<div class="row mt-4">
 			<div class="col-md-12">
 				<h4>Active plugins</h4>
 				<hr/>
-				{{{renderTable(pluginTableArgs)}}}
+				{{{ renderTable(pluginTableArgs) }}}
 			</div>
 		</div>
 
@@ -30,7 +22,7 @@
 			<div class="col-md-12">
 				<h4>Invalidate URLs</h4>
 				<hr/>
-				{{{renderTable(urlTableArgs)}}}
+				{{{ renderTable(urlTableArgs) }}}
 			</div>
 		</div>
 	</div>

@@ -44,6 +44,11 @@ class Templates {
 		return View.render( 'templates/table', args );
 	}
 
+	static renderComponent( name, args ) {
+
+		return View.render( `templates/${ name }`, args );
+	}
+
 }
 
 module.exports = Templates;
