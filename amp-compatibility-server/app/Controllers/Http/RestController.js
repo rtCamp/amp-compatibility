@@ -39,6 +39,10 @@ class RestController {
 	 */
 	async store( { request } ) {
 
+		// @Todo: Move namespace to environment file.
+		// This is just a random UUID, we're using as namespace
+		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
+
 		const requestData = request.post();
 
 		if ( _.isEmpty( requestData ) ) {
@@ -54,18 +58,14 @@ class RestController {
 			};
 		}
 
-		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
 		const siteUrl = requestData.site_url || '';
 		const summarizedData = await this.summarizeSiteRequest( requestData );
-
-		Logger.info( 'Site: %s', siteUrl );
-
-		// @Todo: Move namespace to environment file.
-		// This is just a random UUID, we're using as namespace
-		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
-
 		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
 		uuid = `ampwp-${ uuid }`;
+
+		requestData.error_log = requestData.error_log || {};
+
+		Logger.info( 'Site: %s | UUID: %s', siteUrl, uuid );
 
 		const item = {
 			site_request_id: uuid,
@@ -73,6 +73,7 @@ class RestController {
 			status: 'pending',
 			created_at: Utility.getCurrentDateTime(),
 			raw_data: Utility.jsonPrettyPrint( summarizedData ),
+			error_log: requestData.error_log.contents || '',
 		};
 
 		const response = await SiteRequestModel.saveMany( [ item ], {
