@@ -57,6 +57,20 @@ class BigQuerySiteRequest extends BigQueryBase {
 		};
 	}
 
+	/**
+	 * To save site request in BigQuery
+	 *
+	 * @param {Object} item Item to be inserted.
+	 *
+	 * @returns {Promise<Array>} True on success Otherwise False.
+	 */
+	static async saveSiteRequest( item ) {
+
+		const insertQuery = await this.getInsertQuery( item );
+		const response = await BigQuery.query( insertQuery );
+		return response;
+
+	}
 }
 
 module.exports = BigQuerySiteRequest;

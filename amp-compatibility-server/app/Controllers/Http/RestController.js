@@ -72,14 +72,11 @@ class RestController {
 			site_url: siteUrl,
 			status: 'pending',
 			created_at: Utility.getCurrentDateTime(),
-			raw_data: Utility.jsonPrettyPrint( summarizedData ),
+			raw_data: JSON.stringify( summarizedData ),
 			error_log: requestData.error_log.contents || '',
 		};
 
-		const response = await SiteRequestModel.saveMany( [ item ], {
-			useStream: false,
-			allowUpdate: false,
-		} );
+		const response = await SiteRequestModel.saveSiteRequest( item );
 
 		if ( false === response ) {
 			return {
