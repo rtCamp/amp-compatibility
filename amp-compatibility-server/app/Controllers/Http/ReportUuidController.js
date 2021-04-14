@@ -176,7 +176,6 @@ class ReportUuidController {
 
 							value = '<ul class="list-group list-sm list-group-flush mt-0 mb-0">' + postTypes.join( '' ) + '</ul>';
 
-
 							break;
 					}
 					return value;
@@ -190,6 +189,20 @@ class ReportUuidController {
 
 		const urlTableArgs = {
 			items: requestData.urls,
+			valueCallback: ( key, value ) => {
+				value = value ? value : '-';
+
+				switch ( key ) {
+					case 'url':
+						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
+						break;
+					default:
+						value = `<div class="text-center">${ value }</div>`;
+						break;
+				}
+
+				return value;
+			},
 		};
 
 		return view.render( 'dashboard/reports/uuid/show', {
