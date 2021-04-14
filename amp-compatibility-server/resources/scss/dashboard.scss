@@ -115,3 +115,11 @@ body {
 	}
 
 }
+
+.error-log {
+	border: 1px solid #DEDEDE;
+	border-radius: 7px;
+	padding: 5px;
+	max-height: 510px;
+	overflow: scroll;
+}

@@ -84,9 +84,14 @@ class ReportUuidController {
 		const uuid = params.uuid;
 		const siteRequest = await SiteRequestModel.getRow( uuid );
 
+		if ( ! siteRequest ) {
+			return view.render( 'dashboard/reports/uuid/not-found' );
+		}
+
 		const rawData = siteRequest.raw_data.trim();
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
+		const errorLog = siteRequest.error_log || '';
 
 		const infoBoxList = {
 			requestInfo: {
@@ -213,6 +218,7 @@ class ReportUuidController {
 			infoBoxList,
 			pluginTableArgs,
 			urlTableArgs,
+			errorLog
 		} );
 	}
 
