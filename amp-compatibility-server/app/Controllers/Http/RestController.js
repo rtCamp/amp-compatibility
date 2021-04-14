@@ -15,7 +15,7 @@ const Logger = use( 'Logger' );
 const _ = require( 'underscore' );
 
 // For generating UUIDs
-const uuidv5 = require('uuid/v5');
+const uuidv5 = require( 'uuid/v5' );
 
 class RestController {
 
@@ -39,6 +39,10 @@ class RestController {
 	 */
 	async store( { request } ) {
 
+		// @Todo: Move namespace to environment file.
+		// This is just a random UUID, we're using as namespace
+		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
+
 		const requestData = request.post();
 
 		if ( _.isEmpty( requestData ) ) {
@@ -54,24 +58,28 @@ class RestController {
 			};
 		}
 
-		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
 		const siteUrl = requestData.site_url || '';
-		Logger.info( 'Site: %s', siteUrl );
-
-		// @Todo: Move namespace to environment file.
-		// This is just a random UUID, we're using as namespace
-		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
+		const summarizedData = await this.summarizeSiteRequest( requestData );
 		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
 		uuid = `ampwp-${ uuid }`;
+
+		requestData.error_log = requestData.error_log || {};
+
+		Logger.info( 'Site: %s | UUID: %s', siteUrl, uuid );
 
 		const item = {
 			site_request_id: uuid,
 			site_url: siteUrl,
 			status: 'pending',
 			created_at: Utility.getCurrentDateTime(),
+			raw_data: Utility.jsonPrettyPrint( summarizedData ),
+			error_log: requestData.error_log.contents || '',
 		};
 
-		const response = await SiteRequestModel.saveSiteRequest( item);
+		const response = await SiteRequestModel.saveMany( [ item ], {
+			useStream: false,
+			allowUpdate: false,
+		} );
 
 		if ( false === response ) {
 			return {
@@ -92,6 +100,60 @@ class RestController {
 				uuid: uuid,
 			},
 		};
+	}
+
+	/**
+	 * To summarize site request data to store in raw format
+	 *
+	 * @param {Object} requestData Request data.
+	 *
+	 * @return {Promise<{site_url: *, site_info: *}>}
+	 */
+	async summarizeSiteRequest( requestData ) {
+
+		const summarizedData = {
+			site_url: requestData.site_url,
+			site_info: requestData.site_info,
+		};
+
+		summarizedData.wp_active_theme = {
+			name: requestData.site_info.wp_active_theme.name,
+			slug: requestData.site_info.wp_active_theme.slug,
+			version: requestData.site_info.wp_active_theme.version,
+		};
+
+		/**
+		 * Plugin summary.
+		 */
+		summarizedData.plugins = [];
+
+		for ( const index in requestData.plugins ) {
+			const plugin = requestData.plugins[ index ];
+
+			summarizedData.plugins.push( {
+				name: plugin.name,
+				slug: plugin.slug,
+				version: plugin.version,
+			} );
+
+		}
+
+		/**
+		 * Validated URL Summary.
+		 */
+		summarizedData.urls = [];
+
+		for ( const index in requestData.urls ) {
+
+			const url = requestData.urls[ index ];
+			url.errorsCount = url.errors.length || 0;
+
+			delete ( url.errors );
+
+			summarizedData.urls.push( url );
+		}
+
+		return summarizedData;
 	}
 
 }

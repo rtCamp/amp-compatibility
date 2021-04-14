@@ -4,9 +4,9 @@
 const Schema = use( 'Schema' );
 
 // Models
-const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
+const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
-class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
+class BigQuerySiteHealthSchema extends Schema {
 
 	/**
 	 * To create table.
@@ -17,15 +17,20 @@ class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
 
 		const columns = [
 			{
-				name: 'site_request_id',
+				name: 'raw_data',
 				type: 'STRING',
 				mode: 'NULLABLE',
-				description: '',
+				description: 'To store summarized request info in JSON format.',
+			},
+			{
+				name: 'error_log',
+				type: 'STRING',
+				mode: 'NULLABLE',
+				description: 'To store error log data.',
 			},
 		];
 
-
-		const table = AmpValidatedUrlModel.getBigQueryTable;
+		const table = SiteRequestModel.getBigQueryTable;
 		const [ metadata ] = await table.getMetadata();
 		const newSchema = metadata.schema;
 
@@ -36,6 +41,7 @@ class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
 		metadata.schema = newSchema;
 
 		const [ result ] = await table.setMetadata( metadata );
+
 	}
 
 	/**
@@ -48,4 +54,4 @@ class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
 	}
 }
 
-module.exports = BigQueryUpdateAmpValidatedUrlsSchema;
+module.exports = BigQuerySiteHealthSchema
