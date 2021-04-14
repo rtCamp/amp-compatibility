@@ -1,7 +1,7 @@
 @layout( 'dashboard/base' )
 
 @section('page')
-	<div>
+	<div class="mb-4">
 		<div class="row">
 			@each( setting in infoBoxList )
 			<div class="col-md-6 mt-4">
@@ -23,6 +23,18 @@
 				<h4>Invalidate URLs</h4>
 				<hr/>
 				{{{ renderTable(urlTableArgs) }}}
+			</div>
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<h4>Error Log</h4>
+				<hr/>
+				@if(errorLog)
+					<pre class="error-log">{{{errorLog}}}</pre>
+				@else
+					<p class="lead fw-normal text-center">No error log found.</p>
+				@endif
 			</div>
 		</div>
 	</div>
