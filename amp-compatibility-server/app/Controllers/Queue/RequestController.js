@@ -296,8 +296,8 @@ class RequestController extends Base {
 
 		data.wp_active_theme = ExtensionVersionModel.getPrimaryValue( {
 			type: 'theme',
-			slug: data.wp_active_theme.slug,
-			version: data.wp_active_theme.version,
+			slug: data.wp_active_theme.slug || '',
+			version: data.wp_active_theme.version || '',
 		} );
 
 		data.amp_supported_post_types = data.amp_supported_post_types || [];
