@@ -263,11 +263,7 @@ class ReportUuidController {
 			},
 		} );
 
-		const extensionVersionData = await ExtensionVersionModel.getRows( {
-			whereClause: {
-				extension_version_slug: extensionSlugVersionList,
-			},
-		} );
+		const extensionVersionData = await ExtensionVersionModel.getRowsWithErrorCount( extensionSlugVersionList );
 
 		for ( const index in preparedPluginList ) {
 			const plugin = preparedPluginList[ index ];
@@ -293,14 +289,17 @@ class ReportUuidController {
 					version: extensionVersionData[ index ].version || plugin.version,
 					latest_version: extensionData[ extensionSlug ].latest_version || false,
 				},
-				error_count: extensionVersionData[ index ].error_count || 0,
+				error_count: {
+					count: extensionVersionData[ index ].error_count || 0,
+					has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
+				},
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
 				is_verified: !! extensionVersionData[ index ].is_verified,
 			};
 		}
 
 		const pluginTableArgs = {
-			items: _.toArray(preparedPluginList),
+			items: _.toArray( preparedPluginList ),
 			valueCallback: ( key, value ) => {
 
 				switch ( key ) {
@@ -329,7 +328,13 @@ class ReportUuidController {
 
 						break;
 					case 'error_count':
-						value = `<span class="text-center">${ value ? value : '-' }</span>`;
+
+						if ( value.has_synthetic_data ) {
+							value = `<span class="text-center">${ value.count }</span>`;
+						} else {
+							value = `<span class="text-center">${ value.count ? value.count : '-' }</span>`;
+						}
+
 						break;
 					case 'has_synthetic_data':
 					case 'is_verified':
