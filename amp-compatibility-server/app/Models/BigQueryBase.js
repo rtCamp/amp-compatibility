@@ -857,14 +857,14 @@ class BigQueryBase {
 
 		const params = _.defaults( args, {
 			paged: 1,
-			perPage: 50,
-			s: '',
+			perPage: -1,
+			whereClause: {},
 			orderby: {},
+			s: '',
 			searchFields: [],
 		} );
 
 		const paged = params.paged - 1;
-		const offset = paged * params.perPage;
 		const tableName = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
 
 		let queryObject = {
@@ -873,10 +873,34 @@ class BigQueryBase {
 			where: 'WHERE 1=1 ',
 			groupby: '',
 			orderby: '',
-			limit: `LIMIT ${ params.perPage } OFFSET ${ offset }`,
 		};
 
-		if ( params.orderby ) {
+		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
+			const offset = paged * params.perPage;
+			queryObject.limit = `LIMIT ${ params.perPage } OFFSET ${ offset }`;
+		}
+
+		if ( ! _.isEmpty( params.whereClause ) && _.isObject( params.whereClause ) ) {
+
+			const whereFields = [];
+			const preparedField = this._prepareItemForDB( params.whereClause );
+
+			for ( let key in preparedField ) {
+
+				if ( _.isArray( preparedField[ key ] ) ) {
+					let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
+					whereFields.push( `${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
+				} else {
+					whereFields.push( `${ key }=${ preparedField[ key ] }` );
+				}
+
+			}
+
+			queryObject.where += ` AND ${ whereFields.join( ' AND ' ) } `;
+
+		}
+
+		if ( ! _.isEmpty( params.orderby ) && _.isObject( params.orderby ) ) {
 			const orderByObject = [];
 
 			for ( let field in params.orderby ) {
@@ -889,7 +913,7 @@ class BigQueryBase {
 		/**
 		 * Add clause for search.
 		 */
-		if ( params.s && params.searchFields ) {
+		if ( params.s && ! _.isEmpty( params.searchFields ) && _.isArray( params.searchFields ) ) {
 			const searchObject = [];
 
 			for ( let index in params.searchFields ) {
@@ -933,8 +957,14 @@ class BigQueryBase {
 		}
 
 		const items = await BigQuery.query( query );
+		const preparedItems = {};
 
-		return items;
+		for ( const index in items ) {
+			const item = items[ index ];
+			preparedItems[ item[ this.primaryKey ] ] = item;
+		}
+
+		return preparedItems;
 	}
 
 	/**

@@ -5,7 +5,7 @@ const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
 // Models
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
-
+const GlobalCache = use( 'App/Helpers/GlobalCache' );
 const Utility = use( 'App/Helpers/Utility' );
 
 // Helpers
@@ -64,6 +64,18 @@ class RestController {
 		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
 		uuid = `ampwp-${ uuid }`;
 
+		const existingRequest = await GlobalCache.get( uuid, 'site_requests' );
+
+		if ( existingRequest ) {
+			return {
+				status: 'ok',
+				data: {
+					uuid: uuid,
+					message: 'UUID is already exist.',
+				},
+			};
+		}
+
 		requestData.error_log = requestData.error_log || {};
 
 		Logger.info( 'Site: %s | UUID: %s', siteUrl, uuid );
@@ -92,6 +104,8 @@ class RestController {
 		requestData.uuid = uuid;
 
 		await RequestQueueController.createJob( requestData );
+
+		await GlobalCache.set( uuid, 'pending', 'site_requests' );
 
 		return {
 			status: 'ok',

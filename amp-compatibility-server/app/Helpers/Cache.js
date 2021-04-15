@@ -66,7 +66,7 @@ class Cache {
 	 *
 	 * @returns {Promise<boolean>}
 	 */
-	static async set( key, data, group = 'default' ) {
+	static async set( key, data, group = 'default', expiryTime = 0 ) {
 
 		const id = this.getKey( key, group );
 
@@ -79,7 +79,13 @@ class Cache {
 		}
 
 		try {
-			await this.connection.set( id, data );
+
+			if ( parseInt( expiryTime ) && 0 < parseInt( expiryTime ) ) {
+				await this.connection.set( id, data, 'EX', expiryTime );
+			} else {
+				await this.connection.set( id, data );
+			}
+
 		} catch ( exception ) {
 			console.error( exception );
 		}
