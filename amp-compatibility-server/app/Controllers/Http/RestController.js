@@ -148,7 +148,7 @@ class RestController {
 
 		const summarizedData = {
 			site_url: requestData.site_url,
-			site_info: requestData.site_info,
+			site_info: _.clone(requestData.site_info),
 		};
 
 		summarizedData.wp_active_theme = {
