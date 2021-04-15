@@ -880,7 +880,7 @@ class BigQueryBase {
 			queryObject.limit = `LIMIT ${ params.perPage } OFFSET ${ offset }`;
 		}
 
-		if ( params.whereClause && _.isObject( params.whereClause ) ) {
+		if ( ! _.isEmpty( params.whereClause ) && _.isObject( params.whereClause ) ) {
 
 			const whereFields = [];
 			const preparedField = this._prepareItemForDB( params.whereClause );
