@@ -15,6 +15,7 @@ const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 
+const GlobalCache = use( 'App/Helpers/GlobalCache' );
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -99,6 +100,8 @@ class RequestController extends Base {
 		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
 		storedItem.status = 'success';
 
+		await GlobalCache.set( this.job.data.uuid, 'success', 'site_requests' );
+
 		await SiteRequestModel.saveMany( [ storedItem ] );
 
 		const preparedLog = this.prepareLog( result );
@@ -114,6 +117,8 @@ class RequestController extends Base {
 
 		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
 		storedItem.status = 'fail';
+
+		await GlobalCache.set( this.job.data.uuid, 'fail', 'site_requests' );
 
 		await SiteRequestModel.saveMany( [ storedItem ] );
 
