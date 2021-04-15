@@ -2,7 +2,6 @@ const { BigQuery: BigQueryClient } = require( '@google-cloud/bigquery' );
 const _ = require( 'underscore' );
 
 const GlobalCache = use( 'App/Helpers/GlobalCache' );
-const Cache = use( 'App/Helpers/Cache' );
 const Utility = use( 'App/Helpers/Utility' );
 
 class BigQuery {
