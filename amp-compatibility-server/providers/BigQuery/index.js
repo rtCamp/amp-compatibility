@@ -1,6 +1,10 @@
 const { BigQuery: BigQueryClient } = require( '@google-cloud/bigquery' );
 const _ = require( 'underscore' );
 
+const GlobalCache = use( 'App/Helpers/GlobalCache' );
+const Cache = use( 'App/Helpers/Cache' );
+const Utility = use( 'App/Helpers/Utility' );
+
 class BigQuery {
 
 	/**
@@ -31,6 +35,27 @@ class BigQuery {
 	 * @return {Promise<object>}
 	 */
 	async query( query ) {
+
+		if ( _.isEmpty( query ) ) {
+			return {};
+		}
+
+		let cacheKey = '';
+		const cacheGroup = 'bigquery_result';
+		const expireyTime = ( 60 * 30 );
+
+		if ( 0 === query.trim().toLowerCase().indexOf( 'select ' ) ) {
+			cacheKey = Utility.makeHash( query );
+		}
+
+		if ( cacheKey ) {
+			const response = await GlobalCache.get( cacheKey, cacheGroup );
+
+			if ( response && ! _.isEmpty( response ) ) {
+				return response;
+			}
+		}
+
 		// For all options, see https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query
 		const options = {
 			query: query,
@@ -41,6 +66,10 @@ class BigQuery {
 
 		// Wait for the query to finish
 		const [ response ] = await job.getQueryResults();
+
+		if ( cacheKey && response && ! _.isEmpty( response ) ) {
+			await GlobalCache.set( cacheKey, response, cacheGroup, expireyTime );
+		}
 
 		return response;
 	}
@@ -78,7 +107,7 @@ class BigQuery {
 		}
 
 		const table = '`' + `${ this.config.projectId }.${ this.config.dataset }` + '`.__TABLES__';
-		const query = `SELECT *, (size_bytes/1000000000) AS size_in_gb FROM ${table} LIMIT 1000;`;
+		const query = `SELECT *, (size_bytes/1000000000) AS size_in_gb FROM ${ table } LIMIT 1000;`;
 
 		const items = await this.query( query );
 		const response = {};
