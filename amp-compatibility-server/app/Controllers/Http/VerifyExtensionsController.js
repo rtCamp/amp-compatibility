@@ -73,7 +73,7 @@ class VerifyExtensionsController {
 			query += `\n ${ queryObject[ index ] }`;
 		}
 
-		const items = await BigQuery.query( query );
+		const items = await BigQuery.query( query, true );
 
 		/**
 		 * Get count.

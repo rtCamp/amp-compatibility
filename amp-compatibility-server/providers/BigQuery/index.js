@@ -31,10 +31,11 @@ class BigQuery {
 	 * To execute Query in BigQuery.
 	 *
 	 * @param {string} query ex "INSERT INTO `table` VALUES (1,2,3);
+	 * @param {bool} force Forcefully fetch data from BigQuery instead of checking in cache..
 	 *
 	 * @return {Promise<object>}
 	 */
-	async query( query ) {
+	async query( query, force = false ) {
 
 		if ( _.isEmpty( query ) ) {
 			return {};
@@ -48,7 +49,7 @@ class BigQuery {
 			cacheKey = Utility.makeHash( query );
 		}
 
-		if ( cacheKey ) {
+		if ( cacheKey && false === force ) {
 			const response = await GlobalCache.get( cacheKey, cacheGroup );
 
 			if ( response && ! _.isEmpty( response ) ) {
