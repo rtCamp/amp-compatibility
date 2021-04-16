@@ -28,8 +28,5 @@ class ShortCodes extends Base {
 		];
 
 		$this->generate_post( $page_args );
-
 	}
-
-
 }

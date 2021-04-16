@@ -5,7 +5,7 @@
  * @package amp-wp-dummy-data-generator
  */
 
-namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
+namespace AMP_WP_Dummy_Data_Generator\Inc\CLI;
 
 use function WP_CLI\Utils\get_flag_value;
 
@@ -121,7 +121,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 
 		// Log message to log file if a log file.
 		if ( ! empty( $this->log_file ) ) {
-			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
+			file_put_contents( $this->log_file, $message_prefix . $message . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents,WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents
 		}
 
 		if ( ! empty( $this->logs ) ) {
@@ -211,7 +211,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 			return [];
 		}
 
-		$data = array();
+		$data = [];
 
 		$handle = fopen( $filename, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 
@@ -324,7 +324,7 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 	 *
 	 * @return string|bool Written filename on success, false on failure.
 	 */
-	protected function write_to_csv( $file = '', $column_headers = array(), $data = array(), $callback = null, $fopen_mode = 'w' ) {
+	protected function write_to_csv( $file = '', $column_headers = [], $data = [], $callback = null, $fopen_mode = 'w' ) {
 
 		if ( ! is_string( $file ) || empty( $file ) ) {
 			return false;
@@ -421,6 +421,4 @@ class Base extends WP_DAM_CLI_Base { // phpcs:ignore
 		}
 
 	}
-
-
 }

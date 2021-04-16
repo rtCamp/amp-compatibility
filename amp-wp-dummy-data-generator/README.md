@@ -1,5 +1,6 @@
 # AMP WP Dummy data generator
-Plugin that generate ideal content for website considering active plugins and theme.
+
+Plugin that generates sample content for the active plugins and theme with the aim of triggering possible AMP validation errors.
 
 ## How to use?
 Install this plugin in WordPress installation, And run below command from current plugin directory.
@@ -8,11 +9,16 @@ Install this plugin in WordPress installation, And run below command from curren
 bash ./start.sh
 ```
 
-## WP CLI Commands
+## WP-CLI Commands
 
 #### To send AMP validation data.
 ```bash
 wp amp-send-data
+```
+
+#### To configure AMP plugin and set default options/settings.
+```bash
+wp configure-amp-site
 ```
 
 ## Directory/File Info
@@ -21,10 +27,10 @@ wp amp-send-data
 Contains custom data to be imported/generated for various plugins as well as
 pre and post import scripts to be executed before and after import.
 
-### [./inc/classes/generator/](./inc/classes/generator/)
+### [./inc/classes/generator/](./inc/classes/generator)
 Contains all content generator classes.
 
-### [./inc/classes/wp-cli/class-commands.php](./inc/classes/wp-cli/class-commands.php)
+### [./inc/classes/cli/class-commands.php](inc/classes/cli/class-commands.php)
 Define all helper WP CLI command for [bash script](./start.sh)
 
 

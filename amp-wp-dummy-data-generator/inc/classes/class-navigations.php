@@ -1,6 +1,6 @@
 <?php
 /**
- * Navigation class.
+ * Navigations class.
  *
  * @package amp-wp-dummy-data-generator
  */
@@ -17,19 +17,11 @@ class Navigations {
 	use Singleton;
 
 	/**
-	 * Construct method.
-	 */
-	protected function __construct() {
-
-		$this->setup_hooks();
-	}
-
-	/**
 	 * To setup action/filters.
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		add_filter( 'theme_mod_nav_menu_locations', [ $this, 'add_navigation_menus' ] );
 	}
@@ -64,5 +56,4 @@ class Navigations {
 
 		return $locations;
 	}
-
 }

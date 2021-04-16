@@ -8,27 +8,28 @@ _All `.xml` and `.wxr` files in the directory `data/wporg/core/` will get import
 
 ```
 data
-├── premium
-│   ├── plugins
-│   │   └── my-premium-plugin
-│   └── themes
-│       └── my-premium-theme
+├── commercial
+│   ├── plugins
+│   │   └── my-commercial-plugin
+│   └── themes
+│       └── my-commercial-theme
 └── wporg
     ├── core
     ├── plugins
-    │   ├── bbpress
-    │   ├── jetpack
-    │   └── woocommerce
+    │   ├── bbpress
+    │   ├── jetpack
+    │   └── woocommerce
     └── themes
         └── twentytwenty
-
 ```
+
+TODO: Should the sample data be actually committed to the repo as opposed to being gitignored and pulled down from their respective locations when running? As it stands right now, the sample data will become stale. Although maybe the desire is rather for consistency between runs.
 
 ### Directory `wporg` ###
 Contains dummy data files for plugins and themes available on WordPress.org
 
-### Directory `premium` ###
-Contains dummy data files for premium plugins and themes
+### Directory `commercial` ###
+Contains dummy data files for commercial plugins and themes
 
 *The slug of the plugin/theme name must match the directory name here*
 
@@ -45,7 +46,7 @@ buddypress-media
 
 ### File `pre.sh` ###
 
-This file will be executed before the data files are imported.
+This script will be executed before the data files are imported.
 
 This can include install commands for recommended plugins to be installed in conjunction
 with this plugin, eg. an extension plugin for WooCommerce would require WooCommerce to be
@@ -55,17 +56,21 @@ installed and activated, in which case, we can add
 
 in `pre.sh` file for that extension.
 
+TODO: Add an example plugin to the repo that uses uses pre.sh. There aren't currently any examples committed. 
+
 ### File `post.sh` ###
 
-This file will be executed after the data files are imported.
+This script will be executed after the data files are imported.
 
-This can be helpful if we want to run certain commands after data is imported, eg. SEO Yoast
+This can be helpful if we want to run certain commands after data is imported, e.g. the Yoast SEO
 plugin might require to reindex the data after import in which case we can add
 
 `wp yoast index`
 
 in `post.sh` file.
 
+TODO: Add an example plugin to the repo that uses uses post.sh. There aren't currently any examples committed. For example, 
+
 ### Files `*.xml` and `*.wxr` ###
 
-All `.xml` and `.wxr` files within the **individual plugin/theme directory** will get imported, when that plugin is active.
+All `.xml` and `.wxr` files within the **individual plugin/theme directory** will get imported when that plugin is active.

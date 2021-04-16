@@ -18,7 +18,7 @@ class Posts extends Base {
 	/**
 	 * To get list of post types for that post need to create.
 	 *
-	 * @return array List of post types.
+	 * @return string[] List of post types.
 	 */
 	protected function get_post_types() {
 
@@ -28,7 +28,6 @@ class Posts extends Base {
 			'custom_css',
 			'customize_changeset',
 			'oembed_cache',
-			'user_request',
 			'user_request',
 		];
 
@@ -49,7 +48,7 @@ class Posts extends Base {
 		$count      = count( $post_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating posts for %d post type...' : 'Generating posts for %d post types...', $count ),
+			sprintf( 1 === $count ? 'Generating posts for %d post type...' : 'Generating posts for %d post types...', $count ),
 			$count
 		);
 
@@ -72,7 +71,7 @@ class Posts extends Base {
 		$count      = count( $post_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting posts for %d post type...' : 'Deleting posts for %d post types...', $count ),
+			sprintf( 1 === $count ? 'Deleting posts for %d post type...' : 'Deleting posts for %d post types...', $count ),
 			$count
 		);
 
@@ -81,6 +80,8 @@ class Posts extends Base {
 				'posts_per_page' => -1,
 				'post_type'      => $post_type,
 				'post_status'    => 'any',
+				// This is synthetic data generation, we can ignore slow_db_query_meta_query.
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'meta_query'     => [
 					[
 						'key'   => self::GENERATED_FLAG,
@@ -123,27 +124,31 @@ class Posts extends Base {
 		$templates        = ( ! empty( $templates ) && is_array( $templates ) ) ? array_keys( $templates ) : [];
 
 		// Adjust the limit according the post types and it's template.
-		$limit = AMP_WP_DUMMY_DATA_GENERATOR_LIMIT + count( $templates );
+		$limit = 1;
+		$limit = $limit + count( $templates );
 		$limit = $post_type_object->hierarchical ? $limit * 2 : $limit;
 
 		// Find associated taxonomies.
 		$taxonomy_terms = [];
-		$taxonomies     = get_taxonomies( [
-			'object_type' => [ $post_type ],
-		] );
+		$taxonomies     = get_taxonomies(
+			[
+				'object_type' => [ $post_type ],
+			]
+		);
 
 		foreach ( $taxonomies as $taxonomy ) {
-			$taxonomy_terms[ $taxonomy ] = get_terms( [
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => false,
-			] );
+			$taxonomy_terms[ $taxonomy ] = get_terms(
+				[
+					'taxonomy'   => $taxonomy,
+					'hide_empty' => false,
+				]
+			);
 		}
 
 		$taxonomy_terms = array_filter( $taxonomy_terms );
 
 		for ( $index = 1; $index <= $limit; $index ++ ) {
 
-			$post_id    = false;
 			$post_title = "$index: $singular_name";
 
 			$args = [
@@ -158,7 +163,7 @@ class Posts extends Base {
 				$parent_index        = $index - ( $limit / 2 );
 				$args['post_parent'] = $posts[ $parent_index ];
 			} elseif ( 1 !== $index ) {
-				// Parent Pages
+				// Parent Pages.
 				$template = array_pop( $templates );
 
 				// Set page template to post.
@@ -167,15 +172,16 @@ class Posts extends Base {
 
 					$args['meta_input']['_wp_page_template'] = $template;
 				}
-
 			}
 
-			$existing_posts = get_posts( [
-				'title'       => $post_title,
-				'post_type'   => $post_type,
-				'numberposts' => 1,
-				'fields'      => 'ids',
-			] );
+			$existing_posts = get_posts(
+				[
+					'title'       => $post_title,
+					'post_type'   => $post_type,
+					'numberposts' => 1,
+					'fields'      => 'ids',
+				]
+			);
 
 			if ( ! empty( $existing_posts[0] ) && 0 < intval( $existing_posts[0] ) ) {
 				$post_id = $existing_posts[0];
@@ -196,14 +202,12 @@ class Posts extends Base {
 						}
 
 						$count  = count( $terms );
-						$term_1 = rand( 1, $count ) - 1;
+						$term_1 = wp_rand( 1, $count ) - 1;
 
 						$args['tax_input'][ $taxonomy ] = [
 							$terms[ $term_1 ]->term_id,
 						];
-
 					}
-
 				}
 
 				$post_id = $this->generate_post( $args );
@@ -217,5 +221,4 @@ class Posts extends Base {
 		return $posts;
 
 	}
-
 }

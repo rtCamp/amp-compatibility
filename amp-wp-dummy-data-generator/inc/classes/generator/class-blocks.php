@@ -16,7 +16,7 @@ class Blocks extends Base {
 
 	const PAGE_SLUG = 'amp-wp-dummy-data-generator-blocks';
 
-	const SELF_CLOSING_TAGS = array( 'img', 'br' );
+	const SELF_CLOSING_TAGS = [ 'img', 'br' ];
 
 	/**
 	 * Blocks associative array to populate with generated blocks, keyed by block type.
@@ -54,7 +54,7 @@ class Blocks extends Base {
 		$this->blocks    = [];
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating %d block...' : 'Generating %d blocks...', $count ),
+			sprintf( 1 === $count ? 'Generating %d block...' : 'Generating %d blocks...', $count ),
 			$count
 		);
 
@@ -106,7 +106,7 @@ class Blocks extends Base {
 		$count = count( $block_types );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting %d block...' : 'Deleting %d blocks...', $count ),
+			sprintf( 1 === $count ? 'Deleting %d block...' : 'Deleting %d blocks...', $count ),
 			$count
 		);
 
@@ -130,21 +130,17 @@ class Blocks extends Base {
 	 */
 	private function generate_block( \WP_Block_Type $block_type ) {
 
-		$block = array(
+		$block = [
 			'blockName'    => $block_type->name,
 			'attrs'        => [],
 			'innerBlocks'  => [],
 			'innerContent' => [],
-		);
+		];
 
 		// Populate block attrs and innerContent.
 		$html = [];
 		foreach ( $block_type->get_attributes() as $slug => $data ) {
 			$value = $this->generate_block_attribute_value( $slug, $data );
-
-			if ( isset( $data['selector'] ) ) {
-				$selector = explode( ',', $data['selector'] )[0];
-			}
 
 			$source = isset( $data['source'] ) ? $data['source'] : 'comment';
 			switch ( $source ) {
@@ -210,7 +206,7 @@ class Blocks extends Base {
 				return new \stdClass();
 			case 'array':
 				if ( isset( $data['items'] ) ) {
-					return array( $this->generate_block_attribute_value( $slug, $data['items'] ) );
+					return [ $this->generate_block_attribute_value( $slug, $data['items'] ) ];
 				}
 
 				return [];
@@ -241,10 +237,14 @@ class Blocks extends Base {
 					return array_shift( $data['enum'] );
 				}
 				if ( ! empty( $data['source'] ) && 'attribute' === $data['source'] ) {
-					if ( ! empty( $data['attribute'] ) && in_array( $data['attribute'], array(
+					if ( ! empty( $data['attribute'] ) && in_array(
+						$data['attribute'],
+						[
 							'src',
 							'href',
-						), true ) ) {
+						],
+						true
+					) ) {
 						if ( false !== strpos( $data['selector'], 'audio' ) ) {
 							return 'https://www.w3schools.com/tags/horse.mp3';
 						}
@@ -278,7 +278,6 @@ class Blocks extends Base {
 	 *               with the latter being either an associative array of the
 	 *               same shape, or an indexed array of strings.
 	 * @since 1.0.0
-	 *
 	 */
 	private function generate_block_attribute_html( array $data, $value ) {
 
@@ -298,13 +297,13 @@ class Blocks extends Base {
 		foreach ( $nested as $index => $partial_selector ) {
 			list( $tag_name, $attrs ) = $this->parse_selector( $partial_selector );
 
-			$current[ $tag_name ] = array(
+			$current[ $tag_name ] = [
 				'attrs'     => $attrs,
 				'innerHTML' => [],
-			);
+			];
 
 			// If final nested element, fill it with attribute value accordingly.
-			if ( $index === count( $nested ) - 1 ) {
+			if ( count( $nested ) - 1 === $index ) {
 				switch ( $data['source'] ) {
 					case 'attribute':
 						$current[ $tag_name ]['attrs'][ $data['attribute'] ] = $value;
@@ -352,7 +351,7 @@ class Blocks extends Base {
 				$attr = substr( $attr, 0, strlen( $attr - 1 ) );
 				if ( strpos( $attr, '=' ) ) { // Set value for attribute.
 					list( $attr, $value ) = explode( '=', $attr, 2 );
-					$acc[ $attr ] = trim( $value, '"\'' );
+					$acc[ $attr ]         = trim( $value, '"\'' );
 				} else { // Assume boolean attribute.
 					$acc[ $attr ] = true;
 				}
@@ -362,7 +361,7 @@ class Blocks extends Base {
 
 		if ( false !== strpos( $selector, '#' ) ) {
 			list( $selector, $id ) = explode( '#', $selector, 2 );
-			$attrs['id'] = $id;
+			$attrs['id']           = $id;
 		}
 
 		if ( false !== strpos( $selector, '.' ) ) {
@@ -377,7 +376,7 @@ class Blocks extends Base {
 			$tag_name = 'div';
 		}
 
-		return array( $tag_name, $attrs );
+		return [ $tag_name, $attrs ];
 	}
 
 	/**
@@ -408,11 +407,16 @@ class Blocks extends Base {
 					continue;
 				}
 
-				if ( is_string( $value ) && empty( $value ) ) {
+				if ( is_string( $value ) && ! empty( $value ) ) {
+					$result .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
 					continue;
 				}
 
-				$result .= ' ' . $attr . '="' . esc_attr( $value ) . '"';
+				// Handles the case where we have multiple classes as an array for a given tag and the header attribute.
+				if ( is_array( $value ) && ! empty( $value ) ) {
+					$result .= ' ' . $attr . '="' . esc_attr( implode( ' ', $value ) ) . '"';
+				}
+
 			}
 
 			if ( in_array( $tag_name, static::SELF_CLOSING_TAGS, true ) ) {
@@ -428,5 +432,4 @@ class Blocks extends Base {
 
 		return $results;
 	}
-
 }

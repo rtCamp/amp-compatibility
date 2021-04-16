@@ -1,0 +1,1 @@
+Commercial themes will go in this directory.

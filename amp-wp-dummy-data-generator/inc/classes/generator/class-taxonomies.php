@@ -22,6 +22,15 @@ class Taxonomies extends Base {
 	 */
 	protected function get_taxonomies() {
 
+		// TODO: This seems slightly problematic, it would be better to find a solution which
+		// doesn't require manual exclusions, as doing that would be impossible for all the
+		// different plugins and configurations out there.
+		//
+		// Maybe we could do something along the lines of also checking for each public taxonomy
+		// whether it also has at least one public post type assigned? I'd argue that a post type
+		// really shouldn't be public if it shouldn't appear in the frontend.
+		// If a taxonomy is public but doesn't have any post types associated, it shouldn't appear
+		// in the frontend anyways.
 		$taxonomies = get_taxonomies( [ 'public' => true ] );
 		$exclude    = [
 			'amp_validation_error',
@@ -45,7 +54,7 @@ class Taxonomies extends Base {
 		$terms      = [];
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Generating terms for %d taxonomy...' : 'Generating terms for %d taxonomies...', $count ),
+			sprintf( 1 === $count ? 'Generating terms for %d taxonomy...' : 'Generating terms for %d taxonomies...', $count ),
 			$count
 		);
 
@@ -68,7 +77,7 @@ class Taxonomies extends Base {
 		$count      = count( $taxonomies );
 
 		$progress = make_progress_bar(
-			sprintf( $count === 1 ? 'Deleting terms for %d taxonomy...' : 'Deleting terms for %d taxonomies...', $count ),
+			sprintf( 1 === $count ? 'Deleting terms for %d taxonomy...' : 'Deleting terms for %d taxonomies...', $count ),
 			$count
 		);
 
@@ -77,6 +86,8 @@ class Taxonomies extends Base {
 				'fields'     => 'ids',
 				'taxonomy'   => $taxonomy,
 				'meta_key'   => self::GENERATED_FLAG,
+				// This is synthetic data generation, we can ignore slow_db_query_meta_query.
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'meta_value' => 'true',
 				'hide_empty' => false,
 			];
@@ -108,11 +119,11 @@ class Taxonomies extends Base {
 		}
 
 		$taxonomy_object = get_taxonomy( $taxonomy );
-		$limit           = $taxonomy_object->hierarchical ? AMP_WP_DUMMY_DATA_GENERATOR_LIMIT * 2 : AMP_WP_DUMMY_DATA_GENERATOR_LIMIT;
+		$limit           = 1;
+		$limit           = $taxonomy_object->hierarchical ? $limit * 2 : $limit;
 		$labels          = get_taxonomy_labels( $taxonomy_object );
 		$singular_name   = ( ! empty( $labels->singular_name ) ) ? $labels->singular_name : $taxonomy;
 		$terms           = [];
-
 
 		for ( $index = 1; $index <= $limit; $index ++ ) {
 
@@ -150,8 +161,7 @@ class Taxonomies extends Base {
 	 *
 	 * @return int Term ID.
 	 */
-	protected function generate_term( string $term, string $taxonomy, array $args ) {
-
+	protected function generate_term( $term, $taxonomy, array $args = [] ) {
 		$response = wp_insert_term( $term, $taxonomy, $args );
 
 		$term_id = ( ! empty( $response ) && ! is_wp_error( $response ) && 0 < intval( $response['term_id'] ) ) ? intval( $response['term_id'] ) : 0;
@@ -162,5 +172,4 @@ class Taxonomies extends Base {
 
 		return $term_id;
 	}
-
 }

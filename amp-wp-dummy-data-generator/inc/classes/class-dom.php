@@ -7,6 +7,9 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc;
 
+/**
+ * Helper class to traverse through HTML DOM.
+ */
 class Dom {
 
 	/**
@@ -23,6 +26,13 @@ class Dom {
 	 */
 	public $dom_document = false;
 
+	/**
+	 * Construct method.
+	 *
+	 * @param string $content String containing HTML content.
+	 *
+	 * @throws \Exception Throws default Exception if $content is empty.
+	 */
 	public function __construct( $content ) {
 
 		if ( empty( $content ) ) {
@@ -45,9 +55,18 @@ class Dom {
 
 	}
 
+	/**
+	 * Evaluates the given XPath expression.
+	 *
+	 * @param string $query The XPath expression to execute.
+	 *
+	 * @return DOMNodeList|false a DOMNodeList containing all nodes matching
+	 * the given XPath expression. Any expression which does not return nodes
+	 * will return an empty DOMNodeList. The return is false if the expression
+	 * is malformed or the contextnode is invalid.
+	 */
 	public function query( $query ) {
 
 		return $this->xpath->query( $query );
 	}
-
 }

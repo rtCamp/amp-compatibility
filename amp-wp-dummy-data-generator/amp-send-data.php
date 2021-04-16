@@ -5,76 +5,91 @@
  * @package amp-send-data
  */
 
-use function WP_CLI\Utils\get_flag_value;
+namespace AMP_Send_Data;
+
+use function \WP_CLI\Utils\get_flag_value;
 
 define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://rich-torus-221321.ue.r.appspot.com' );
 
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
-	return;
+if ( ! defined( '\WP_CLI' ) || ! \WP_CLI ) {
+	fwrite( STDERR, "Must be run in context of WP-CLI.\n" );
+	exit( 1 );
 }
 
 /**
  * Check if AMP plugin activate or not.
  * If not than throw exception.
  *
- * @throws Exception
+ * @throws \Exception When the AMP plugin is not active.
+ *
+ * @return void
  */
-function amp_send_data_check_amp_activate() {
+function verify_amp_plugin_active() {
 
 	if ( ! defined( 'AMP__VERSION' ) ) {
-		throw new Exception( PHP_EOL . 'Please activate AMP plugin.' . PHP_EOL );
+		throw new \Exception( PHP_EOL . 'Please activate AMP plugin.' . PHP_EOL );
 	}
 }
 
-\WP_CLI::add_command( 'configure-amp-site', 'amp_send_data_configure_amp_site' );
-\WP_CLI::add_command( 'amp-send-data', 'amp_send_data_amp_sent_data' );
+\WP_CLI::add_command( 'configure-amp-site', 'AMP_Send_Data\configure_amp_site' );
+\WP_CLI::add_command( 'amp-send-data', 'AMP_Send_Data\amp_send_data' );
 
 /**
  * To configure AMP site.
  *
- * @throws \WP_CLI\ExitException
+ * @throws \WP_CLI\ExitException When exiting.
  *
  * @return void
  */
-function amp_send_data_configure_amp_site() {
+function configure_amp_site() {
 
-	amp_send_data_check_amp_activate();
+	verify_amp_plugin_active();
 
 	/**
 	 * To update amp option.
 	 * User must have manage_options capabilities.
 	 */
-	add_filter( 'user_has_cap', function ( $allCaps ) {
+	add_filter(
+		'user_has_cap',
+		function ( $all_caps ) {
 
-		return array_merge( $allCaps, [
-			'manage_options' => true,
-		] );
-	} );
+			return array_merge( $all_caps, [ 'manage_options' => true ] );
+		}
+	);
 
-	$supportable_templates = AMP_Theme_Support::get_supportable_templates();
+	$supportable_templates = \AMP_Theme_Support::get_supportable_templates();
 	$supportable_templates = ( ! empty( $supportable_templates ) && is_array( $supportable_templates ) ) ? array_keys( $supportable_templates ) : [];
 
 	$new_settings = [
-		AmpProject\AmpWP\Option::THEME_SUPPORT           => AMP_Theme_Support::STANDARD_MODE_SLUG,
-		AmpProject\AmpWP\Option::ALL_TEMPLATES_SUPPORTED => true,
-		AmpProject\AmpWP\Option::SUPPORTED_POST_TYPES    => AMP_Post_Type_Support::get_eligible_post_types(),
-		AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => $supportable_templates,
-		AmpProject\AmpWP\Option::MOBILE_REDIRECT         => true,
-		AmpProject\AmpWP\Option::PLUGIN_CONFIGURED       => true,
+		\AmpProject\AmpWP\Option::THEME_SUPPORT           => \AMP_Theme_Support::STANDARD_MODE_SLUG,
+		\AmpProject\AmpWP\Option::ALL_TEMPLATES_SUPPORTED => true,
+		\AmpProject\AmpWP\Option::SUPPORTED_POST_TYPES    => \AMP_Post_Type_Support::get_eligible_post_types(),
+		\AmpProject\AmpWP\Option::SUPPORTED_TEMPLATES     => $supportable_templates,
+		\AmpProject\AmpWP\Option::MOBILE_REDIRECT         => true,
+		\AmpProject\AmpWP\Option::PLUGIN_CONFIGURED       => true,
 	];
 
-	if ( AMP_Options_Manager::update_options( $new_settings ) ) {
+	if ( \AMP_Options_Manager::update_options( $new_settings ) ) {
 		\WP_CLI::success( 'AMP options updated.' );
 	} else {
 		\WP_CLI::error( 'Fail to update AMP options.' );
 	}
-
 }
 
+/**
+ * Sends data to our endpoint where we queue it for further analysis.
+ *
+ * @param string[] $args       Not Used.
+ * @param string[] $assoc_args Associative array of arguments passed to the CLI command.
+ *
+ * @return null
+ *
+ * @throws \Exception When the AMP plugin is not active.
+ *
+ */
+function amp_send_data( $args = [], $assoc_args = [] ) {
 
-function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
-
-	amp_send_data_check_amp_activate();
+	verify_amp_plugin_active();
 
 	$is_print     = filter_var( get_flag_value( $assoc_args, 'print', false ), FILTER_SANITIZE_STRING );
 	$is_synthetic = filter_var( get_flag_value( $assoc_args, 'is-synthetic', false ), FILTER_SANITIZE_STRING );
@@ -108,9 +123,9 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		// Print the data.
 		$print = strtolower( trim( $is_print ) );
 		if ( 'json' === $print ) {
-			print_r( wp_json_encode( $data ) . PHP_EOL );
+			echo wp_json_encode( $data ) . PHP_EOL;
 		} elseif ( 'json-pretty' === $print ) {
-			print_r( wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL );
+			echo wp_json_encode( $data, JSON_PRETTY_PRINT ) . PHP_EOL;
 		} else {
 			print_r( $data );
 		}
@@ -121,8 +136,6 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		$response = wp_remote_post(
 			sprintf( '%s/api/v1/amp-wp/', $endpoint ),
 			[
-				'method'   => 'POST',
-				'timeout'  => 1000,
 				'body'     => $data,
 				'compress' => true,
 			]
@@ -130,13 +143,11 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();
-			WP_CLI::warning( "Something went wrong: $error_message" );
+			\WP_CLI::warning( "Something went wrong: $error_message" );
 		} else {
-
 			$body = wp_remote_retrieve_body( $response );
-			WP_CLI::success( $body );
+			\WP_CLI::success( $body );
 		}
-
 	}
 
 	/**
@@ -174,13 +185,13 @@ function amp_send_data_amp_sent_data( $args = [], $assoc_args = [] ) {
 		$summary['Synthetic Data'] = 'Yes';
 	}
 
-	WP_CLI::log( sprintf( PHP_EOL . "%'=100s", '' ) );
-	WP_CLI::log( 'Summary of AMP data' );
-	WP_CLI::log( sprintf( "%'=100s", '' ) );
+	\WP_CLI::log( sprintf( PHP_EOL . "%'=100s", '' ) );
+	\WP_CLI::log( 'Summary of AMP data' );
+	\WP_CLI::log( sprintf( "%'=100s", '' ) );
 	foreach ( $summary as $key => $value ) {
-		WP_CLI::log( sprintf( '%-25s : %s', $key, $value ) );
+		\WP_CLI::log( sprintf( '%-25s : %s', $key, $value ) );
 	}
-	WP_CLI::log( sprintf( "%'=100s" . PHP_EOL, '' ) );
+	\WP_CLI::log( sprintf( "%'=100s" . PHP_EOL, '' ) );
 
 
 }
@@ -197,7 +208,7 @@ class AMP_Prepare_Data {
 	 */
 	public static function get_data() {
 
-		amp_send_data_check_amp_activate();
+		verify_amp_plugin_active();
 
 		$amp_urls = static::get_amp_urls();
 
@@ -206,7 +217,7 @@ class AMP_Prepare_Data {
 			'site_info'                  => static::get_site_info(),
 			'plugins'                    => static::get_plugin_info(),
 			'themes'                     => static::get_theme_info(),
-			'errors'                     => array_values( static::get_errors() ),
+			'errors'                     => array_values( $amp_urls['errors'] ),
 			'error_sources'              => array_values( $amp_urls['error_sources'] ),
 			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
 			'urls'                       => array_values( $amp_urls['urls'] ),
@@ -228,18 +239,16 @@ class AMP_Prepare_Data {
 			$wp_type = ( defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ) ? 'subdomain' : 'subdir';
 		}
 
-		global $_wp_using_ext_object_cache;
-
 		$active_theme = wp_get_theme();
 		$active_theme = static::normalize_theme_info( $active_theme );
 
-		$amp_settings = AMP_Options_Manager::get_options();
+		$amp_settings = \AMP_Options_Manager::get_options();
 		$amp_settings = ( ! empty( $amp_settings ) && is_array( $amp_settings ) ) ? $amp_settings : [];
 
 		$loopback_status = '';
 
 		if ( class_exists( 'Health_Check_Loopback' ) ) {
-			$loopback_status = Health_Check_Loopback::can_perform_loopback();
+			$loopback_status = \Health_Check_Loopback::can_perform_loopback();
 			$loopback_status = ( ! empty( $loopback_status->status ) ) ? $loopback_status->status : '';
 		}
 
@@ -253,7 +262,7 @@ class AMP_Prepare_Data {
 			'wp_https_status'              => is_ssl() ? true : false,
 			'wp_multisite'                 => $wp_type,
 			'wp_active_theme'              => $active_theme,
-			'object_cache_status'          => ( ! empty( $_wp_using_ext_object_cache ) ) ? true : false,
+			'object_cache_status'          => wp_using_ext_object_cache(),
 			'libxml_version'               => ( defined( 'LIBXML_VERSION' ) ) ? LIBXML_VERSION : '',
 			'is_defined_curl_multi'        => ( function_exists( 'curl_multi_init' ) ),
 			'stylesheet_transient_caching' => '',
@@ -286,7 +295,7 @@ class AMP_Prepare_Data {
 		}
 
 		$active_plugins = array_values( array_unique( $active_plugins ) );
-		$plugin_info    = array_map( 'AMP_Prepare_Data::normalize_plugin_info', $active_plugins );
+		$plugin_info    = array_map( '\AMP_Send_Data\AMP_Prepare_Data::normalize_plugin_info', $active_plugins );
 
 		return $plugin_info;
 	}
@@ -441,11 +450,6 @@ class AMP_Prepare_Data {
 			$error_data[ $error_term->slug ] = $error_detail;
 		}
 
-		/**
-		 * Remove duplicate data.
-		 */
-		$error_data = array_map( 'unserialize', array_unique( array_map( 'serialize', $error_data ) ) );
-
 		return $error_data;
 	}
 
@@ -495,7 +499,7 @@ class AMP_Prepare_Data {
 				continue;
 			}
 
-			$staleness = AMP_Validated_URL_Post_Type::get_post_staleness( $amp_error_post->ID );
+			$staleness = \AMP_Validated_URL_Post_Type::get_post_staleness( $amp_error_post->ID );
 
 			// Empty array for post staleness means post is NOT stale.
 			if ( ! empty( $staleness ) ) {
@@ -586,7 +590,6 @@ class AMP_Prepare_Data {
 				if ( false !== strpos( $amp_error_post->post_title, '?s=' ) ) {
 					$object_type = 'search';
 				}
-
 			}
 
 			switch ( $object_type ) {
@@ -616,6 +619,7 @@ class AMP_Prepare_Data {
 		}
 
 		return [
+			'errors'                     => $error_data,
 			'error_sources'              => $all_sources,
 			'amp_validated_environments' => $all_amp_validated_environments,
 			'urls'                       => $amp_invalid_urls,
@@ -633,7 +637,7 @@ class AMP_Prepare_Data {
 	 */
 	protected static function get_stylesheet_info( $post_id ) {
 
-		$stylesheets = get_post_meta( $post_id, AMP_Validated_URL_Post_Type::STYLESHEETS_POST_META_KEY, true );
+		$stylesheets = get_post_meta( $post_id, \AMP_Validated_URL_Post_Type::STYLESHEETS_POST_META_KEY, true );
 
 		if ( empty( $stylesheets ) ) {
 			return [];
@@ -642,9 +646,9 @@ class AMP_Prepare_Data {
 		$stylesheets             = json_decode( $stylesheets, true );
 		$style_custom_cdata_spec = null;
 
-		foreach ( AMP_Allowed_Tags_Generated::get_allowed_tag( 'style' ) as $spec_rule ) {
-			if ( isset( $spec_rule[ AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) && AMP_Style_Sanitizer::STYLE_AMP_CUSTOM_SPEC_NAME === $spec_rule[ AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) {
-				$style_custom_cdata_spec = $spec_rule[ AMP_Rule_Spec::CDATA ];
+		foreach ( \AMP_Allowed_Tags_Generated::get_allowed_tag( 'style' ) as $spec_rule ) {
+			if ( isset( $spec_rule[ \AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) && \AMP_Style_Sanitizer::STYLE_AMP_CUSTOM_SPEC_NAME === $spec_rule[ \AMP_Rule_Spec::TAG_SPEC ]['spec_name'] ) {
+				$style_custom_cdata_spec = $spec_rule[ \AMP_Rule_Spec::CDATA ];
 			}
 		}
 
@@ -668,11 +672,13 @@ class AMP_Prepare_Data {
 				return $stylesheets[ $a ]['priority'] - $stylesheets[ $b ]['priority'];
 			}
 		);
+
 		foreach ( $pending_stylesheet_indices as $i ) {
-			// @todo Add information about amp-key frames as well.
+
 			if ( ! isset( $stylesheets[ $i ]['group'] ) || 'amp-custom' !== $stylesheets[ $i ]['group'] || ! empty( $stylesheets[ $i ]['duplicate'] ) ) {
 				continue;
 			}
+
 			$max_final_size = max( $max_final_size, $stylesheets[ $i ]['final_size'] );
 			if ( $stylesheets[ $i ]['included'] ) {
 				$included_final_size    += $stylesheets[ $i ]['final_size'];

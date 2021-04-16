@@ -28,7 +28,5 @@ class Widgets extends Base {
 		];
 
 		$this->generate_post( $page_args );
-
 	}
-
 }

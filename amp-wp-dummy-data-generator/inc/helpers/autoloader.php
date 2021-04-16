@@ -57,7 +57,7 @@ function autoloader( $resource = '' ) {
 			case 'blocks':
 			case 'meta-boxes':
 			case 'widgets':
-			case 'wp-cli':
+			case 'cli':
 			case 'generator':
 				/**
 				 * If there is class name provided for specific directory then load that.
@@ -68,6 +68,7 @@ function autoloader( $resource = '' ) {
 					$file_name = sprintf( 'class-%s', trim( strtolower( $path[2] ) ) );
 					break;
 				}
+				// Need to run default, when if condition fails above.
 			default:
 				$directory = 'classes';
 				$file_name = sprintf( 'class-%s', trim( strtolower( $path[1] ) ) );

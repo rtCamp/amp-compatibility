@@ -1,1 +1,0 @@
-Premium plugins will go in this directory.

@@ -1,6 +1,8 @@
 <?php
 /**
+ * Shortcodes class.
  *
+ * @package amp-wp-dummy-data-generator
  */
 
 namespace AMP_WP_Dummy_Data_Generator\Inc;
@@ -15,19 +17,11 @@ class Shortcodes {
 	use Singleton;
 
 	/**
-	 * Construct method.
-	 */
-	protected function __construct() {
-
-		$this->setup_hooks();
-	}
-
-	/**
 	 * To setup action and filters.
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		/**
 		 * Filters
@@ -52,14 +46,13 @@ class Shortcodes {
 		}
 
 		foreach ( $shortcode_tags as $shortcode_tag => $callback ) {
-			$shortcode_content = "<div><h3>$shortcode_tag</h3> " . $this->get_shortcode_markup( $shortcode_tag ) . " </div>";
+			$shortcode_content = "<div><h3>$shortcode_tag</h3> " . $this->get_shortcode_markup( $shortcode_tag ) . ' </div>';
 
 			$content .= '<br/>' . $shortcode_content;
 		}
 
 		return $content;
 	}
-
 
 	/**
 	 * To get short code markup.
@@ -109,9 +102,7 @@ class Shortcodes {
 				}
 				break;
 
-
 			case 'playlist':
-
 				$args           = [
 					'post_type'      => 'attachment',
 					'post_mime_type' => 'audio',
@@ -163,7 +154,5 @@ class Shortcodes {
 		}
 
 		return $markup;
-
 	}
-
 }

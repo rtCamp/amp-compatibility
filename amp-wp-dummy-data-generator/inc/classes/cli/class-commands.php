@@ -5,7 +5,7 @@
  * @package amp-wp-dummy-data-generator
  */
 
-namespace AMP_WP_Dummy_Data_Generator\Inc\WP_CLI;
+namespace AMP_WP_Dummy_Data_Generator\Inc\CLI;
 
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\Blocks;
 use AMP_WP_Dummy_Data_Generator\Inc\Generator\Posts;
@@ -45,17 +45,18 @@ class Commands extends Base {
 	 *
 	 * @param string $slug Slug of theme/plugin.
 	 *
-	 * @return array Array of strings, containing data directory paths.
+	 * @return string[] Data directory paths.
 	 */
 	private function get_data_dirs( $slug ) {
 
-		$return_locations = array();
-		$search_locations = array(
-			'/data/wporg/plugins/',
-			'/data/wporg/themes/',
-			'/data/premium/plugins/',
-			'/data/premium/themes/',
-		);
+		$return_locations = [];
+		$search_locations =
+			[
+				'/data/wporg/plugins/',
+				'/data/wporg/themes/',
+				'/data/commercial/plugins/',
+				'/data/commercial/themes/',
+			];
 		foreach ( $search_locations as $search_location ) {
 			$maybe_data_dir = AMP_WP_DUMMY_DATA_GENERATOR_PATH . $search_location . $slug;
 
@@ -71,15 +72,11 @@ class Commands extends Base {
 	 * To get the data directory/directories of WordPress Core.
 	 * Adding this function in case we might want to include some other directories later.
 	 *
-	 * @return array Array of strings, containing data directory paths.
+	 * @return string[] Data directory paths.
 	 */
 	private function get_data_dir_core() {
 
-		$return_locations = array();
-		$maybe_data_dir   = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
-		if ( is_dir( $maybe_data_dir ) ) {
-			$return_locations[] = $maybe_data_dir;
-		}
+		$return_locations[] = AMP_WP_DUMMY_DATA_GENERATOR_PATH . '/data/wporg/core';
 
 		return $return_locations;
 	}
@@ -87,15 +84,13 @@ class Commands extends Base {
 	/**
 	 * Returns array of import files for a given plugin or theme.
 	 *
-	 * @param string $slug         Name of plugin or theme.
+	 * @param string $slug Name of plugin or theme.
 	 *
-	 * @param array  $import_files Array of files already listed to be imported.
-	 *
-	 * @return array Array of import files list.
+	 * @return string[] Import files list.
 	 */
-	private function get_import_files_single( $slug, $import_files = array() ) {
+	private function get_import_file_paths( $slug ) {
 
-		$return_import_files = array();
+		$return_import_files = [];
 
 		if ( 'core' === $slug ) {
 			$data_dirs = $this->get_data_dir_core();
@@ -106,13 +101,11 @@ class Commands extends Base {
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
 				$import_files_glob = glob( "{$data_dir}/*.{xml,XML,wxr,WXR}", GLOB_BRACE );
-				if ( false !== $import_files ) {
+				if ( false !== $import_files_glob ) {
 					$return_import_files = array_merge( $return_import_files, $import_files_glob );
 				}
 			}
 		}
-
-		$return_import_files = array_merge( $import_files, $return_import_files );
 
 		return $return_import_files;
 	}
@@ -120,28 +113,27 @@ class Commands extends Base {
 	/**
 	 * Returns path for pre or post import scripts for a given plugin or theme.
 	 *
-	 * @param string $slug         Name of plugin or theme.
+	 * @param string $slug     Name of plugin or theme.
 	 *
-	 * @param array  $script_files Array of scripts already listed to be executed.
+	 * @param string $pre_post Whether the scripts we need are pre or post DB import.
 	 *
 	 * @return array Array of script files list.
 	 */
-	private function get_pre_post_script( $slug, $script_files = array(), $pre_post = 'pre' ) {
+	private function get_script_paths( $slug, $pre_post = 'pre' ) {
 
-		$return_path = array();
-		$data_dirs   = $this->get_data_dirs( $slug );
+		$return_paths = [];
+		$data_dirs    = $this->get_data_dirs( $slug );
 
 		if ( ! empty( $data_dirs ) ) {
 			foreach ( $data_dirs as $data_dir ) {
 				$pre_post_glob = glob( "{$data_dir}/{$pre_post}.sh" );
 				if ( ! empty( $pre_post_glob ) ) {
-					$return_path = $pre_post_glob;
+					$return_paths = array_merge( $pre_post_glob, $return_paths );
 				}
 			}
 		}
-		$return_path = array_merge( $script_files, $return_path );
 
-		return $return_path;
+		return $return_paths;
 	}
 
 	/**
@@ -185,18 +177,18 @@ class Commands extends Base {
 
 		$filename = 'before' === $type ? 'pre' : 'post';
 
-		$script_files = array();
+		$script_files = [];
 
 		/**
 		 * Themes
 		 */
 		$active_theme_object = wp_get_theme();
 		$active_theme        = $active_theme_object->get_stylesheet();
-		$script_files        = $this->get_pre_post_script( $active_theme, $script_files, $filename );
+		$script_files        = array_merge( $this->get_script_paths( $active_theme, $filename ), $script_files );
 
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
-			$script_files = $this->get_pre_post_script( $parent_theme, $script_files, $filename );
+			$script_files = array_merge( $this->get_script_paths( $parent_theme, $filename ), $script_files );
 		}
 
 		/**
@@ -206,7 +198,7 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-			$script_files = $this->get_pre_post_script( $active_plugin, $script_files, $filename );
+			$script_files = array_merge( $this->get_script_paths( $active_plugin, $filename ), $script_files );
 		}
 
 		if ( ! empty( $script_files ) ) {
@@ -244,16 +236,16 @@ class Commands extends Base {
 
 		$this->extract_args( $assoc_args );
 
-		$import_files = array();
+		$import_files = [];
 
 		if ( empty( $this->exclude_default ) ) {
 			/**
 			 * WordPress default sample data.
 			 */
-			$import_files = $this->get_import_files_single( 'core', $import_files );
+			$import_files = array_merge( $this->get_import_file_paths( 'core' ), $import_files );
 
 			if ( self::is_gutenberg_active() ) {
-				$import_files = $this->get_import_files_single( 'gutenberg', $import_files );
+				$import_files = array_merge( $this->get_import_file_paths( 'gutenberg' ), $import_files );
 			}
 		}
 
@@ -262,11 +254,11 @@ class Commands extends Base {
 		 */
 		$active_theme_object = wp_get_theme();
 		$active_theme        = $active_theme_object->get_stylesheet();
-		$import_files        = $this->get_import_files_single( $active_theme, $import_files );
+		$import_files        = array_merge( $this->get_import_file_paths( $active_theme ), $import_files );
 
 		if ( ! empty( $active_theme_object->parent() ) && ! is_a( $active_theme_object->parent(), 'WP_Theme' ) ) {
 			$parent_theme = $active_theme_object->parent()->get_stylesheet();
-			$import_files = $this->get_import_files_single( $parent_theme, $import_files );
+			$import_files = array_merge( $this->get_import_file_paths( $parent_theme ), $import_files );
 		}
 
 		/**
@@ -276,7 +268,7 @@ class Commands extends Base {
 		$active_plugins = array_keys( $active_plugins );
 
 		foreach ( $active_plugins as $active_plugin ) {
-			$import_files = $this->get_import_files_single( $active_plugin, $import_files );
+			$import_files = array_merge( $this->get_import_file_paths( $active_plugin ), $import_files );
 		}
 
 		if ( ! empty( $import_files ) ) {
@@ -313,10 +305,6 @@ class Commands extends Base {
 	public function generate( $args, $assoc_args ) {
 
 		$this->extract_args( $assoc_args );
-
-		foreach ( $this->generators as $generator ) {
-			$generator->clear();
-		}
 
 		foreach ( $this->generators as $generator ) {
 			$generator->generate();
@@ -387,5 +375,4 @@ class Commands extends Base {
 
 		return $use_block_editor;
 	}
-
 }

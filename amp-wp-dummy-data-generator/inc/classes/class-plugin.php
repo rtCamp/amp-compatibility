@@ -21,12 +21,10 @@ class Plugin {
 	 */
 	protected function __construct() {
 
-		$this->setup_hooks();
-
 		// Load plugin classes.
 		Widgets::get_instance();
 		Shortcodes::get_instance();
-		WP_CLI::get_instance();
+		CLI::get_instance();
 		Navigations::get_instance();
 
 	}
@@ -36,9 +34,12 @@ class Plugin {
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() {
+	public function setup_hooks() {
 
 		add_filter( 'pre_option_permalink_structure', [ $this, 'update_posts_permastructs' ] );
+		Widgets::get_instance()->setup_hooks();
+		Shortcodes::get_instance()->setup_hooks();
+		Navigations::get_instance()->setup_hooks();
 	}
 
 	/**
@@ -50,5 +51,4 @@ class Plugin {
 
 		return '/%postname%/';
 	}
-
 }
