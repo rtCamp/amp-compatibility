@@ -7,6 +7,7 @@
 
 namespace AMP_Send_Data;
 
+use function cli\err;
 use function \WP_CLI\Utils\get_flag_value;
 
 define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://rich-torus-221321.ue.r.appspot.com' );
@@ -82,9 +83,9 @@ function configure_amp_site() {
  * @param string[] $args       Not Used.
  * @param string[] $assoc_args Associative array of arguments passed to the CLI command.
  *
- * @return null
- *
  * @throws \Exception When the AMP plugin is not active.
+ *
+ * @return null
  *
  */
 function amp_send_data( $args = [], $assoc_args = [] ) {
@@ -221,9 +222,34 @@ class AMP_Prepare_Data {
 			'error_sources'              => array_values( $amp_urls['error_sources'] ),
 			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
 			'urls'                       => array_values( $amp_urls['urls'] ),
+			'error_log'                  => static::get_error_log(),
 		];
 
 		return $request_data;
+	}
+
+	/**
+	 * To get error log.
+	 *
+	 * @return array Error log contents and log_errors ini setting.
+	 */
+	protected static function get_error_log() {
+
+		$file        = file( ini_get( 'error_log' ) );
+		$max_lines   = max( 0, count( $file ) - 200 );
+		$file_length = count( $file );
+		$contents    = [];
+
+		for ( $i = $max_lines; $i < $file_length; $i ++ ) {
+			if ( ! empty( $file[ $i ] ) ) {
+				$contents[] = sanitize_text_field( $file[ $i ] );
+			}
+		}
+
+		return [
+			'log_errors' => ini_get( 'log_errors' ),
+			'contents'   => implode( "\n", $contents ),
+		];
 	}
 
 	/**
@@ -692,7 +718,7 @@ class AMP_Prepare_Data {
 			} else {
 				$excluded_final_size    += $stylesheets[ $i ]['final_size'];
 				$excluded_original_size += $stylesheets[ $i ]['original_size'];
-				$excluded_stylesheets++;
+				$excluded_stylesheets ++;
 				$stylesheets[ $i ]['status'] = $excluded_status;
 			}
 		}
