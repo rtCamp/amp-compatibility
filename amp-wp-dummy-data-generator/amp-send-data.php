@@ -7,14 +7,12 @@
 
 namespace AMP_Send_Data;
 
-use function cli\err;
 use function \WP_CLI\Utils\get_flag_value;
 
 define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://rich-torus-221321.ue.r.appspot.com' );
 
 if ( ! defined( '\WP_CLI' ) || ! \WP_CLI ) {
-	fwrite( STDERR, "Must be run in context of WP-CLI.\n" );
-	exit( 1 );
+	return;
 }
 
 /**
@@ -97,7 +95,7 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 	$endpoint     = filter_var( get_flag_value( $assoc_args, 'endpoint', AMP_SEND_DATA_SERVER_ENDPOINT ), FILTER_SANITIZE_STRING );
 	$endpoint     = untrailingslashit( $endpoint );
 
-	$amp_data_object = new AMP_Prepare_Data( [] );
+	$amp_data_object = new AMP_Prepare_Data();
 	$data            = $amp_data_object->get_data();
 
 	$data = wp_parse_args( $data, [
@@ -203,6 +201,49 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
  * Class AMP_Prepare_Data
  */
 class AMP_Prepare_Data {
+
+
+	protected $args = [];
+
+	protected $urls = [];
+
+	public function __construct( $args = [] ) {
+
+		$this->args = ( ! empty( $args ) && is_array( $args ) ) ? $args : [];
+
+		$this->parse_args();
+	}
+
+	protected function parse_args() {
+
+		if ( ! empty( $this->args['term_ids'] ) && is_array( $this->args['term_ids'] ) ) {
+			$this->args['term_ids'] = array_map( 'intval', $this->args['term_ids'] );
+			$this->args['term_ids'] = array_filter( $this->args['term_ids'] );
+
+			foreach ( $this->args['term_ids'] as $term_id ) {
+				$url = get_term_link( $term_id );
+
+				if ( ! empty( $url ) && ! is_wp_error( $url ) ) {
+					$this->urls[] = $url;
+				}
+			}
+		}
+
+		if ( ! empty( $this->args['post_ids'] ) && is_array( $this->args['post_ids'] ) ) {
+			$this->args['post_ids'] = array_map( 'intval', $this->args['post_ids'] );
+			$this->args['post_ids'] = array_filter( $this->args['post_ids'] );
+
+			foreach ( $this->args['post_ids'] as $post_id ) {
+
+				$url = get_permalink( $post_id );
+
+				if ( ! empty( $url ) && ! is_wp_error( $url ) ) {
+					$this->urls[] = $url;
+				}
+			}
+		}
+
+	}
 
 	/**
 	 * To get amp data to send it to compatibility server.
@@ -480,7 +521,11 @@ class AMP_Prepare_Data {
 		return $error_data;
 	}
 
-
+	/**
+	 * @param $error_data
+	 *
+	 * @return array|mixed|null
+	 */
 	protected static function normalize_error( $error_data ) {
 
 		if ( empty( $error_data ) || ! is_array( $error_data ) ) {
@@ -505,7 +550,13 @@ class AMP_Prepare_Data {
 		return $error_data;
 	}
 
-
+	/**
+	 * To normalize the error source data.
+	 *
+	 * @param array $source Error source detail.
+	 *
+	 * @return array Normalized error source data.
+	 */
 	protected static function normalize_error_source( $source ) {
 
 		if ( empty( $source ) || ! is_array( $source ) ) {
@@ -587,11 +638,25 @@ class AMP_Prepare_Data {
 	 *
 	 * @return array List amp validated URLs.
 	 */
-	protected static function get_amp_urls() {
+	protected function get_amp_urls() {
 
 		global $wpdb;
 
-		$query            = "SELECT ID, post_title, post_content FROM $wpdb->posts WHERE post_type='amp_validated_url'";
+		$query = "SELECT ID, post_title, post_content FROM $wpdb->posts WHERE post_type='amp_validated_url'";
+
+		if ( ! empty( $this->urls ) && is_array( $this->urls ) ) {
+
+			$urls = array_map( function ( $url ) {
+
+				return "'" . esc_url_raw( $url ) . "'";
+			}, $this->urls );
+
+			$query .= ' AND post_title IN ( ' . implode( ', ', $urls ) . ' ) ';
+
+		} else {
+			$query .= ' LIMIT 0, 100';
+		}
+
 		$amp_error_posts  = $wpdb->get_results( $query );
 		$amp_invalid_urls = [];
 
@@ -648,7 +713,6 @@ class AMP_Prepare_Data {
 					$error_list[ $error_data['error_slug'] ] = $error_data;
 				}
 
-
 				/**
 				 * Source loop.
 				 */
@@ -664,11 +728,13 @@ class AMP_Prepare_Data {
 					}
 				}
 
-				$error_sources = array_filter( $error_sources );
+				$error_sources      = array_filter( $error_sources );
+				$error_source_slugs = wp_list_pluck( $error_sources, 'error_source_slug' );
+				$error_source_slugs = array_values( array_unique( $error_source_slugs ) );
 
 				$post_errors[] = [
 					'error_slug' => $error_data['error_slug'],
-					'sources'    => wp_list_pluck( $error_sources, 'error_source_slug' ),
+					'sources'    => $error_source_slugs,
 				];
 
 			}
