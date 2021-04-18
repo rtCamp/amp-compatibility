@@ -97,12 +97,16 @@ class RequestController extends Base {
 	static async onJobSucceeded( jobId, result ) {
 		Logger.info( 'Result: Site: %s | Job ID: %s', this.jobName, jobId );
 
-		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
-		storedItem.status = 'success';
+		const updateQuery = SiteRequestModel.getUpdateQuery(
+			{
+				site_request_id: this.job.data.uuid,
+				status: 'success',
+			},
+		);
+
+		await SiteRequestModel._executeQueries( [ updateQuery ] );
 
 		await GlobalCache.set( this.job.data.uuid, 'success', 'site_requests' );
-
-		await SiteRequestModel.saveMany( [ storedItem ] );
 
 		const preparedLog = this.prepareLog( result );
 		console.log( preparedLog );
@@ -115,12 +119,14 @@ class RequestController extends Base {
 	 */
 	static async onJobFailed() {
 
-		const storedItem = await SiteRequestModel.getItemByPrimaryKey( this.job.data.uuid );
-		storedItem.status = 'fail';
-
+		const updateQuery = SiteRequestModel.getUpdateQuery(
+			{
+				site_request_id: this.job.data.uuid,
+				status: 'fail',
+			},
+		);
+		await SiteRequestModel._executeQueries( [ updateQuery ] );
 		await GlobalCache.set( this.job.data.uuid, 'fail', 'site_requests' );
-
-		await SiteRequestModel.saveMany( [ storedItem ] );
 
 	}
 
@@ -358,7 +364,6 @@ class RequestController extends Base {
 			response = {
 				extensions: ( await ExtensionModel.saveMany( preparedItems, {
 					allowUpdate: false,
-					useStream: true,
 				} ) ),
 				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
 					allowUpdate: false,
@@ -417,7 +422,6 @@ class RequestController extends Base {
 			response = {
 				extensions: ( await ExtensionModel.saveMany( preparedItems, {
 					allowUpdate: false,
-					useStream: true,
 				} ) ),
 				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
 					allowUpdate: false,
