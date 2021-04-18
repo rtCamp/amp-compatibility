@@ -95,7 +95,17 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 	$endpoint     = filter_var( get_flag_value( $assoc_args, 'endpoint', AMP_SEND_DATA_SERVER_ENDPOINT ), FILTER_SANITIZE_STRING );
 	$endpoint     = untrailingslashit( $endpoint );
 
-	$amp_data_object = new AMP_Prepare_Data();
+	$urls     = filter_var( get_flag_value( $assoc_args, 'urls', false ), FILTER_SANITIZE_STRING );
+	$post_ids = filter_var( get_flag_value( $assoc_args, 'post_ids', false ), FILTER_SANITIZE_STRING );
+	$term_ids = filter_var( get_flag_value( $assoc_args, 'term_ids', false ), FILTER_SANITIZE_STRING );
+
+	$args = [
+		'urls'     => ( ! empty( $urls ) ) ? explode( ',', $urls ) : '',
+		'post_ids' => ( ! empty( $post_ids ) ) ? explode( ',', $post_ids ) : '',
+		'term_ids' => ( ! empty( $term_ids ) ) ? explode( ',', $term_ids ) : '',
+	];
+
+	$amp_data_object = new AMP_Prepare_Data( $args );
 	$data            = $amp_data_object->get_data();
 
 	$data = wp_parse_args( $data, [
@@ -105,7 +115,6 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 		'themes'                     => [],
 		'errors'                     => [],
 		'error_sources'              => [],
-		'amp_validated_environments' => [],
 		'urls'                       => [],
 	] );
 
