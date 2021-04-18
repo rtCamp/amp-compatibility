@@ -12,8 +12,7 @@ use function \WP_CLI\Utils\get_flag_value;
 define( 'AMP_SEND_DATA_SERVER_ENDPOINT', 'https://rich-torus-221321.ue.r.appspot.com' );
 
 if ( ! defined( '\WP_CLI' ) || ! \WP_CLI ) {
-	fwrite( STDERR, "Must be run in context of WP-CLI.\n" );
-	exit( 1 );
+	return;
 }
 
 /**
@@ -82,9 +81,9 @@ function configure_amp_site() {
  * @param string[] $args       Not Used.
  * @param string[] $assoc_args Associative array of arguments passed to the CLI command.
  *
- * @return null
- *
  * @throws \Exception When the AMP plugin is not active.
+ *
+ * @return null
  *
  */
 function amp_send_data( $args = [], $assoc_args = [] ) {
@@ -96,7 +95,9 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 	$endpoint     = filter_var( get_flag_value( $assoc_args, 'endpoint', AMP_SEND_DATA_SERVER_ENDPOINT ), FILTER_SANITIZE_STRING );
 	$endpoint     = untrailingslashit( $endpoint );
 
-	$data = AMP_Prepare_Data::get_data();
+	$amp_data_object = new AMP_Prepare_Data();
+	$data            = $amp_data_object->get_data();
+
 	$data = wp_parse_args( $data, [
 		'site_url'                   => [],
 		'site_info'                  => [],
@@ -201,26 +202,69 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
  */
 class AMP_Prepare_Data {
 
+
+	protected $args = [];
+
+	protected $urls = [];
+
+	public function __construct( $args = [] ) {
+
+		$this->args = ( ! empty( $args ) && is_array( $args ) ) ? $args : [];
+
+		$this->parse_args();
+	}
+
+	protected function parse_args() {
+
+		if ( ! empty( $this->args['term_ids'] ) && is_array( $this->args['term_ids'] ) ) {
+			$this->args['term_ids'] = array_map( 'intval', $this->args['term_ids'] );
+			$this->args['term_ids'] = array_filter( $this->args['term_ids'] );
+
+			foreach ( $this->args['term_ids'] as $term_id ) {
+				$url = get_term_link( $term_id );
+
+				if ( ! empty( $url ) && ! is_wp_error( $url ) ) {
+					$this->urls[] = $url;
+				}
+			}
+		}
+
+		if ( ! empty( $this->args['post_ids'] ) && is_array( $this->args['post_ids'] ) ) {
+			$this->args['post_ids'] = array_map( 'intval', $this->args['post_ids'] );
+			$this->args['post_ids'] = array_filter( $this->args['post_ids'] );
+
+			foreach ( $this->args['post_ids'] as $post_id ) {
+
+				$url = get_permalink( $post_id );
+
+				if ( ! empty( $url ) && ! is_wp_error( $url ) ) {
+					$this->urls[] = $url;
+				}
+			}
+		}
+
+	}
+
 	/**
 	 * To get amp data to send it to compatibility server.
 	 *
 	 * @return array
 	 */
-	public static function get_data() {
+	public function get_data() {
 
 		verify_amp_plugin_active();
 
-		$amp_urls = static::get_amp_urls();
+		$amp_urls = $this->get_amp_urls();
 
 		$request_data = [
-			'site_url'                   => static::get_home_url(),
-			'site_info'                  => static::get_site_info(),
-			'plugins'                    => static::get_plugin_info(),
-			'themes'                     => static::get_theme_info(),
-			'errors'                     => array_values( $amp_urls['errors'] ),
-			'error_sources'              => array_values( $amp_urls['error_sources'] ),
-			'amp_validated_environments' => array_values( $amp_urls['amp_validated_environments'] ),
-			'urls'                       => array_values( $amp_urls['urls'] ),
+			'site_url'      => static::get_home_url(),
+			'site_info'     => $this->get_site_info(),
+			'plugins'       => $this->get_plugin_info(),
+			'themes'        => $this->get_theme_info(),
+			'errors'        => array_values( $amp_urls['errors'] ),
+			'error_sources' => array_values( $amp_urls['error_sources'] ),
+			'urls'          => array_values( $amp_urls['urls'] ),
+			'error_log'     => $this->get_error_log(),
 		];
 
 		return $request_data;
@@ -231,7 +275,7 @@ class AMP_Prepare_Data {
 	 *
 	 * @return array Site information.
 	 */
-	protected static function get_site_info() {
+	protected function get_site_info() {
 
 		$wp_type = 'single';
 
@@ -285,7 +329,7 @@ class AMP_Prepare_Data {
 	 *
 	 * @return array List of plugin detail.
 	 */
-	protected static function get_plugin_info() {
+	protected function get_plugin_info() {
 
 		$active_plugins = get_option( 'active_plugins' );
 
@@ -298,6 +342,47 @@ class AMP_Prepare_Data {
 		$plugin_info    = array_map( '\AMP_Send_Data\AMP_Prepare_Data::normalize_plugin_info', $active_plugins );
 
 		return $plugin_info;
+	}
+
+	/**
+	 * To get active theme info.
+	 *
+	 * @return array List of theme information.
+	 */
+	protected function get_theme_info() {
+
+		$themes   = [ wp_get_theme() ];
+		$response = [];
+
+		foreach ( $themes as $theme ) {
+			$response[] = static::normalize_theme_info( $theme );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * To get error log.
+	 *
+	 * @return array Error log contents and log_errors ini setting.
+	 */
+	protected function get_error_log() {
+
+		$file        = file( ini_get( 'error_log' ) );
+		$max_lines   = max( 0, count( $file ) - 200 );
+		$file_length = count( $file );
+		$contents    = [];
+
+		for ( $i = $max_lines; $i < $file_length; $i ++ ) {
+			if ( ! empty( $file[ $i ] ) ) {
+				$contents[] = sanitize_text_field( $file[ $i ] );
+			}
+		}
+
+		return [
+			'log_errors' => ini_get( 'log_errors' ),
+			'contents'   => implode( "\n", $contents ),
+		];
 	}
 
 	/**
@@ -334,23 +419,6 @@ class AMP_Prepare_Data {
 			'is_suppressed'     => in_array( $slug, $suppressed_plugin_list, true ) ? $suppressed_plugins[ $slug ]['last_version'] : '',
 		];
 
-	}
-
-	/**
-	 * To get active theme info.
-	 *
-	 * @return array List of theme information.
-	 */
-	protected static function get_theme_info() {
-
-		$themes   = [ wp_get_theme() ];
-		$response = [];
-
-		foreach ( $themes as $theme ) {
-			$response[] = static::normalize_theme_info( $theme );
-		}
-
-		return $response;
 	}
 
 	/**
@@ -454,44 +522,156 @@ class AMP_Prepare_Data {
 	}
 
 	/**
+	 * @param $error_data
+	 *
+	 * @return array|mixed|null
+	 */
+	protected static function normalize_error( $error_data ) {
+
+		if ( empty( $error_data ) || ! is_array( $error_data ) ) {
+			return [];
+		}
+
+		unset( $error_data['sources'] );
+
+		$error_data['text'] = ( ! empty( $error_data['text'] ) ) ? trim( $error_data['text'] ) : '';
+
+		$error_data = wp_json_encode( $error_data );
+		$error_data = static::remove_domain( $error_data );
+		$error_data = json_decode( $error_data, true );
+
+		ksort( $error_data );
+
+		/**
+		 * Generate new slug after removing site specific data.
+		 */
+		$error_data['error_slug'] = static::generate_hash( $error_data );
+
+		return $error_data;
+	}
+
+	/**
+	 * To normalize the error source data.
+	 *
+	 * @param array $source Error source detail.
+	 *
+	 * @return array Normalized error source data.
+	 */
+	protected static function normalize_error_source( $source ) {
+
+		if ( empty( $source ) || ! is_array( $source ) ) {
+			return [];
+		}
+
+		static $plugin_versions = [];
+		static $theme_versions = [];
+
+		/**
+		 * All plugin info
+		 */
+		if ( empty( $plugin_versions ) || ! is_array( $plugin_versions ) ) {
+
+			$plugin_list = get_plugins();
+			$plugin_list = array_keys( $plugin_list );
+			$plugin_list = array_values( array_unique( $plugin_list ) );
+			$plugin_list = array_map( __CLASS__ . '::normalize_plugin_info', $plugin_list );
+
+			foreach ( $plugin_list as $plugin ) {
+				$plugin_versions[ $plugin['slug'] ] = $plugin['version'];
+			}
+
+		}
+
+		/**
+		 * All theme info.
+		 */
+		if ( empty( $theme_versions ) || ! is_array( $theme_versions ) ) {
+
+			$theme_list = wp_get_themes();
+
+			foreach ( $theme_list as $theme ) {
+				if ( ! empty( $theme ) && is_a( $theme, 'WP_Theme' ) ) {
+					$theme_versions[ $theme->get_stylesheet() ] = $theme->get( 'Version' );
+				}
+			}
+
+		}
+
+		/**
+		 * Normalize error source.
+		 */
+
+		$allowed_types  = [ 'plugin', 'theme' ];
+		$source['type'] = ( ! empty( $source['type'] ) ) ? strtolower( trim( $source['type'] ) ) : '';
+
+		/**
+		 * Do not include wp-core sources.
+		 */
+		if ( empty( $source['type'] ) || ! in_array( $source['type'], $allowed_types, true ) ) {
+			return [];
+		}
+
+		if ( 'plugin' === $source['type'] ) {
+			$source['version'] = $plugin_versions[ $source['name'] ];
+		} elseif ( 'theme' === $source['type'] ) {
+			$source['version'] = $theme_versions[ $source['name'] ];
+		}
+
+		if ( ! empty( $source['text'] ) ) {
+			$source['text'] = trim( $source['text'] );
+			$source['text'] = static::remove_domain( $source['text'] );
+		}
+
+		// Generate error source slug.
+		$error_source_slug = self::generate_hash( $source );
+
+		// Update source information. Add error_slug and source_slug.
+		$source['error_source_slug'] = $error_source_slug;
+
+		ksort( $source );
+
+		return $source;
+	}
+
+	/**
 	 * To get amp validated URLs.
 	 *
 	 * @return array List amp validated URLs.
 	 */
-	protected static function get_amp_urls() {
+	protected function get_amp_urls() {
 
 		global $wpdb;
 
-		$query           = "SELECT ID, post_title, post_content FROM $wpdb->posts WHERE post_type='amp_validated_url'";
-		$amp_error_posts = $wpdb->get_results( $query );
+		$query = "SELECT ID, post_title, post_content FROM $wpdb->posts WHERE post_type='amp_validated_url'";
 
-		// To Store all error_sources data.
-		$all_sources = [];
+		if ( ! empty( $this->urls ) && is_array( $this->urls ) ) {
 
-		// To store all environment data.
-		$all_amp_validated_environments = [];
+			$urls = array_map( function ( $url ) {
 
-		// To store all AMP validated URls
+				return "'" . esc_url_raw( $url ) . "'";
+			}, $this->urls );
+
+			$query .= ' AND post_title IN ( ' . implode( ', ', $urls ) . ' ) ';
+
+		} else {
+			$query .= ' LIMIT 0, 100';
+		}
+
+		$amp_error_posts  = $wpdb->get_results( $query );
 		$amp_invalid_urls = [];
 
-		$error_data      = static::get_errors();
-		$plugin_info     = static::get_plugin_info();
-		$theme_info      = static::get_theme_info();
-		$plugin_versions = [];
-		$theme_versions  = [];
-
-		foreach ( $plugin_info as $item ) {
-			$plugin_versions[ $item['slug'] ] = $item['version'];
-		}
-
-		foreach ( $theme_info as $item ) {
-			$theme_versions[ $item['slug'] ] = $item['version'];
-		}
+		/**
+		 * Error Information
+		 */
+		$error_list = [];
 
 		/**
-		 * Process each post.
-		 *
-		 * Post ==> Errors => sources
+		 * Error Source information.
+		 */
+		$error_source_list = [];
+
+		/**
+		 * Post loop.
 		 */
 		foreach ( $amp_error_posts as $amp_error_post ) {
 
@@ -499,10 +679,8 @@ class AMP_Prepare_Data {
 				continue;
 			}
 
-			$staleness = \AMP_Validated_URL_Post_Type::get_post_staleness( $amp_error_post->ID );
-
 			// Empty array for post staleness means post is NOT stale.
-			if ( ! empty( $staleness ) ) {
+			if ( ! empty( \AMP_Validated_URL_Post_Type::get_post_staleness( $amp_error_post->ID ) ) ) {
 				continue;
 			}
 
@@ -514,71 +692,52 @@ class AMP_Prepare_Data {
 			}
 
 			/**
-			 * Process individual error in each post
+			 * Error loop.
 			 */
-			foreach ( $post_errors_raw as $error ) { // Errors of each posts.
+			foreach ( $post_errors_raw as $post_error ) {
 
-				$error_slug = $error_data[ $error['term_slug'] ]['error_slug'];
+				$error_data    = ( ! empty( $post_error['data'] ) && is_array( $post_error['data'] ) ) ? $post_error['data'] : [];
+				$error_sources = ( ! empty( $error_data['sources'] ) && is_array( $error_data['sources'] ) ) ? $error_data['sources'] : [];
 
-				$sources            = ( ! empty( $error['data']['sources'] ) ) ? $error['data']['sources'] : [];
-				$post_error_sources = [];
+				if ( empty( $error_data ) || empty( $error_sources ) ) {
+					continue;
+				}
+
+				unset( $error_data['sources'] );
+				$error_data = static::normalize_error( $error_data );
 
 				/**
-				 * Process each error_source of errors
+				 * Store error data in all error list.
 				 */
-				foreach ( $sources as $index => $source ) { // Source of each errors of the post
+				if ( ! empty( $error_data ) && is_array( $error_data ) ) {
+					$error_list[ $error_data['error_slug'] ] = $error_data;
+				}
 
-					$allowed_types  = [ 'plugin', 'theme' ];
-					$source['type'] = ( ! empty( $source['type'] ) ) ? strtolower( trim( $source['type'] ) ) : '';
+				/**
+				 * Source loop.
+				 */
+				foreach ( $error_sources as $index => $source ) {
+					$source['error_slug']    = $error_data['error_slug'];
+					$error_sources[ $index ] = static::normalize_error_source( $source );
 
 					/**
-					 * Do not include wp-core sources.
+					 * Store error source in all error_source list.
 					 */
-					if ( empty( $source['type'] ) || ! in_array( $source['type'], $allowed_types, true ) ) {
-						continue;
+					if ( ! empty( $error_sources[ $index ] ) && is_array( $error_sources[ $index ] ) ) {
+						$error_source_list[ $error_sources[ $index ]['error_source_slug'] ] = $error_sources[ $index ];
 					}
+				}
 
-					if ( 'plugin' === $source['type'] ) {
-						$sources[ $index ]['version'] = $plugin_versions[ $source['name'] ];
-					} elseif ( 'theme' === $source['type'] ) {
-						$sources[ $index ]['version'] = $theme_versions[ $source['name'] ];
-					}
-
-					if ( ! empty( $sources[ $index ]['text'] ) ) {
-						$sources[ $index ]['text'] = trim( $sources[ $index ]['text'] );
-						$sources[ $index ]['text'] = static::remove_domain( $sources[ $index ]['text'] );
-					}
-
-					// Generate error source slug.
-					$error_source_slug = self::generate_hash( $sources[ $index ] );
-
-					// Update source information. Add error_slug and source_slug.
-					$sources[ $index ]['error_source_slug'] = $error_source_slug;
-					$sources[ $index ]['error_slug']        = $error_slug;
-
-					ksort( $sources[ $index ] );
-
-					// Store error source slug in current post list.
-					$post_error_sources[] = $error_source_slug;
-
-					// Store error source detail in all source list.
-					$all_sources[ $error_source_slug ] = $sources[ $index ];
-
-				} // Process on individual source complete.
+				$error_sources      = array_filter( $error_sources );
+				$error_source_slugs = wp_list_pluck( $error_sources, 'error_source_slug' );
+				$error_source_slugs = array_values( array_unique( $error_source_slugs ) );
 
 				$post_errors[] = [
-					'error_slug' => $error_slug,
-					'sources'    => array_values( $post_error_sources ),
+					'error_slug' => $error_data['error_slug'],
+					'sources'    => $error_source_slugs,
 				];
-			} // Process on each post is completed.
 
-			// AMP Validated environment.
-			$amp_validated_environment          = get_post_meta( $amp_error_post->ID, '_amp_validated_environment', true );
-			$amp_validated_environment_slug     = static::generate_hash( $amp_validated_environment );
-			$amp_validated_environment['_slug'] = $amp_validated_environment_slug;
-
-			// Store in all amp validation environments.
-			$all_amp_validated_environments[ $amp_validated_environment_slug ] = $amp_validated_environment;
+			}
 
 			// Object information.
 			$amp_queried_object = get_post_meta( $amp_error_post->ID, '_amp_queried_object', true );
@@ -619,11 +778,11 @@ class AMP_Prepare_Data {
 		}
 
 		return [
-			'errors'                     => $error_data,
-			'error_sources'              => $all_sources,
-			'amp_validated_environments' => $all_amp_validated_environments,
-			'urls'                       => $amp_invalid_urls,
+			'errors'        => $error_list,
+			'error_sources' => $error_source_list,
+			'urls'          => $amp_invalid_urls,
 		];
+
 	}
 
 	/**
@@ -692,7 +851,7 @@ class AMP_Prepare_Data {
 			} else {
 				$excluded_final_size    += $stylesheets[ $i ]['final_size'];
 				$excluded_original_size += $stylesheets[ $i ]['original_size'];
-				$excluded_stylesheets++;
+				$excluded_stylesheets ++;
 				$stylesheets[ $i ]['status'] = $excluded_status;
 			}
 		}

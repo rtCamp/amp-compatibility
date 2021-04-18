@@ -125,14 +125,20 @@ class RestController {
 	getInsertQuery( item ) {
 
 		const rawData = item.raw_data;
+		let errorLog = item.error_log || '';
 
 		delete ( item.raw_data );
+		delete ( item.error_log );
+
+		errorLog = errorLog.replace( /'/g, '`' );
+		errorLog = errorLog.split( "\n" );
+		errorLog = JSON.stringify(errorLog);
 
 		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ SiteRequestModel.table }` + '`';
 		const preparedItem = SiteRequestModel._prepareItemForDB( item );
 		const keys = Object.keys( preparedItem ).join( ', ' );
 		const values = Object.values( preparedItem ).join( ', ' );
-		const query = `INSERT INTO ${ table } ( ${ keys }, raw_data ) VALUES ( ${ values }, '${ rawData }' );`;
+		const query = `INSERT INTO ${ table } ( ${ keys }, raw_data, error_log ) VALUES ( ${ values }, '${ rawData }', '${ errorLog }' );`;
 
 		return query;
 	}

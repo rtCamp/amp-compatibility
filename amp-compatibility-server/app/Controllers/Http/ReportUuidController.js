@@ -91,7 +91,16 @@ class ReportUuidController {
 		const rawData = siteRequest.raw_data.trim();
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
-		const errorLog = siteRequest.error_log || '';
+
+
+		let errorLog = siteRequest.error_log || '';
+
+		try {
+			errorLog = JSON.parse( errorLog );
+			errorLog = errorLog.join( "\n" );
+		} catch ( error ) {
+			// Do nothing.
+		}
 
 		const infoBoxList = {
 			requestInfo: {
