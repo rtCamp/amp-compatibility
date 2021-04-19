@@ -20,7 +20,7 @@ class BigQueryExtensionVersionsSchema extends Schema {
 				name: 'verification_status',
 				type: 'STRING',
 				mode: 'NULLABLE',
-				description: 'Extension version\'s status.',
+				description: 'Extension version\'s status. e.g. known_issues, unverified, human_verified, auto_verified',
 			},
 		];
 

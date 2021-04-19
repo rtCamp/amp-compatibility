@@ -17,6 +17,7 @@ class ExtensionVersion extends Base {
 			type: 'string|in:plugin,theme|required',
 			slug: 'string|required',
 			version: 'version|required',
+			verification_status: 'string|in:known_issues,unverified,human_verified,auto_verified',
 		};
 	}
 
@@ -32,6 +33,8 @@ class ExtensionVersion extends Base {
 			type: 'slug',
 			slug: 'slug',
 			version: 'version',
+			is_verified: 'to_boolean',
+			verification_status: 'slug',
 		};
 	}
 }
