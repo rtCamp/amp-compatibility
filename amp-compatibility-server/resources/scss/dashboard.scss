@@ -116,6 +116,7 @@ body {
 
 }
 
+.json-data,
 .error-log {
 	border: 1px solid #dedede;
 	border-radius: 5px;
@@ -124,4 +125,62 @@ body {
 	overflow: scroll;
 	font-size: 12px;
 	line-height: 2;
+}
+
+.json-data {
+	line-height: 1.2;
+	padding: 5px;
+	font-size: 10px;
+}
+
+abbr {
+	border-bottom: 1px dotted #343a40;
+	cursor: pointer;
+}
+
+.table {
+
+	.url {
+		width: 30%;
+	}
+
+	.node_attributes {
+		width: 20%;
+	}
+
+	.accordion-button {
+		padding: 5px 15px;
+		background-color: transparent;
+		font-weight: bold;
+
+		&::after {
+			margin: 0;
+		}
+	}
+}
+
+.accordion-body {
+	&.error-data,
+	&.validated-url {
+		border-left: 3px solid #343a40;
+	}
+
+	&.validated-url {
+		border-color: #007bff;
+
+	}
+
+	&.error-data {
+		border-color: #ffc107;
+	}
+
+}
+
+.btn-xs {
+	font-size: 12px;
+	padding: 3px 7px;
+}
+
+.hiddenRow {
+	padding: 0 !important;
 }

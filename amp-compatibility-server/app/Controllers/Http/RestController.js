@@ -179,6 +179,7 @@ class RestController {
 				name: plugin.name,
 				slug: plugin.slug,
 				version: plugin.version,
+				is_suppressed: plugin.is_suppressed,
 			} );
 
 		}
@@ -186,18 +187,9 @@ class RestController {
 		/**
 		 * Validated URL Summary.
 		 */
-		summarizedData.urls = [];
-
-		for ( const index in requestData.urls ) {
-
-			const url = _.clone( requestData.urls[ index ] );
-
-			url.errorsCount = _.size( url.errors ) || 0;
-
-			delete ( url.errors );
-
-			summarizedData.urls.push( url );
-		}
+		summarizedData.errorCount = _.size( requestData.errors ) || 0;
+		summarizedData.errorSourceCount = _.size( requestData.error_sources ) || 0;
+		summarizedData.urls = _.clone( requestData.urls );
 
 		return summarizedData;
 	}

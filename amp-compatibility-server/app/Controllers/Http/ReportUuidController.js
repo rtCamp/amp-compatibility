@@ -5,13 +5,14 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
 
-const BigQuery = use( 'App/BigQuery' );
 const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
 const ExtensionModel = use( 'App/Models/BigQueryExtension' );
+const ErrorModel = use( 'App/Models/BigQueryError' );
 const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
 
+const Templates = use( 'App/Controllers/Templates' );
+const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
 class ReportUuidController {
@@ -82,7 +83,7 @@ class ReportUuidController {
 	async show( { request, response, view, params } ) {
 
 		const uuid = params.uuid;
-		const siteRequest = await SiteRequestModel.getRow( uuid );
+		const siteRequest = await SiteRequestModel.getRow( uuid, true );
 
 		if ( ! siteRequest ) {
 			return view.render( 'dashboard/reports/uuid/not-found' );
@@ -91,7 +92,6 @@ class ReportUuidController {
 		const rawData = siteRequest.raw_data.trim();
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
-
 
 		let errorLog = siteRequest.error_log || '';
 
@@ -203,24 +203,7 @@ class ReportUuidController {
 		};
 
 		const pluginTableArgs = await this.preparePluginTableArgs( requestData.plugins );
-
-		const urlTableArgs = {
-			items: requestData.urls,
-			valueCallback: ( key, value ) => {
-				value = value ? value : '-';
-
-				switch ( key ) {
-					case 'url':
-						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
-						break;
-					default:
-						value = `<div class="text-center">${ value }</div>`;
-						break;
-				}
-
-				return value;
-			},
-		};
+		const urlTableArgs = await this.prepareValidateURLArgs( requestData.urls );
 
 		return view.render( 'dashboard/reports/uuid/show', {
 			uuid,
@@ -257,6 +240,7 @@ class ReportUuidController {
 				type: 'plugin',
 				slug: plugin.slug,
 				version: plugin.version,
+				is_suppressed: plugin.is_suppressed,
 			} );
 
 			extensionSlugList.push( extensionSlug );
@@ -302,6 +286,7 @@ class ReportUuidController {
 					count: extensionVersionData[ index ].error_count || 0,
 					has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
 				},
+				is_suppressed: preparedPluginList[ index ].is_suppressed,
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
 				is_verified: !! extensionVersionData[ index ].is_verified,
 			};
@@ -353,6 +338,13 @@ class ReportUuidController {
 							value = `<span class="text-danger">No</span>`;
 						}
 						break;
+					case 'is_suppressed':
+						if ( value ) {
+							value = `<span class="text-success">Yes</span> <small>(From ${ value })</small>`;
+						} else {
+							value = `<span class="text-danger">No</span>`;
+						}
+						break;
 					default:
 						break;
 				}
@@ -363,6 +355,217 @@ class ReportUuidController {
 
 		return pluginTableArgs;
 	}
+
+	/**
+	 * To prepare args for validate URLs table.
+	 *
+	 * @param {array} urls List of array
+	 *
+	 * @return {Promise<{valueCallback: function(*, *): string, tableID: string, items: *, collapsible: {accordionClass: string, bodyCallback: function(*=): *}}>}
+	 */
+	async prepareValidateURLArgs( urls ) {
+
+		/**
+		 * Prepare all error and error source information.
+		 */
+		let errorData = {};
+		let errorSourceData = {};
+
+		for ( const index in urls ) {
+			const errors = urls[ index ].errors || [];
+
+			for ( const errorIndex in errors ) {
+				const error = errors[ errorIndex ];
+				const errorSources = error.sources || [];
+				errorData[ error.error_slug ] = {};
+
+				for ( const errorSourceIndex in errorSources ) {
+					if ( errorSources[ errorSourceIndex ] ) {
+						errorSourceData[ errorSources[ errorSourceIndex ] ] = {};
+					}
+				}
+			}
+		}
+
+		errorData = await ErrorModel.getRows( _.keys( errorData ) );
+		errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
+
+		const urlTableArgs = {
+			tableID: 'validateUrls',
+			items: urls,
+			collapsible: {
+				accordionClass: 'validated-url',
+				bodyCallback: ( validateUrl ) => {
+					const tableArgs = this._prepareErrorTableArgs( validateUrl, errorData, errorSourceData );
+					return Templates.renderComponent( 'table', tableArgs );
+				},
+			},
+			valueCallback: ( key, value ) => {
+				value = value ? value : '-';
+
+				switch ( key ) {
+					case 'url':
+						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
+						break;
+					case 'errors':
+						value = value.length || 0;
+					default:
+						value = `<div class="text-center">${ value }</div>`;
+						break;
+				}
+
+				return value;
+			},
+		};
+
+		return urlTableArgs;
+	}
+
+	/**
+	 * To prepare args for error table.
+	 *
+	 * @private
+	 *
+	 * @param {array} validateUrl List of validated URL
+	 * @param {object} allErrorData List of error detail that occurs in Validated URL.
+	 * @param {object} allErrorSourceData List of error source detail that occurs in Validated URL
+	 *
+	 * @return {{valueCallback: function(*, *=): string, tableID: string, items: *, collapsible: {accordionClass: string, bodyCallback: function(*=): *}}}
+	 */
+	_prepareErrorTableArgs( validateUrl, allErrorData, allErrorSourceData ) {
+
+		const errors = validateUrl.errors || [];
+		const errorData = [];
+
+		for ( const index in errors ) {
+			const errorSlug = errors[ index ].error_slug;
+			const error = allErrorData[ errorSlug ] || {};
+
+			errorData[ errorSlug ] = {
+				error_slug: errorSlug,
+				code: error.code,
+				type: error.type,
+				node_name: error.node_name,
+				node_attributes: error.node_attributes,
+				sources: errors[ index ].sources,
+				raw_data: error.raw_data,
+			};
+
+		}
+
+		const tableArgs = {
+			tableID: `error-${ Utility.makeHash( validateUrl.url ) }`,
+			items: _.values( errorData ),
+			collapsible: {
+				accordionClass: 'error-data',
+				bodyCallback: ( errorDetail ) => {
+
+					const tableArgs = this._prepareErrorSourceTableArgs( errorDetail, allErrorSourceData );
+					return Templates.renderComponent( 'table', tableArgs );
+
+				},
+			},
+			valueCallback: ( key, value ) => {
+				value = value ? value : '-';
+
+				switch ( key ) {
+					case 'error_slug':
+						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 10 ) }</abbr>`;
+						break;
+					case 'node_attributes':
+						if ( value ) {
+							value = Utility.maybeParseJSON( value );
+							if ( _.isObject( value ) ) {
+								value = `<pre class="json-data mh-100" style="max-width: 400px;">${ Utility.jsonPrettyPrint( value ) }</pre>`;
+							} else {
+								value = `<pre class="json-data mh-100" style="max-width: 400px;">${ value }</pre>`;
+							}
+
+						} else {
+							value = `<div class="text-center">${ value }</div>`;
+						}
+						break;
+					case 'raw_data':
+						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy to clipboard</button>`;
+						break;
+					case 'sources':
+						value = value.length || 0;
+					default:
+						value = `<div class="text-center">${ value }</div>`;
+						break;
+				}
+
+				return value;
+			},
+		};
+
+		return tableArgs;
+	}
+
+	/**
+	 * To prepare args for error source table.
+	 *
+	 * @private
+	 *
+	 * @param {array} errorDetail List of errors.
+	 * @param {object} allErrorSourceData List of error source detail that occurs in error.
+	 *
+	 * @return {{valueCallback: function(*, *=): string, tableID: string, items: *, collapsible: {accordionClass: string, bodyCallback: function(*=): *}}}
+	 */
+	_prepareErrorSourceTableArgs( errorDetail, allErrorSourceData ) {
+
+		const sources = errorDetail.sources || [];
+		const sourceData = {};
+
+		for ( const index in sources ) {
+			const errorSourceSlug = sources[ index ];
+			const source = allErrorSourceData[ errorSourceSlug ] || {};
+
+			sourceData[ errorSourceSlug ] = {
+				error_source_slug: errorSourceSlug,
+				extension_version_slug: source.extension_version_slug,
+				//name: source.name,
+				file: source.file,
+				line: source.line,
+				function: source.function,
+				hook: source.hook,
+				priority: source.priority,
+				handle: source.handle,
+				dependency_type: source.dependency_type,
+				raw_data: source.raw_data,
+			};
+		}
+
+		const tableArgs = {
+			tableID: `error-source-${ errorDetail.error_slug }`,
+			items: _.values( sourceData ),
+			valueCallback: ( key, value ) => {
+				value = value ? value : '-';
+
+				switch ( key ) {
+					case 'error_source_slug':
+						value = `<abbr class="copy-to-clipboard" data-copy-text="${ value }">${ value.slice( value.length - 10 ) }</abbr>`;
+						break;
+					case 'file':
+					case 'line':
+					case 'function':
+					case 'priority':
+					case 'handle':
+					case 'hook':
+						value = `<small>${ value }</small>`;
+						break;
+					case 'raw_data':
+						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy to clipboard</button>`;
+						break;
+				}
+
+				return value;
+			},
+		};
+
+		return tableArgs;
+	}
+
 }
 
 module.exports = ReportUuidController;
