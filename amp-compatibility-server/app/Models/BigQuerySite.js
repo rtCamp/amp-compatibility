@@ -45,6 +45,17 @@ class BigQuerySite extends BigQueryBase {
 		return 'updated_at';
 	}
 
+	/**
+	 * Default values for each field.
+	 *
+	 * @returns {{}} default values.
+	 */
+	static get defaults() {
+		return {
+			object_cache_status: false,
+		};
+	}
+
 }
 
 module.exports = BigQuerySite;

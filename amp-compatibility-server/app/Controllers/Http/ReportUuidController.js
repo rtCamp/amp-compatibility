@@ -42,8 +42,8 @@ class ReportUuidController {
 			},
 		} );
 
-		const items = await SiteRequestModel.getRows( params );
-		const total = await SiteRequestModel.getCount( params );
+		const items = await SiteRequestModel.getRows( params, true );
+		const total = await SiteRequestModel.getCount( params, true );
 
 		for ( const index in items ) {
 			items[ index ].created_at = items[ index ].created_at ? items[ index ].created_at.value : '';

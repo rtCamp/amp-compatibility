@@ -60,7 +60,9 @@ class RestController {
 		}
 
 		const siteUrl = requestData.site_url || '';
-		const summarizedData = await this.summarizeSiteRequest( requestData );
+		let summarizedData = _.clone( requestData );
+		summarizedData = await this.summarizeSiteRequest( summarizedData );
+
 		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
 		uuid = `ampwp-${ uuid }`;
 
@@ -188,7 +190,7 @@ class RestController {
 
 		for ( const index in requestData.urls ) {
 
-			const url = requestData.urls[ index ];
+			const url = _.clone( requestData.urls[ index ] );
 
 			url.errorsCount = _.size( url.errors ) || 0;
 

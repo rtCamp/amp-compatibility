@@ -602,7 +602,7 @@ class BigQueryBase {
 
 		const selectQuery = `SELECT ${ '`' + this.primaryKey + '`' } FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
 
-		const selectResponse = await BigQuery.query( selectQuery );
+		const selectResponse = await BigQuery.query( selectQuery, true );
 
 		const query = `DELETE FROM ${ table } WHERE ${ whereFields.join( ' AND ' ) };`;
 
@@ -926,7 +926,7 @@ class BigQueryBase {
 		return queryObject;
 	}
 
-	static async getRow( primaryValue ) {
+	static async getRow( primaryValue, force = false ) {
 
 		// Bail out if row don't have primary value.
 		if ( false === primaryValue ) {
@@ -935,7 +935,7 @@ class BigQueryBase {
 
 		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
 		const query = `SELECT * FROM ${ table } WHERE ${ this.primaryKey } = '${ primaryValue }';`;
-		const items = await BigQuery.query( query );
+		const items = await BigQuery.query( query, force );
 
 		return items[ 0 ];
 	}
@@ -947,7 +947,7 @@ class BigQueryBase {
 	 *
 	 * @return {Promise<*>}
 	 */
-	static async getRows( args ) {
+	static async getRows( args, force = false ) {
 
 		let query = '';
 		const queryObject = this.parseQueryArgs( args );
@@ -956,7 +956,7 @@ class BigQueryBase {
 			query += `\n ${ queryObject[ index ] }`;
 		}
 
-		const items = await BigQuery.query( query );
+		const items = await BigQuery.query( query, force );
 		const preparedItems = {};
 
 		for ( const index in items ) {
@@ -974,7 +974,7 @@ class BigQueryBase {
 	 *
 	 * @return {Promise<*>}
 	 */
-	static async getCount( args ) {
+	static async getCount( args, force = false ) {
 
 		let query = '';
 		const queryObject = this.parseQueryArgs( args );
@@ -988,7 +988,7 @@ class BigQueryBase {
 			query += `\n ${ queryObject[ index ] }`;
 		}
 
-		const result = await BigQuery.query( query );
+		const result = await BigQuery.query( query, force );
 		const total = result[ 0 ].count || 0;
 
 		return total;
