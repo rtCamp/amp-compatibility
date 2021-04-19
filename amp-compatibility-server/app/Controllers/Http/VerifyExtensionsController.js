@@ -51,13 +51,13 @@ class VerifyExtensionsController {
 
 		let query = '';
 		let queryObject = {
-			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified',
+			select: 'SELECT extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status',
 			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
 				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
 				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
 				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
 			where: 'WHERE extension_versions.has_synthetic_data = TRUE',
-			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.is_verified',
+			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.verification_status',
 			orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
 			limit: `LIMIT ${ params.perPage } OFFSET ${ offset }`,
 		};
@@ -89,7 +89,57 @@ class VerifyExtensionsController {
 		const count = await BigQuery.query( query );
 		pagination.total = count.length || 0;
 
-		return view.render( 'dashboard/verify-extensions', { items, pagination, searchString: params.s } );
+		for ( const index in items ) {
+
+			const preparedItem = items[ index ];
+
+			preparedItem.verification_status = {
+				name: preparedItem.name,
+				version: preparedItem.version,
+				status: preparedItem.verification_status || 'unverified',
+				extensionVersionSlug: preparedItem.extension_version_slug,
+			};
+
+			delete ( preparedItem.extension_version_slug );
+
+			items[ index ] = preparedItem;
+
+		}
+
+		const extensionVersionsTableArgs = {
+			items: _.toArray( items ),
+			valueCallback: ( key, value ) => {
+
+				switch ( key ) {
+					case 'verification_status':
+						const options = {
+							known_issues: 'Known Issues',
+							unverified: 'Unverified',
+							human_verified: 'Human Verified',
+							auto_verified: 'Auto Verified',
+						};
+
+						let htmlMarkup = `<select class="extension-verify-status" data-extension-name="${ value.name }" data-extension-version="${ value.version }" data-extension-version-slug="${ value.extensionVersionSlug }" >`;
+
+						for ( const index in options ) {
+							htmlMarkup += `<option value="${ index }" ${ index === value.status ? 'selected' : '' } ${ [ 'auto_verified' ].includes( index ) ? 'disabled' : '' } >${ options[ index ] }</option>`
+						}
+
+						htmlMarkup += '</select>';
+
+						value = htmlMarkup;
+						break;
+				}
+
+				return value;
+			},
+		};
+
+		return view.render( 'dashboard/verify-extensions', {
+			extensionVersionsTableArgs,
+			pagination,
+			searchString: params.s,
+		} );
 	}
 
 	/**
@@ -107,12 +157,12 @@ class VerifyExtensionsController {
 
 		const rules = {
 			extensionVersionSlug: 'required|string',
-			isVerified: 'required|boolean',
+			verificationStatus: 'required|string',
 		};
 
 		const messages = {
 			'extensionVersionSlug.required': 'Please provide extension version slug.',
-			'isVerified.required': 'Please provide is verified or not.',
+			'verificationStatus.required': 'Please provide verification status.',
 		};
 
 		const validation = await validateAll( postData, rules, messages );
@@ -124,11 +174,9 @@ class VerifyExtensionsController {
 			};
 		}
 
-		postData.isVerified = postData.isVerified.toLowerCase();
-
 		const item = {
 			extension_version_slug: postData.extensionVersionSlug,
-			is_verified: ( 'true' === postData.isVerified ),
+			verification_status: postData.verificationStatus,
 		};
 
 		try {

@@ -74,6 +74,7 @@ class BigQueryExtensionVersion extends BigQueryBase {
 			error_count: 0,
 			has_synthetic_data: false,
 			is_verified: false,
+			verification_status: 'unverified',
 		};
 	}
 

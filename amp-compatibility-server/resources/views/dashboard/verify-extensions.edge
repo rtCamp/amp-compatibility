@@ -17,41 +17,9 @@
 			</form>
 		</div>
 
-		<table class="table table-hover table-sm table-responsive">
-			<thead>
-			<tr>
-				@each( ( value, key ) in items[0] )
-				@if( 'extension_version_slug' === key )
-				@elseif( 'error_count' === key || 'active_installs' === key )
-					<th scope="col" class="text-end">{{ upperFirst( snackCaseToString( key ) ) }}</th>
-				@else
-					<th scope="col">{{ upperFirst( snackCaseToString( key ) ) }}</th>
-				@endif
-				@endeach
-			</tr>
-			</thead>
-			<tbody>
-			@each( ( item, index ) in items )
-			<tr data-extension="{{toJSON(item)}}">
-				@each( ( value, key ) in item )
-				@if( 'extension_version_slug' === key )
-				@elseif( 'error_count' === key || 'active_installs' === key )
-					<td align="right">{{value ? value : 0}}</td>
-				@elseif( 'is_verified' === key )
-					<td align="center">
-						<input class="extension-verify-checkbox"
-							   type="checkbox" {{ true === value ? 'checked' : '' }} />
-					</td>
-				@else
-					<td>{{value ? value : ' - '}}</td>
-				@endif
-				@endeach
-			</tr>
-			@endeach
-			</tbody>
-		</table>
+		{{{ renderTable(extensionVersionsTableArgs) }}}
 
-		{{{renderPagination(pagination)}}}
+		{{{ renderPagination(pagination) }}}
 	</div>
 @endsection
 

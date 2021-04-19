@@ -21,7 +21,7 @@ class Site extends Base {
 			wp_https_status: 'boolean|required',
 			wp_multisite: 'string|in:subdomain,subdir,single|required',
 			wp_active_theme: 'string|required',
-			object_cache_status: 'boolean|required',
+			object_cache_status: 'boolean',
 			libxml_version: 'number',
 			is_defined_curl_multi: 'boolean|required',
 			stylesheet_transient_caching: 'boolean|required',
