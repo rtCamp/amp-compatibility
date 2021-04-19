@@ -8,10 +8,10 @@ window.addEventListener( 'DOMContentLoaded', function () {
 		 */
 		init: function () {
 
-			const checkboxes = document.querySelectorAll( '.extension-verify-checkbox' );
+			const checkboxes = document.querySelectorAll( '.extension-verify-status' );
 
 			checkboxes.forEach( ( checkbox ) => {
-				checkbox.addEventListener( 'change', this.onCheckboxChange );
+				checkbox.addEventListener( 'change', this.onStatusChange );
 			} );
 
 		},
@@ -22,22 +22,31 @@ window.addEventListener( 'DOMContentLoaded', function () {
 		 *
 		 * @return void
 		 */
-		onCheckboxChange: function () {
+		onStatusChange: function () {
 
-			const parent = jQuery( this ).parents( 'tr' );
-			let extensionDetail = jQuery( parent ).attr( 'data-extension' );
-			extensionDetail = JSON.parse( extensionDetail ) || {};
-			const isVerified = !! this.checked;
+			const statusLabel = {
+				known_issues: 'Known Issues',
+				unverified: 'Unverified',
+				human_verified: 'Human Verified',
+				auto_verified: 'Auto Verified',
+			};
+			const extensionDetail = {
+				name: this.dataset.extensionName,
+				version: this.dataset.extensionVersion,
+			};
 
-			if ( ! extensionDetail.extension_version_slug ) {
+			const extensionVersionSlug = this.dataset.extensionVersionSlug;
+			const status = this.value;
+
+			if ( ! extensionVersionSlug ) {
 				return;
 			}
 
 			this.disabled = true;
 
 			jQuery.post( '/admin/verify-extensions', {
-				extensionVersionSlug: extensionDetail.extension_version_slug,
-				isVerified: isVerified,
+				extensionVersionSlug: extensionVersionSlug,
+				verificationStatus: status,
 			}, ( data ) => {
 
 				const messageContainer = document.getElementById( 'messageContainer' );
@@ -45,11 +54,10 @@ window.addEventListener( 'DOMContentLoaded', function () {
 
 				if ( 'ok' === data.status ) {
 					messageElement.classList.add( 'text-success' );
-					messageElement.innerText = `Extension "${ extensionDetail.name } - ${ extensionDetail.version }" successfully marked as `;
-					messageElement.innerText += ( isVerified ? '"Verified"' : '"Not Verified"' );
+					messageElement.innerText = `Extension "${ extensionDetail.name } - ${ extensionDetail.version }" successfully marked as "${ statusLabel[ status ] }"`;
 				} else {
 					messageElement.classList.add( 'text-danger' );
-					messageElement.innerText = `Failed to mark "${ extensionDetail.name } - ${ extensionDetail.version }"`;
+					messageElement.innerText = `Failed to mark "${ extensionDetail.name } - ${ extensionDetail.version }" as "${ statusLabel[ status ] }"`;
 				}
 
 				this.disabled = false;
