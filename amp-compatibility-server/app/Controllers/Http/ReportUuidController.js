@@ -456,18 +456,20 @@ class ReportUuidController {
 
 		}
 
+		let collapsible = {
+			accordionClass: 'error-data',
+			bodyCallback: ( errorDetail ) => {
+
+				const tableArgs = this._prepareErrorSourceTableArgs( errorDetail, allErrorSourceData );
+				return Templates.renderComponent( 'table', tableArgs );
+
+			},
+		};
+
 		const tableArgs = {
 			tableID: `error-${ Utility.makeHash( validateUrl.url ) }`,
 			items: _.values( errorData ),
-			collapsible: {
-				accordionClass: 'error-data',
-				bodyCallback: ( errorDetail ) => {
-
-					const tableArgs = this._prepareErrorSourceTableArgs( errorDetail, allErrorSourceData );
-					return Templates.renderComponent( 'table', tableArgs );
-
-				},
-			},
+			collapsible: false,
 			valueCallback: ( key, value ) => {
 				value = value ? value : '-';
 
