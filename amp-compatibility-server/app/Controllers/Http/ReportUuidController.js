@@ -93,6 +93,9 @@ class ReportUuidController {
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
 
+
+		requestData.urls = requestData.urls || [];
+
 		let errorLog = siteRequest.error_log || '';
 
 		try {
