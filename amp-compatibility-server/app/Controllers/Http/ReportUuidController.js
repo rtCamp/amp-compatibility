@@ -93,7 +93,6 @@ class ReportUuidController {
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
 
-
 		requestData.urls = requestData.urls || [];
 
 		let errorLog = siteRequest.error_log || '';
@@ -390,24 +389,21 @@ class ReportUuidController {
 			}
 		}
 
-		//errorData = await ErrorModel.getRows( _.keys( errorData ) );
+		errorData = await ErrorModel.getRows( _.keys( errorData ) );
 		//errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
 
-		errorData = {};
 		errorSourceData = {};
-
-		let collapsible = {
-			accordionClass: 'validated-url',
-			bodyCallback: ( validateUrl ) => {
-				const tableArgs = this._prepareErrorTableArgs( validateUrl, errorData, errorSourceData );
-				return Templates.renderComponent( 'table', tableArgs );
-			},
-		};
 
 		const urlTableArgs = {
 			tableID: 'validateUrls',
 			items: urls,
-			collapsible: false,
+			collapsible: {
+				accordionClass: 'validated-url',
+				bodyCallback: ( validateUrl ) => {
+					const tableArgs = this._prepareErrorTableArgs( validateUrl, errorData, errorSourceData );
+					return Templates.renderComponent( 'table', tableArgs );
+				},
+			},
 			valueCallback: ( key, value ) => {
 				value = value ? value : '-';
 
@@ -461,20 +457,18 @@ class ReportUuidController {
 
 		}
 
-		let collapsible = {
-			accordionClass: 'error-data',
-			bodyCallback: ( errorDetail ) => {
-
-				const tableArgs = this._prepareErrorSourceTableArgs( errorDetail, allErrorSourceData );
-				return Templates.renderComponent( 'table', tableArgs );
-
-			},
-		};
-
 		const tableArgs = {
 			tableID: `error-${ Utility.makeHash( validateUrl.url ) }`,
 			items: _.values( errorData ),
-			collapsible: false,
+			collapsible: {
+				accordionClass: 'error-data',
+				bodyCallback: ( errorDetail ) => {
+
+					const tableArgs = this._prepareErrorSourceTableArgs( errorDetail, allErrorSourceData );
+					return Templates.renderComponent( 'table', tableArgs );
+
+				},
+			},
 			valueCallback: ( key, value ) => {
 				value = value ? value : '-';
 
