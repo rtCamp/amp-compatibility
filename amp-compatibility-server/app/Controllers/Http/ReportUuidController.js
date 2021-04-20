@@ -390,8 +390,11 @@ class ReportUuidController {
 			}
 		}
 
-		errorData = await ErrorModel.getRows( _.keys( errorData ) );
-		errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
+		//errorData = await ErrorModel.getRows( _.keys( errorData ) );
+		//errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
+
+		errorData = {};
+		errorSourceData = {};
 
 		let collapsible = {
 			accordionClass: 'validated-url',
