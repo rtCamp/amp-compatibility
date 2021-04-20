@@ -83,7 +83,7 @@ class ReportUuidController {
 	async show( { request, response, view, params } ) {
 
 		const uuid = params.uuid;
-		const siteRequest = await SiteRequestModel.getRow( uuid, true );
+		const siteRequest = await SiteRequestModel.getRow( uuid );
 
 		if ( ! siteRequest ) {
 			return view.render( 'dashboard/reports/uuid/not-found' );
