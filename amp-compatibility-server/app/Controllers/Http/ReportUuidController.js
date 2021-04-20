@@ -393,16 +393,18 @@ class ReportUuidController {
 		errorData = await ErrorModel.getRows( _.keys( errorData ) );
 		errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
 
+		let collapsible = {
+			accordionClass: 'validated-url',
+			bodyCallback: ( validateUrl ) => {
+				const tableArgs = this._prepareErrorTableArgs( validateUrl, errorData, errorSourceData );
+				return Templates.renderComponent( 'table', tableArgs );
+			},
+		};
+
 		const urlTableArgs = {
 			tableID: 'validateUrls',
 			items: urls,
-			collapsible: {
-				accordionClass: 'validated-url',
-				bodyCallback: ( validateUrl ) => {
-					const tableArgs = this._prepareErrorTableArgs( validateUrl, errorData, errorSourceData );
-					return Templates.renderComponent( 'table', tableArgs );
-				},
-			},
+			collapsible: false,
 			valueCallback: ( key, value ) => {
 				value = value ? value : '-';
 
