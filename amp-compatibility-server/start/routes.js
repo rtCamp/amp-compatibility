@@ -20,8 +20,8 @@ Route.on( '/' ).render( 'welcome' );
 
 Route.get( 'logout', 'AuthController.logout' );
 
-Route.get( 'authenticate/google', 'AuthController.authenticateGoogle' );
-Route.get( 'authenticated/google', 'AuthController.authenticatedGoogle' );
+Route.get( 'authenticate/google', 'AuthController.authenticateGoogle' ).middleware( 'throttle:10' );
+Route.get( 'authenticated/google', 'AuthController.authenticatedGoogle' ).middleware( 'throttle:10' );
 
 /**
  * Admin Dashboard.
@@ -67,7 +67,7 @@ Route.group( () => {
 
 	Route.get( '/report/uuid/:uuid', 'ReportUuidController.show' );
 
-} ).prefix( 'admin' ).middleware( 'auth' );
+} ).prefix( 'admin' ).middleware( 'auth' ).middleware( 'throttle:30' );
 
 /**
  * API endpoint.
@@ -80,4 +80,4 @@ Route.group( () => {
 	Route.get( 'amp-wp', 'RestController.index' );
 	Route.post( 'amp-wp', 'RestController.store' );
 
-} ).prefix( 'api/v1' );
+} ).prefix( 'api/v1' ).middleware( 'throttle:30' );

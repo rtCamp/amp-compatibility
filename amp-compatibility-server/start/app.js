@@ -23,6 +23,7 @@ const providers = [
 	'@adonisjs/redis/providers/RedisProvider',
 	'@adonisjs/validator/providers/ValidatorProvider',
 	'@adonisjs/ally/providers/AllyProvider',
+	'adonis-throttle/providers/ThrottleProvider',
 	path.join( __dirname, '..', 'providers', 'BigQueryProvider' ),
 	path.join( __dirname, '..', 'providers', 'Sanitizer/Provider' ),
 	path.join( __dirname, '..', 'providers', 'Validator/Provider' ),
@@ -55,7 +56,9 @@ const aceProviders = [
 |   { Route: 'Adonis/Src/Route' }
 |
 */
-const aliases = {};
+const aliases = {
+	Throttle: 'Adonis/Addons/Throttle'
+};
 
 /*
 |--------------------------------------------------------------------------
