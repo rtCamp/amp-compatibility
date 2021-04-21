@@ -119,7 +119,7 @@ class VerifyExtensionsController {
 							auto_verified: 'Auto Verified',
 						};
 
-						let htmlMarkup = `<select class="extension-verify-status" data-extension-name="${ value.name }" data-extension-version="${ value.version }" data-extension-version-slug="${ value.extensionVersionSlug }" >`;
+						let htmlMarkup = `<select class="extension-verify-status form-select form-select-xs" data-extension-name="${ value.name }" data-extension-version="${ value.version }" data-extension-version-slug="${ value.extensionVersionSlug }" >`;
 
 						for ( const index in options ) {
 							htmlMarkup += `<option value="${ index }" ${ index === value.status ? 'selected' : '' } ${ [ 'auto_verified' ].includes( index ) ? 'disabled' : '' } >${ options[ index ] }</option>`

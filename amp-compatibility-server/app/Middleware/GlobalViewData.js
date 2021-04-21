@@ -45,7 +45,7 @@ class GlobalViewData {
 		View.global( 'dashboardActivePage', dashboardActivePage );
 		View.global( 'params', params );
 		View.global( 'queryParams', request.get() );
-		View.global( 'queryString',queryString );
+		View.global( 'queryString', queryString );
 		View.global( 'parseInt', parseInt );
 		View.global( 'snackCaseToString', ( string ) => {
 			return string.replace( /_+/g, ' ' );
@@ -125,7 +125,7 @@ class GlobalViewData {
 				icon: '',
 				url: '/admin/report/uuid',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/report/uuid' ) ),
-			}
+			},
 		};
 	}
 }
