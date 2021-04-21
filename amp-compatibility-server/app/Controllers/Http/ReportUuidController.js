@@ -390,9 +390,7 @@ class ReportUuidController {
 		}
 
 		errorData = await ErrorModel.getRows( _.keys( errorData ) );
-		//errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
-
-		errorSourceData = {};
+		errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
 
 		const urlTableArgs = {
 			tableID: 'validateUrls',
