@@ -123,12 +123,12 @@ class BigQueryExtensionVersion extends BigQueryBase {
 
 		let query = '';
 		let queryObject = {
-			select: 'SELECT extension_versions.extension_version_slug, extension_versions.slug, extension_versions.version, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.is_verified, extension_versions.has_synthetic_data',
+			select: 'SELECT extension_versions.extension_version_slug, extension_versions.slug, extension_versions.version, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.has_synthetic_data',
 			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
 				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
 				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
 			where: `WHERE extension_versions.extension_version_slug IN ( ${ preparedExtensionVersionSlugs.join( ', ' ) } )`,
-			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extension_versions.version, extension_versions.type, extension_versions.is_verified,extension_versions.has_synthetic_data',
+			groupby: 'GROUP BY extension_versions.extension_version_slug, extension_versions.slug, extension_versions.version, extension_versions.type, extension_versions.verification_status, extension_versions.has_synthetic_data',
 		};
 
 		for ( const index in queryObject ) {

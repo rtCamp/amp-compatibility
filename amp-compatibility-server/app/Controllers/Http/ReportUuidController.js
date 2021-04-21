@@ -61,8 +61,16 @@ class ReportUuidController {
 				},
 				valueCallback: ( key, value ) => {
 
-					if ( 'site_request_id' === key ) {
-						value = `<a href="/admin/report/uuid/${ value }">${ value }</a>`;
+					switch ( key ) {
+						case 'site_request_id':
+							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
+							break;
+						case 'site_url':
+							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
+							break;
+						case 'created_at':
+							value = value.replace( 'T', ' ' );
+							break;
 					}
 
 					return value;
@@ -80,9 +88,25 @@ class ReportUuidController {
 		return view.render( 'dashboard/reports/uuid/list', data );
 	}
 
+	/**
+	 * To List All UUIDs.
+	 *
+	 * @param {object} ctx
+	 * @param {View} view ctx.view
+	 * @param {Request} request ctx.request
+	 * @param {Response} response ctx.response
+	 * @param {object} params ctx.params
+	 *
+	 * @return {Promise<Route|String|*>}
+	 */
 	async show( { request, response, view, params } ) {
 
 		const uuid = params.uuid;
+
+		if ( ! uuid ) {
+			return view.render( 'dashboard/reports/uuid/not-found' );
+		}
+
 		const siteRequest = await SiteRequestModel.getRow( uuid );
 
 		if ( ! siteRequest ) {
@@ -290,7 +314,7 @@ class ReportUuidController {
 				},
 				is_suppressed: preparedPluginList[ index ].is_suppressed,
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
-				is_verified: !! extensionVersionData[ index ].is_verified,
+				verification_status: extensionVersionData[ index ].verification_status || 'unverified',
 			};
 		}
 
@@ -333,12 +357,22 @@ class ReportUuidController {
 
 						break;
 					case 'has_synthetic_data':
-					case 'is_verified':
 						if ( value ) {
 							value = `<span class="text-success">Yes</span>`;
 						} else {
 							value = `<span class="text-danger">No</span>`;
 						}
+						break;
+					case 'verification_status':
+						const statusLabel = {
+							known_issues: 'Known Issues',
+							unverified: 'Unverified',
+							human_verified: 'Human Verified',
+							auto_verified: 'Auto Verified',
+						};
+
+						value = statusLabel[ value ] || 'Unverified';
+						value = `<abbr>${ value }</abbr>`;
 						break;
 					case 'is_suppressed':
 						if ( value ) {
@@ -418,6 +452,14 @@ class ReportUuidController {
 					case 'url':
 						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 						break;
+					case 'site_request_id':
+						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 10 ) }</a>`;
+						break;
+					case 'updated_at':
+					case 'created_at':
+						value = ( _.isObject( value ) ) ? value.value : value;
+						value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
+						break;
 					case 'errors':
 						value = value.length || 0;
 					default:
@@ -465,7 +507,7 @@ class ReportUuidController {
 		}
 
 		const tableArgs = {
-			tableID: `error-${ Utility.makeHash( validateUrl.url ) }`,
+			tableID: `error-${ Utility.makeHash( validateUrl ) }`,
 			items: _.values( errorData ),
 			collapsible: {
 				accordionClass: 'error-data',
