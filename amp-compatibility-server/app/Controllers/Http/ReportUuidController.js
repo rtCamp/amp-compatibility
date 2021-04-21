@@ -61,8 +61,16 @@ class ReportUuidController {
 				},
 				valueCallback: ( key, value ) => {
 
-					if ( 'site_request_id' === key ) {
-						value = `<a href="/admin/report/uuid/${ value }">${ value }</a>`;
+					switch ( key ) {
+						case 'site_request_id':
+							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
+							break;
+						case 'site_url':
+							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
+							break;
+						case 'created_at':
+							value = value.replace( 'T', ' ' );
+							break;
 					}
 
 					return value;
@@ -80,9 +88,25 @@ class ReportUuidController {
 		return view.render( 'dashboard/reports/uuid/list', data );
 	}
 
+	/**
+	 * To List All UUIDs.
+	 *
+	 * @param {object} ctx
+	 * @param {View} view ctx.view
+	 * @param {Request} request ctx.request
+	 * @param {Response} response ctx.response
+	 * @param {object} params ctx.params
+	 *
+	 * @return {Promise<Route|String|*>}
+	 */
 	async show( { request, response, view, params } ) {
 
 		const uuid = params.uuid;
+
+		if ( ! uuid ) {
+			return view.render( 'dashboard/reports/uuid/not-found' );
+		}
+
 		const siteRequest = await SiteRequestModel.getRow( uuid );
 
 		if ( ! siteRequest ) {
@@ -418,6 +442,14 @@ class ReportUuidController {
 					case 'url':
 						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 						break;
+					case 'site_request_id':
+						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 10 ) }</a>`;
+						break;
+					case 'updated_at':
+					case 'created_at':
+						value = ( _.isObject( value ) ) ? value.value : value;
+						value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
+						break;
 					case 'errors':
 						value = value.length || 0;
 					default:
@@ -465,7 +497,7 @@ class ReportUuidController {
 		}
 
 		const tableArgs = {
-			tableID: `error-${ Utility.makeHash( validateUrl.url ) }`,
+			tableID: `error-${ Utility.makeHash( validateUrl ) }`,
 			items: _.values( errorData ),
 			collapsible: {
 				accordionClass: 'error-data',

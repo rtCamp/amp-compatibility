@@ -66,6 +66,7 @@ Route.group( () => {
 	Route.get( '/report/uuid/page/:paged', 'ReportUuidController.index' );
 
 	Route.get( '/report/uuid/:uuid', 'ReportUuidController.show' );
+	Route.get( '/report/site/:site', 'ReportSiteController.show' );
 
 } ).prefix( 'admin' ).middleware( 'auth' ).middleware( 'throttle:30' );
 
