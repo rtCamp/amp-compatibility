@@ -5,18 +5,15 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
 
-const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+const BigQuery = use( 'App/BigQuery' );
+
 const SiteModel = use( 'App/Models/BigQuerySite' );
 const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
 const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
 const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
-
 const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ErrorModel = use( 'App/Models/BigQueryError' );
-const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
 const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
 
-const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );
 
 const ReportUuidController = use( 'App/Controllers/Http/ReportUuidController' );
@@ -49,34 +46,43 @@ class ReportSiteController {
 			return view.render( 'dashboard/reports/site/not-found' );
 		}
 
+		const reportUuidController = new ReportUuidController();
+
 		// Get active plugins.
-		const activePlugins = await SiteToExtensionModel.getRows( {
-			whereClause: {
-				site_url: site,
-			},
-		} );
+		const plugins = await this._getPlugins( site );
+		const pluginTableArgs = await reportUuidController.preparePluginTableArgs( plugins );
 
 		// Get Validate URLs.
-		const reportUuidController = new ReportUuidController();
 		const preparedValidateUrls = await this._getValidateURLs( site );
 		const urlTableArgs = await reportUuidController.prepareValidateURLArgs( preparedValidateUrls );
 
+		let infoBoxList = this._getInfoboxList( siteInfo );
+		infoBoxList.requestInfo.items.URL_Counts = preparedValidateUrls.length || 0;
+
 		return view.render( 'dashboard/reports/site/show', {
-			infoBoxList: this._getInfoboxList( siteInfo ),
+			infoBoxList,
 			urlTableArgs,
+			pluginTableArgs,
 		} );
 	}
 
+	/**
+	 * Prepare infobox from site info..
+	 *
+	 * @param siteInfo
+	 * @return {{siteHealth: {valueCallback: (function(*, *=): string), title: string, items: {is_defined_curl_multi: (string|*), libxml_version: (string|*), object_cache_status: (boolean|string|*), stylesheet_transient_caching: (string|*), loopback_requests: (string|*), https_status: (string|*)}}, requestInfo: {valueCallback: (function(*, *): string), title: string, items: {last_updated, site_URL, URL_Counts: number}}, siteInfo: {valueCallback: (function(*, *): string), title: string, items: {MySQL_version: (string|*), site_URL, PHP_version: (string|*), WordPress_version: (string|*), WordPress_language: (string|*), site_title: (string|*)}}, ampSettings: {valueCallback: (function(*, *=): string), title: string, items: {AMP_reader_theme: (string|*), AMP_version: (string|*), AMP_mode: (string|*), AMP_mobile_redirect: (string|*), AMP_supported_templates: (string|*|string), AMP_plugin_configured: (string|*), AMP_supported_post_types: (string|*|string), AMP_all_templates_supported: (string|*)}}}}
+	 * @private
+	 */
 	_getInfoboxList( siteInfo ) {
 		return {
 			requestInfo: {
 				title: 'Request Info',
 				items: {
 					site_URL: siteInfo.site_url,
-					status: siteInfo.status,
-					//URL_Counts: requestData.urls.length || 0,
+					//status: siteInfo.status,
+					URL_Counts: 0,
 					// errorCount: 0,
-					//request_Date: siteInfo.created_at.value,
+					last_updated: siteInfo.updated_at.value,
 				},
 				valueCallback: ( key, value ) => {
 					switch ( key ) {
@@ -127,7 +133,7 @@ class ReportSiteController {
 						case 'https_status':
 						case 'object_cache_status':
 						case 'is_defined_curl_multi':
-							value = parseInt( value ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
+							value = ( value || parseInt( value ) ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
 							break;
 					}
 					return value;
@@ -150,7 +156,7 @@ class ReportSiteController {
 						case 'AMP_plugin_configured':
 						case 'AMP_all_templates_supported':
 						case 'AMP_mobile_redirect':
-							value = parseInt( value ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
+							value = ( value || parseInt( value ) ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
 							break;
 						case 'AMP_supported_post_types':
 
@@ -176,6 +182,49 @@ class ReportSiteController {
 		};
 	}
 
+	/**
+	 * To get list of plugin by site.
+	 *
+	 * @param {string } site Site domain.
+	 *
+	 * @return {Promise<*>}
+	 *
+	 * @private
+	 */
+	async _getPlugins( site ) {
+
+		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
+		const siteToExtensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ SiteToExtensionModel.table }` + '`';
+		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
+
+		let query = '';
+		let queryObject = {
+			select: 'SELECT extensions.name, extension_versions.slug, extension_versions.version, site_to_extensions.amp_suppressed',
+			from: `FROM ${ siteToExtensionTable } AS site_to_extensions ` +
+				  `INNER JOIN ${ extensionVersionTable } AS extension_versions ON extension_versions.extension_version_slug = site_to_extensions.extension_version_slug ` +
+				  `INNER JOIN ${ extensionTable } AS extensions ON extensions.extension_slug = extension_versions.extension_slug `,
+			where: `WHERE site_to_extensions.site_url='${ site }' AND extensions.type='plugin'`,
+			orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
+		};
+
+		for ( const index in queryObject ) {
+			query += `\n ${ queryObject[ index ] }`;
+		}
+
+		const items = await BigQuery.query( query, true );
+
+		return items;
+	}
+
+	/**
+	 * To get validate URLs by site.
+	 *
+	 * @param {string} site Site doamin.
+	 *
+	 * @return {Promise<[]>}
+	 *
+	 * @private
+	 */
 	async _getValidateURLs( site ) {
 
 		const validateUrls = await AmpValidatedUrlModel.getRows( {
@@ -220,9 +269,9 @@ class ReportSiteController {
 		for ( const index in validateUrls ) {
 			const preparedValidateUrl = _.defaults(
 				{
-					url: _.clone( validateUrls[ index ].page_url )
+					url: _.clone( validateUrls[ index ].page_url ),
 				},
-				validateUrls[ index ]
+				validateUrls[ index ],
 			);
 
 			preparedValidateUrl.errors = _.toArray( preparedValidateUrl.errors );

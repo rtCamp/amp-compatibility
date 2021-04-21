@@ -314,7 +314,7 @@ class ReportUuidController {
 				},
 				is_suppressed: preparedPluginList[ index ].is_suppressed,
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
-				is_verified: !! extensionVersionData[ index ].is_verified,
+				verification_status: extensionVersionData[ index ].verification_status || 'unverified',
 			};
 		}
 
@@ -357,12 +357,22 @@ class ReportUuidController {
 
 						break;
 					case 'has_synthetic_data':
-					case 'is_verified':
 						if ( value ) {
 							value = `<span class="text-success">Yes</span>`;
 						} else {
 							value = `<span class="text-danger">No</span>`;
 						}
+						break;
+					case 'verification_status':
+						const statusLabel = {
+							known_issues: 'Known Issues',
+							unverified: 'Unverified',
+							human_verified: 'Human Verified',
+							auto_verified: 'Auto Verified',
+						};
+
+						value = statusLabel[ value ] || 'Unverified';
+						value = `<abbr>${ value }</abbr>`;
 						break;
 					case 'is_suppressed':
 						if ( value ) {
