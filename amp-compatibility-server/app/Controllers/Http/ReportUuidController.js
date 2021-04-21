@@ -342,9 +342,9 @@ class ReportUuidController {
 						break;
 					case 'is_suppressed':
 						if ( value ) {
-							value = `<span class="text-success">Yes</span> <small>(From ${ value })</small>`;
+							value = `<span class="text-danger">Yes</span> <small>(From ${ value })</small>`;
 						} else {
-							value = `<span class="text-danger">No</span>`;
+							value = `<span class="text-success">No</span>`;
 						}
 						break;
 					default:
