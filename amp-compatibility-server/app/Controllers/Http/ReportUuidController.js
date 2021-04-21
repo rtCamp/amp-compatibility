@@ -389,8 +389,17 @@ class ReportUuidController {
 			}
 		}
 
-		errorData = await ErrorModel.getRows( _.keys( errorData ) );
-		errorSourceData = await ErrorSourceModel.getRows( _.keys( errorSourceData ) );
+		errorData = await ErrorModel.getRows( {
+			whereClause: {
+				error_slug: _.unique( _.keys( errorData ) ),
+			},
+		} );
+
+		errorSourceData = await ErrorSourceModel.getRows( {
+			whereClause: {
+				error_source_slug: _.unique( _.keys( errorSourceData ) ),
+			},
+		} );
 
 		const urlTableArgs = {
 			tableID: 'validateUrls',
