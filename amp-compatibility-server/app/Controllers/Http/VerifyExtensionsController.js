@@ -97,7 +97,7 @@ class VerifyExtensionsController {
 			preparedItem.verification_status = {
 				name: preparedItem.name,
 				version: preparedItem.version,
-				status: preparedItem.verification_status || 'unverified',
+				status: preparedItem.verification_status || 'unknown',
 				extensionVersionSlug: preparedItem.extension_version_slug,
 			};
 
@@ -120,16 +120,16 @@ class VerifyExtensionsController {
 						break;
 					case 'verification_status':
 						const options = {
-							known_issues: 'Known Issues',
-							unverified: 'Unverified',
-							human_verified: 'Human Verified',
-							auto_verified: 'Auto Verified',
+							fail: 'Fail',
+							unknown: 'Unknown',
+							pass: 'Pass',
+							auto_pass: 'Pass (Auto)',
 						};
 
 						let htmlMarkup = `<select class="extension-verify-status form-select form-select-xs" data-extension-name="${ value.name }" data-extension-version="${ value.version }" data-extension-version-slug="${ value.extensionVersionSlug }" >`;
 
 						for ( const index in options ) {
-							htmlMarkup += `<option value="${ index }" ${ index === value.status ? 'selected' : '' } ${ [ 'auto_verified' ].includes( index ) ? 'disabled' : '' } >${ options[ index ] }</option>`
+							htmlMarkup += `<option value="${ index }" ${ index === value.status ? 'selected' : '' } ${ [ 'auto_pass' ].includes( index ) ? 'disabled' : '' } >${ options[ index ] }</option>`;
 						}
 
 						htmlMarkup += '</select>';
