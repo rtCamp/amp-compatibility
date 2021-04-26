@@ -249,7 +249,7 @@ class ReportUuidController {
 	 */
 	async preparePluginTableArgs( plugins ) {
 
-		if ( _.isEmpty( plugins ) || ! _.isObject( plugins ) ) {
+		if ( _.isEmpty( plugins ) || ! ( _.isArray( plugins ) || _.isObject( plugins ) ) ) {
 			return {};
 		}
 
@@ -405,7 +405,7 @@ class ReportUuidController {
 	 */
 	async prepareValidateURLArgs( urls ) {
 
-		if ( _.isEmpty( urls ) || ! _.isArray( urls ) ) {
+		if ( _.isEmpty( urls ) || ! ( _.isArray( urls ) || _.isObject( urls ) ) ) {
 			return {};
 		}
 
