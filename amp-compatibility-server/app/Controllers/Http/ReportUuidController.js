@@ -343,7 +343,7 @@ class ReportUuidController {
 								value = `<span class="text-success" title="Up to date with latest version.">${ value.version }</span>`;
 
 							} else {
-								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <small>(Latest version: ${ value.latest_version })</small>`;
+								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <strong>&le;</strong> ${ value.latest_version }`;
 							}
 
 						} else {
@@ -380,7 +380,7 @@ class ReportUuidController {
 						break;
 					case 'is_suppressed':
 						if ( value ) {
-							value = `<span class="text-danger">Yes</span> <small>(From ${ value })</small>`;
+							value = `<span class="text-danger">Yes</span> - ${ value }`;
 						} else {
 							value = `<span class="text-success">No</span>`;
 						}
