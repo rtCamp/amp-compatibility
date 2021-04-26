@@ -249,7 +249,7 @@ class ReportUuidController {
 	 */
 	async preparePluginTableArgs( plugins ) {
 
-		if ( _.isEmpty( plugins ) || ! _.isObject( plugins ) ) {
+		if ( _.isEmpty( plugins ) || ! ( _.isArray( plugins ) || _.isObject( plugins ) ) ) {
 			return {};
 		}
 
@@ -343,7 +343,7 @@ class ReportUuidController {
 								value = `<span class="text-success" title="Up to date with latest version.">${ value.version }</span>`;
 
 							} else {
-								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <small>(Latest version: ${ value.latest_version })</small>`;
+								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <strong>&le;</strong> ${ value.latest_version }`;
 							}
 
 						} else {
@@ -380,7 +380,7 @@ class ReportUuidController {
 						break;
 					case 'is_suppressed':
 						if ( value ) {
-							value = `<span class="text-danger">Yes</span> <small>(From ${ value })</small>`;
+							value = `<span class="text-danger">Yes</span> - ${ value }`;
 						} else {
 							value = `<span class="text-success">No</span>`;
 						}
@@ -405,7 +405,7 @@ class ReportUuidController {
 	 */
 	async prepareValidateURLArgs( urls ) {
 
-		if ( _.isEmpty( urls ) || ! _.isArray( urls ) ) {
+		if ( _.isEmpty( urls ) || ! ( _.isArray( urls ) || _.isObject( urls ) ) ) {
 			return {};
 		}
 
@@ -470,7 +470,12 @@ class ReportUuidController {
 					case 'updated_at':
 					case 'created_at':
 						value = ( _.isObject( value ) ) ? value.value : value;
-						value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
+						const dateObject = new Date( value );
+						const date = ( '0' + dateObject.getDate() ).slice( -2 );
+						const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
+						const year = dateObject.getFullYear();
+
+						value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
 						break;
 					case 'errors':
 						value = value.length || 0;
