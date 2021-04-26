@@ -318,7 +318,7 @@ class ReportUuidController {
 				},
 				is_suppressed: preparedPluginList[ index ].is_suppressed,
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
-				verification_status: extensionVersionData[ index ].verification_status || 'unverified',
+				verification_status: extensionVersionData[ index ].verification_status || 'unknown',
 			};
 		}
 
@@ -369,10 +369,10 @@ class ReportUuidController {
 						break;
 					case 'verification_status':
 						const statusLabel = {
-							known_issues: 'Known Issues',
-							unverified: 'Unverified',
-							human_verified: 'Human Verified',
-							auto_verified: 'Auto Verified',
+							fail: 'Fail',
+							unknown: 'Unknown',
+							pass: 'Pass',
+							auto_pass: 'Pass (Auto)',
 						};
 
 						value = statusLabel[ value ] || 'Unverified';

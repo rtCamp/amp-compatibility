@@ -17,7 +17,7 @@ class ExtensionVersion extends Base {
 			type: 'string|in:plugin,theme|required',
 			slug: 'string|required',
 			version: 'version|required',
-			verification_status: 'string|in:known_issues,unverified,human_verified,auto_verified',
+			verification_status: 'string|in:fail,unknown,pass,auto_pass',
 		};
 	}
 
