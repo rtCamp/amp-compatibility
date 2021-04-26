@@ -470,7 +470,12 @@ class ReportUuidController {
 					case 'updated_at':
 					case 'created_at':
 						value = ( _.isObject( value ) ) ? value.value : value;
-						value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
+						const dateObject = new Date( value );
+						const date = ( '0' + dateObject.getDate() ).slice( -2 );
+						const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
+						const year = dateObject.getFullYear();
+
+						value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
 						break;
 					case 'errors':
 						value = value.length || 0;
