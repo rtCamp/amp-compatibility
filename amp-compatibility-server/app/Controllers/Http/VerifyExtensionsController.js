@@ -15,6 +15,7 @@ const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship'
 const { validateAll } = use( 'Validator' );
 
 const _ = require( 'underscore' );
+const humanFormat = require( 'human-format' );
 
 class VerifyExtensionsController {
 
@@ -111,6 +112,12 @@ class VerifyExtensionsController {
 			valueCallback: ( key, value ) => {
 
 				switch ( key ) {
+					case 'active_installs':
+						value = `<div class="text-center">${ humanFormat( value ) }</div>`;
+						break;
+					case 'error_count':
+						value = `<div class="text-center">${ value ? value : '-' }</div>`;
+						break;
 					case 'verification_status':
 						const options = {
 							known_issues: 'Known Issues',
