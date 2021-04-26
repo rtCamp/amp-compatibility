@@ -2,6 +2,8 @@
 
 const View = use( 'View' );
 
+const _ = require( 'underscore' );
+
 class Templates {
 
 	/**
@@ -41,10 +43,18 @@ class Templates {
 
 	static renderTable( args ) {
 
+		if ( _.isEmpty( args ) || ! _.isObject( args ) ) {
+			return '';
+		}
+
 		return View.render( 'templates/table', args );
 	}
 
 	static renderComponent( name, args ) {
+
+		if ( _.isEmpty( name ) || _.isEmpty( args ) || ! _.isObject( args ) ) {
+			return '';
+		}
 
 		return View.render( `templates/${ name }`, args );
 	}

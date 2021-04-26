@@ -249,6 +249,10 @@ class ReportUuidController {
 	 */
 	async preparePluginTableArgs( plugins ) {
 
+		if ( _.isEmpty( plugins ) || ! _.isObject( plugins ) ) {
+			return {};
+		}
+
 		const preparedPluginList = {};
 		const extensionSlugList = [];
 		const extensionSlugVersionList = [];
@@ -401,6 +405,10 @@ class ReportUuidController {
 	 */
 	async prepareValidateURLArgs( urls ) {
 
+		if ( _.isEmpty( urls ) || ! _.isArray( urls ) ) {
+			return {};
+		}
+
 		/**
 		 * Prepare all error and error source information.
 		 */
@@ -423,17 +431,21 @@ class ReportUuidController {
 			}
 		}
 
-		errorData = await ErrorModel.getRows( {
-			whereClause: {
-				error_slug: _.unique( _.keys( errorData ) ),
-			},
-		} );
+		if ( ! _.isEmpty( errorData ) ) {
+			errorData = await ErrorModel.getRows( {
+				whereClause: {
+					error_slug: _.unique( _.keys( errorData ) ),
+				},
+			} );
+		}
 
-		errorSourceData = await ErrorSourceModel.getRows( {
-			whereClause: {
-				error_source_slug: _.unique( _.keys( errorSourceData ) ),
-			},
-		} );
+		if ( ! _.isEmpty( errorSourceData ) ) {
+			errorSourceData = await ErrorSourceModel.getRows( {
+				whereClause: {
+					error_source_slug: _.unique( _.keys( errorSourceData ) ),
+				},
+			} );
+		}
 
 		const urlTableArgs = {
 			tableID: 'validateUrls',

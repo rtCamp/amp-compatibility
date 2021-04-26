@@ -887,6 +887,10 @@ class BigQueryBase {
 
 			for ( let key in preparedField ) {
 
+				if ( ! preparedField[ key ] || _.isEmpty( preparedField[ key ] ) ) {
+					continue;
+				}
+
 				if ( _.isArray( preparedField[ key ] ) ) {
 					let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
 					whereFields.push( `${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
@@ -896,7 +900,11 @@ class BigQueryBase {
 
 			}
 
-			queryObject.where += ` AND ${ whereFields.join( ' AND ' ) } `;
+			const additionalWhereClause = whereFields.join( ' AND ' );
+
+			if ( additionalWhereClause ) {
+				queryObject.where += ` AND ${ whereFields.join( ' AND ' ) } `;
+			}
 
 		}
 
