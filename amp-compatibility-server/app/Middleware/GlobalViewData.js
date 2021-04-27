@@ -114,6 +114,12 @@ class GlobalViewData {
 					},
 				},
 			},
+			extensions: {
+				title: 'Extensions',
+				icon: '',
+				url: '/admin/extensions',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/extensions' ) ),
+			},
 			verifyExtensions: {
 				title: 'Verify Extensions',
 				icon: '',
