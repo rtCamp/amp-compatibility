@@ -67,13 +67,11 @@ class ExtensionController {
 	/**
 	 * To query BigQuery and get result of extension and extension version.
 	 *
-	 * @private
-	 *
 	 * @param {Object} params
 	 *
 	 * @return {Promise<{extensions: *, extensionVersions: *}>}
 	 */
-	async _getExtensionData( params ) {
+	async getExtensionData( params ) {
 
 		const extensions = await ExtensionModel.getRows( params, true );
 
@@ -117,7 +115,7 @@ class ExtensionController {
 	 * @return {Promise<{valueCallback: function(*, *=): string, tableID: string, headings: {}, items: *, collapsible: {accordionClass: string, bodyCallback: function(*=): *}}>}
 	 */
 	async _prepareExtensionsTableArgs( params ) {
-		const { extensions, extensionVersions } = await this._getExtensionData( params );
+		const { extensions, extensionVersions } = await this.getExtensionData( params );
 
 		const preparedItems = [];
 
@@ -299,7 +297,6 @@ class ExtensionController {
 
 		try {
 			const updateQuery = await ExtensionModel.getUpdateQuery( item );
-			console.log( 'updateQuery', updateQuery );
 
 			await BigQuery.query( updateQuery );
 			response = {
@@ -321,10 +318,11 @@ class ExtensionController {
 	 *
 	 * @param {object} ctx
 	 * @param {Request} request ctx.request
+	 * @param {object} request ctx.auth
 	 *
 	 * @return {Promise<{data, status: string}|{data: *, status: string}>}
 	 */
-	async extensionVersionUpdate( { request } ) {
+	async extensionVersionUpdate( { request, auth } ) {
 
 		const postData = request.post();
 		let response = {};
@@ -348,9 +346,13 @@ class ExtensionController {
 			};
 		}
 
+		const user = await auth.getUser();
+
+
 		const item = {
 			extension_version_slug: postData.extensionVersionSlug,
 			verification_status: postData.verificationStatus,
+			verified_by : user.email || 'auto',
 		};
 
 		try {
