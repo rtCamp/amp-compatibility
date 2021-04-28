@@ -167,15 +167,18 @@ abbr {
 	}
 }
 
-.accordion-body {
-	&.error-data,
-	&.validated-url {
-		border-color: #343a40;
-		border-left: 3px solid;
-		border-bottom: 3px solid;
-		border-radius: 0 0 0 3px;
-		margin-bottom: 15px;
+#extension-table {
+	.name {
+		max-width: 400px;
 	}
+}
+
+.accordion-body {
+	border-color: #343a40;
+	border-left: 3px solid;
+	border-bottom: 3px solid;
+	border-radius: 0 0 0 3px;
+	margin-bottom: 15px;
 
 	&.validated-url {
 		border-color: #007bff;
