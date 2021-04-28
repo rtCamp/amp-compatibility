@@ -14,11 +14,17 @@ window.addEventListener( 'DOMContentLoaded', function () {
 				extensionVersionStatusControl.addEventListener( 'change', this.onExtensionVersionStatusChange );
 			} );
 
+			const extensionPartnerControls = document.querySelectorAll( '.extension-partner-control' );
+
+			extensionPartnerControls.forEach( ( extensionPartnerControl ) => {
+				extensionPartnerControl.addEventListener( 'change', this.onExtensionPartnerChange );
+			} );
+
 		},
 
 		/**
-		 * Callback function of checkbox change event.
-		 * To update extension verification mark.
+		 * Callback function of to extension version status control change event.
+		 * To update extension version verification status.
 		 *
 		 * @return void
 		 */
@@ -72,6 +78,52 @@ window.addEventListener( 'DOMContentLoaded', function () {
 
 		},
 
+		/**
+		 * Callback function of to update partnership status of the extension.
+		 *
+		 * @return void
+		 */
+		onExtensionPartnerChange: function () {
+
+			const extensionDetail = {
+				name: this.dataset.name,
+				extensionSlug: this.dataset.extensionSlug,
+			};
+
+			if ( ! extensionDetail.extensionSlug ) {
+				return;
+			}
+
+			const status = this.checked || false;
+
+			this.disabled = true;
+
+			jQuery.post( '/admin/extensions', {
+				extensionSlug: extensionDetail.extensionSlug,
+				status: status,
+			}, ( data ) => {
+
+				const messageContainer = document.getElementById( 'messageContainer' );
+				const messageElement = document.createElement( 'p' );
+
+				if ( 'ok' === data.status ) {
+					messageElement.classList.add( 'text-success' );
+					messageElement.innerText = `Extension "${ extensionDetail.name }" successfully marked as "${ status ? 'Partner extension' : 'Not a partner extension' }"`;
+				} else {
+					messageElement.classList.add( 'text-danger' );
+					messageElement.innerText = `Failed to mark "${ extensionDetail.name }" as "${ status ? 'Partner extension' : 'Not a partner extension' }"`;
+				}
+
+				this.disabled = false;
+
+				messageContainer.append( messageElement );
+
+				setTimeout( () => {
+					messageContainer.removeChild( messageElement );
+				}, 10000 );
+			} );
+
+		},
 	};
 
 	extension.init();

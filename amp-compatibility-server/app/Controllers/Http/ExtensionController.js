@@ -180,7 +180,7 @@ class ExtensionController {
 					case 'is_partner':
 						const checked = !! value.is_partner;
 
-						value = `<div class="text-center"><input type="checkbox" data-extension-version="${ value.extension_slug }" data-name="${ value.name }" ${ checked ? 'checked' : '' } ></div>`;
+						value = `<div class="text-center"><input type="checkbox" class="extension-partner-control" data-extension-slug="${ value.extension_slug }" data-name="${ value.name }" ${ checked ? 'checked' : '' } ></div>`;
 
 						break;
 				}
@@ -268,6 +268,52 @@ class ExtensionController {
 		};
 
 		return extensionVersionsTableArgs;
+	}
+
+	async update( { request } ) {
+		const postData = request.post();
+		let response = {};
+
+		const rules = {
+			extensionSlug: 'required|string',
+			status: 'required|string',
+		};
+
+		const messages = {
+			'extensionSlug.required': 'Please provide extension version slug.',
+			'status.required': 'Please provide partnership status.',
+		};
+
+		const validation = await validateAll( postData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+		const item = {
+			extension_slug: postData.extensionSlug,
+			is_partner: ( 'true' === postData.status.toLowerCase() ),
+		};
+
+		try {
+			const updateQuery = await ExtensionModel.getUpdateQuery( item );
+			console.log( 'updateQuery', updateQuery );
+
+			await BigQuery.query( updateQuery );
+			response = {
+				status: 'ok',
+			};
+		} catch ( exception ) {
+			console.log( exception );
+			response = {
+				status: 'ok',
+				data: exception,
+			};
+		}
+
+		return response;
 	}
 
 	/**
