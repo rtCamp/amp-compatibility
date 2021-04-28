@@ -53,11 +53,12 @@ Route.group( () => {
 	Route.post( '/adhoc-synthetic-queue/add', 'QueueController.addAdhocSyntheticQueueFetch' );
 
 	/**
-	 * Extension verification page.
+	 * Extensions
 	 */
-	Route.get( '/verify-extensions/', 'VerifyExtensionsController.index' );
-	Route.get( '/verify-extensions/page/:paged', 'VerifyExtensionsController.index' );
-	Route.post( '/verify-extensions/', 'VerifyExtensionsController.update' );
+	Route.get( '/extensions/', 'ExtensionController.index' );
+	Route.get( '/extensions/page/:paged', 'ExtensionController.index' );
+	Route.post( '/extensions/', 'ExtensionController.update' );
+	Route.post( '/extensions/version', 'ExtensionController.extensionVersionUpdate' );
 
 	/**
 	 * Report.

@@ -4,27 +4,26 @@
 const Schema = use( 'Schema' );
 
 // Models
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const ExtensionModel = use( 'App/Models/BigQueryExtension' );
 
-class BigQueryExtensionVersionsSchema extends Schema {
+class BigQueryUpdateExtensionsSchema extends Schema {
 
 	/**
-	 * To create table.
+	 * To Update table schema.
 	 *
 	 * @return void
 	 */
 	async up() {
-
 		const columns = [
 			{
-				name: 'verification_status',
-				type: 'STRING',
+				name: 'is_partner',
+				type: 'BOOL',
 				mode: 'NULLABLE',
-				description: 'Extension version\'s status. e.g. known_issues, unverified, human_verified, auto_verified',
+				description: 'Flag of if extension is from partner author or not. Default False.',
 			},
 		];
 
-		const table = ExtensionVersionModel.getBigQueryTable;
+		const table = ExtensionModel.getBigQueryTable;
 		const [ metadata ] = await table.getMetadata();
 		const newSchema = metadata.schema;
 
@@ -35,17 +34,12 @@ class BigQueryExtensionVersionsSchema extends Schema {
 		metadata.schema = newSchema;
 
 		const [ result ] = await table.setMetadata( metadata );
-
 	}
 
-	/**
-	 * To drop table.
-	 *
-	 * @return void.
-	 */
 	down() {
 
 	}
+
 }
 
-module.exports = BigQueryExtensionVersionsSchema
+module.exports = BigQueryUpdateExtensionsSchema;

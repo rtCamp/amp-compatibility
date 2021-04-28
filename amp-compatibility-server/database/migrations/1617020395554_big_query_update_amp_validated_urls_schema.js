@@ -24,7 +24,6 @@ class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
 			},
 		];
 
-
 		const table = AmpValidatedUrlModel.getBigQueryTable;
 		const [ metadata ] = await table.getMetadata();
 		const newSchema = metadata.schema;

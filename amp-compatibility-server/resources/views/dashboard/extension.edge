@@ -5,7 +5,8 @@
 		<div>
 
 			<form class="row" method="GET">
-				<div id="messageContainer" class="col-md-9">
+				<div class="col-md-9">
+					<div id="messageContainer"></div>
 				</div>
 				<div class="col-md-3">
 					<div class="input-group mb-3">
@@ -17,12 +18,12 @@
 			</form>
 		</div>
 
-		{{{ renderTable(extensionVersionsTableArgs) }}}
+		{{{ renderTable(tableArgs) }}}
 
 		{{{ renderPagination(pagination) }}}
 	</div>
 @endsection
 
 @section('script')
-	{{ script('js/verify-extensions') }}
+	{{ script('js/extension') }}
 @endsection

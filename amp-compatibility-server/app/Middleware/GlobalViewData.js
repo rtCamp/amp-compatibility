@@ -114,11 +114,11 @@ class GlobalViewData {
 					},
 				},
 			},
-			verifyExtensions: {
-				title: 'Verify Extensions',
+			extensions: {
+				title: 'Extensions',
 				icon: '',
-				url: '/admin/verify-extensions',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-extensions' ) ),
+				url: '/admin/extensions',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/extensions' ) ),
 			},
 			uuidReport: {
 				title: 'Report by UUID',
