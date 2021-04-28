@@ -56,6 +56,8 @@ Route.group( () => {
 	 * Extensions
 	 */
 	Route.get( '/extensions/', 'ExtensionController.index' );
+	Route.post( '/extensions/', 'ExtensionController.update' );
+	Route.post( '/extensions/version', 'ExtensionController.extensionVersionUpdate' );
 
 	/**
 	 * Extension verification page.

@@ -17,5 +17,6 @@ mix.js( 'resources/js/app.js', 'public/js' )
 	.sass( 'resources/scss/dashboard.scss', 'public/css' )
 	.js( 'resources/js/adhoc-requests.js', 'public/js')
 	.js( 'resources/js/verify-extensions.js', 'public/js')
+	.js( 'resources/js/extension.js', 'public/js')
 	.js( 'resources/js/queue-table.js', 'public/js')
 	.copy( 'resources/images', 'public/images' );

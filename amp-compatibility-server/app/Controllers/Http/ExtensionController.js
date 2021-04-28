@@ -16,6 +16,7 @@ const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 const humanFormat = require( 'human-format' );
+const { validateAll } = use( 'Validator' );
 
 class ExtensionController {
 
@@ -225,6 +226,7 @@ class ExtensionController {
 						status: item.verification_status || 'unknown',
 						name: item.name,
 						version: item.version,
+						extensionVersionSlug: item.extension_version_slug,
 					},
 					verified_by: item.verified_by || '',
 				} );
@@ -266,7 +268,60 @@ class ExtensionController {
 		};
 
 		return extensionVersionsTableArgs;
+	}
 
+	/**
+	 * POST request handler to update verify flag for synthetic data of the extension.
+	 *
+	 * @param {object} ctx
+	 * @param {Request} request ctx.request
+	 *
+	 * @return {Promise<{data, status: string}|{data: *, status: string}>}
+	 */
+	async extensionVersionUpdate( { request } ) {
+
+		const postData = request.post();
+		let response = {};
+
+		const rules = {
+			extensionVersionSlug: 'required|string',
+			verificationStatus: 'required|string',
+		};
+
+		const messages = {
+			'extensionVersionSlug.required': 'Please provide extension version slug.',
+			'verificationStatus.required': 'Please provide verification status.',
+		};
+
+		const validation = await validateAll( postData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+
+		const item = {
+			extension_version_slug: postData.extensionVersionSlug,
+			verification_status: postData.verificationStatus,
+		};
+
+		try {
+			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
+
+			await BigQuery.query( updateQuery );
+			response = {
+				status: 'ok',
+			};
+		} catch ( exception ) {
+			response = {
+				status: 'ok',
+				data: exception,
+			};
+		}
+
+		return response;
 	}
 }
 
