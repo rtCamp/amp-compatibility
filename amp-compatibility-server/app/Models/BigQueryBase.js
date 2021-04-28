@@ -864,7 +864,6 @@ class BigQueryBase {
 			searchFields: [],
 		} );
 
-		const paged = params.paged - 1;
 		const tableName = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ this.table }` + '`';
 
 		let queryObject = {
@@ -876,6 +875,7 @@ class BigQueryBase {
 		};
 
 		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
+			const paged = params.paged ? params.paged - 1 : 0;
 			const offset = paged * params.perPage;
 			queryObject.limit = `LIMIT ${ params.perPage } OFFSET ${ offset }`;
 		}

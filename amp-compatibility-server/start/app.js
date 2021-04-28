@@ -57,7 +57,7 @@ const aceProviders = [
 |
 */
 const aliases = {
-	Throttle: 'Adonis/Addons/Throttle'
+	Throttle: 'Adonis/Addons/Throttle',
 };
 
 /*
@@ -77,6 +77,7 @@ const commands = [
 	'App/Commands/SyntheticDataStart',
 	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionMappingUpdate',
+	'App/Commands/ExtensionVersionVerify',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };
