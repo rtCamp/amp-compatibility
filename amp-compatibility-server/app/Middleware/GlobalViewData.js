@@ -120,12 +120,6 @@ class GlobalViewData {
 				url: '/admin/extensions',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/extensions' ) ),
 			},
-			verifyExtensions: {
-				title: 'Verify Extensions',
-				icon: '',
-				url: '/admin/verify-extensions',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/verify-extensions' ) ),
-			},
 			uuidReport: {
 				title: 'Report by UUID',
 				icon: '',
