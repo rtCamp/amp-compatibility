@@ -21,6 +21,8 @@ class RedirectUnauthorizedUser {
 	 */
 	async handle( { request, response }, next ) {
 
+		response.header( 'Request-IP', request.ip() );
+
 		Exception.handle( 'InvalidSessionException', this.handleInvalidSessionException );
 
 		await next();
