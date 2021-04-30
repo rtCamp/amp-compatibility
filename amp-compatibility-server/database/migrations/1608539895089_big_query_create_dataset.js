@@ -31,7 +31,7 @@ class BigQueryCreateDataset extends Schema {
 	 * @return void.
 	 */
 	async down() {
-		await BigQuery.dropDataset( this.dataset );
+
 		// Clear Redis cache.
 		await Cache.flushdb();
 		await Cache.close();
