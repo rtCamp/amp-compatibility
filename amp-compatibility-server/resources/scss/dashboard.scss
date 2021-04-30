@@ -140,6 +140,11 @@ abbr {
 
 .table {
 
+	td,
+	&.table-sm td {
+		padding: 0 0.5rem;
+	}
+
 	.url {
 		width: 30%;
 	}
@@ -150,6 +155,19 @@ abbr {
 
 	.raw_data {
 		width: 130px;
+	}
+
+	td.active_installs,
+	td.error_count {
+		text-align: right;
+	}
+
+	.active_installs{
+		width: 105px;
+	}
+
+	.error_count {
+		width: 90px;
 	}
 
 	.verification_status {

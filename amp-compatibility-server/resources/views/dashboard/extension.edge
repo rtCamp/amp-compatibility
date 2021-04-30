@@ -5,14 +5,35 @@
 		<div>
 
 			<form class="row" method="GET">
-				<div class="col-md-9">
+				<div class="col-md-8">
 					<div id="messageContainer"></div>
 				</div>
-				<div class="col-md-3">
+				<div class="col-md-4">
 					<div class="input-group mb-3">
-						<input type="search" class="form-control" name="s" value="{{searchString}}">
+						<input type="search" class="form-control" name="s"
+							   value="{{queryStrings.s ? queryStrings.s : ''}}">
 						<button class="btn btn-outline-secondary" type="submit" id="searchButton">Search</button>
 					</div>
+					<ul class="list-group list-group-horizontal-sm justify-content-end mt-0 mb-3">
+						<li class="list-group-item border-0 pt-0 pb-0">
+							<a class="" href="/admin/extensions">All</a>
+						</li>
+						<li class="list-group-item border-0 pt-0 pb-0">
+							<label for="is_partner">
+								<input id="is_partner" name="is_partner" type="checkbox"
+									   value="1" {{queryStrings.is_partner ? 'checked' : ''}} >
+								Partner Only
+							</label>
+						</li>
+						<li class="list-group-item border-0 pt-0 pb-0">
+							<label for="has_error">
+								<input id="has_error" name="has_error" type="checkbox" value="1" {{queryStrings.has_error ? 'checked' : ''}}>
+								Extensions with error<br />
+								<small>(Latest version)</small>
+							</label>
+						</li>
+					</ul>
+
 					<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
 				</div>
 			</form>
