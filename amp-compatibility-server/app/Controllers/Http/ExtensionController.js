@@ -283,7 +283,11 @@ class ExtensionController {
 						version: item.version,
 						extensionVersionSlug: item.extension_version_slug,
 					},
-					verified_by: item.verified_by || '',
+					verified_by: {
+						verified_by: item.verified_by || '',
+						name: item.name,
+						version: item.version,
+					},
 				} );
 			}
 		}
@@ -315,6 +319,17 @@ class ExtensionController {
 						htmlMarkup += '</select>';
 
 						value = htmlMarkup;
+						break;
+					case 'verified_by':
+
+						if ( ! _.isEmpty( value.verified_by ) && 'auto' !== value.verified_by ) {
+							const subject = `Regarding verification status of "${ value.name } - ${ value.version }"`;
+							const htmlMarkup = `<a href='mailto:${ value.verified_by }?subject=${ subject }'>${ value.verified_by }</a>`;
+							value = htmlMarkup;
+						} else {
+							value = value.verified_by;
+						}
+
 						break;
 				}
 
