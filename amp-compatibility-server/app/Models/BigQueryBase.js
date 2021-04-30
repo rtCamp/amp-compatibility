@@ -893,9 +893,9 @@ class BigQueryBase {
 
 				if ( _.isArray( preparedField[ key ] ) ) {
 					let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
-					whereFields.push( `${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
+					whereFields.push( `${ this.table }.${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
 				} else {
-					whereFields.push( `${ key }=${ preparedField[ key ] }` );
+					whereFields.push( `${ this.table }.${ key } = ${ preparedField[ key ] }` );
 				}
 
 			}
@@ -912,7 +912,7 @@ class BigQueryBase {
 			const orderByObject = [];
 
 			for ( let field in params.orderby ) {
-				orderByObject.push( `${ field } ${ params.orderby[ field ] }` );
+				orderByObject.push( `${ this.table }.${ field } ${ params.orderby[ field ] }` );
 			}
 
 			queryObject.orderby = `ORDER BY ${ orderByObject.join( ', ' ) }`;

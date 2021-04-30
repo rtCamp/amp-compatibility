@@ -73,18 +73,39 @@ class ExtensionController {
 	 */
 	async getExtensionData( params ) {
 
-		const extensions = await ExtensionModel.getRows( params, true );
-
-		let extensionSlugs = _.keys( extensions );
-		extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
+		let query = '';
+		let queryObject = {};
 
 		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
 		const errorSourceTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ErrorSourceModel.table }` + '`';
 		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
 		const urlErrorRelationshipTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ UrlErrorRelationshipModel.table }` + '`';
 
-		let query = '';
-		let queryObject = {
+		const extensionArgs = _.clone( params );
+
+		if ( extensionArgs.whereClause && extensionArgs.whereClause.error_count ) {
+			delete extensionArgs.whereClause.error_count;
+		}
+
+		queryObject = ExtensionModel.parseQueryArgs( extensionArgs );
+
+		queryObject.select = `SELECT extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status`;
+		queryObject.from += `\n INNER JOIN ${ extensionVersionTable } AS extension_versions ON extensions.extension_slug = extension_versions.extension_slug AND extensions.latest_version = extension_versions.version ` +
+							`\n LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
+							`\n LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `;
+		queryObject.groupby = `GROUP BY extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, extension_versions.verification_status`;
+
+		query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+
+		const extensions = await BigQuery.query( query, true );
+
+		/**
+		 * Extension version query.
+		 */
+		let extensionSlugs = _.pluck( extensions, 'extension_slug' );
+		extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
+
+		queryObject = {
 			select: 'SELECT extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.verified_by',
 			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
 				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
