@@ -4,7 +4,7 @@
 const Schema = use( 'Schema' );
 
 // Models
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 
 class BigQueryUpdateExtensionVersionsSchema extends Schema {
 

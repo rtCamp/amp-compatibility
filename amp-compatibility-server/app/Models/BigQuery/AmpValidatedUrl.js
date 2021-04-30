@@ -1,9 +1,9 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
 const AmpValidatedUrlValidator = use( 'App/Validators/AmpValidatedUrl' );
 
-class BigQueryAmpValidatedUrl extends BigQueryBase {
+class AmpValidatedUrl extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -61,4 +61,4 @@ class BigQueryAmpValidatedUrl extends BigQueryBase {
 
 }
 
-module.exports = BigQueryAmpValidatedUrl;
+module.exports = AmpValidatedUrl;

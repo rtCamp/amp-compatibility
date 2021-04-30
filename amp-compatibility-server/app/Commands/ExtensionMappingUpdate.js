@@ -2,7 +2,7 @@
 
 const { Command } = require( '@adonisjs/ace' );
 
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Helpers = use( 'Helpers' );
 

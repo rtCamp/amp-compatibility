@@ -4,7 +4,7 @@
 const Schema = use( 'Schema' );
 
 // Models
-const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
 
 class BigQuerySiteHealthSchema extends Schema {
 

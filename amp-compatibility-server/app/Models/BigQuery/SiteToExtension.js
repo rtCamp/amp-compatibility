@@ -1,11 +1,11 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
 const SiteToExtensionValidator = use( 'App/Validators/SiteToExtension' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
-class BigQuerySiteToExtension extends BigQueryBase {
+class SiteToExtension extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -54,4 +54,4 @@ class BigQuerySiteToExtension extends BigQueryBase {
 	}
 }
 
-module.exports = BigQuerySiteToExtension;
+module.exports = SiteToExtension;

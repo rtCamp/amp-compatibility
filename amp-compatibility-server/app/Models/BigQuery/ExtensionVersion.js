@@ -1,16 +1,16 @@
 'use strict';
 
 const BigQuery = use( 'App/BigQuery' );
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
 
 const ExtensionVersionValidator = use( 'App/Validators/ExtensionVersion' );
 const _ = require( 'underscore' );
 
-class BigQueryExtensionVersion extends BigQueryBase {
+class ExtensionVersion extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -148,4 +148,4 @@ class BigQueryExtensionVersion extends BigQueryBase {
 
 }
 
-module.exports = BigQueryExtensionVersion;
+module.exports = ExtensionVersion;

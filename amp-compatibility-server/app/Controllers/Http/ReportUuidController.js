@@ -5,11 +5,11 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
 
-const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ErrorModel = use( 'App/Models/BigQueryError' );
-const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ErrorModel = use( 'App/Models/BigQuery/Error' );
+const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 
 const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );

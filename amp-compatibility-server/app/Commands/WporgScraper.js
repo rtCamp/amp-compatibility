@@ -5,10 +5,10 @@ const { Command } = require( '@adonisjs/ace' );
 const { getPluginsList, getThemesList } = require( 'wporg-api-client' );
 
 // Models
-const AuthorModel = use( 'App/Models/BigQueryAuthor' );
-const AuthorRelationshipModel = use( 'App/Models/BigQueryAuthorRelationship' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const AuthorModel = use( 'App/Models/BigQuery/Author' );
+const AuthorRelationshipModel = use( 'App/Models/BigQuery/AuthorRelationship' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 
 // Helpers
 const Utility = use( 'App/Helpers/Utility' );

@@ -1,11 +1,11 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
-const UrlErrorRelationshipValidator = use( 'App/Validators/UrlErrorRelationship' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
+const AuthorRelationshipValidator = use( 'App/Validators/AuthorRelationship' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
-class BigQueryUrlErrorRelationship extends BigQueryBase {
+class AuthorRelationship extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -13,13 +13,13 @@ class BigQueryUrlErrorRelationship extends BigQueryBase {
 	 * @returns {string} Table name.
 	 */
 	static get table() {
-		return 'url_error_relationships';
+		return 'author_relationships';
 	}
 
 	/**
 	 * Primary key of the table.
 	 *
-	 * @returns {string} primary key name.
+	 * @returns {string} Primary field name.
 	 */
 	static get primaryKey() {
 		return 'hash';
@@ -32,14 +32,13 @@ class BigQueryUrlErrorRelationship extends BigQueryBase {
 	 */
 	static getPrimaryValue( data ) {
 
-		if ( ! _.has( data, 'page_url' ) || ! _.has( data, 'error_slug' ) || ! _.has( data, 'error_source_slug' ) ) {
+		if ( ! _.has( data, 'extension_slug' ) || ! _.has( data, 'author_profile' ) ) {
 			return '';
 		}
 
 		const hashData = {
-			page_url: data.page_url,
-			error_slug: data.error_slug,
-			error_source_slug: data.error_source_slug,
+			extension_slug: data.extension_slug,
+			author_profile: data.author_profile,
 		};
 
 		return Utility.makeHash( hashData );
@@ -51,8 +50,9 @@ class BigQueryUrlErrorRelationship extends BigQueryBase {
 	 * @returns {boolean|Object} Validator class.
 	 */
 	static get validator() {
-		return UrlErrorRelationshipValidator;
+		return AuthorRelationshipValidator;
 	}
+
 }
 
-module.exports = BigQueryUrlErrorRelationship;
+module.exports = AuthorRelationship;

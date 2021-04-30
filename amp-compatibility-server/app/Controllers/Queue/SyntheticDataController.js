@@ -8,7 +8,7 @@ const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Storage = use( 'Storage' );
 
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
