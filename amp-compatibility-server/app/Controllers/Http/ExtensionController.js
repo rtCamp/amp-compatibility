@@ -47,18 +47,33 @@ class ExtensionController {
 			},
 		} );
 
-		const total = await ExtensionModel.getCount( params, false );
-		const extensionsTableArgs = await this._prepareExtensionsTableArgs( params );
+		const isPartner = !! request.input( 'is_partner' );
+		const hasError = !! request.input( 'has_error' );
+
+		if ( isPartner ) {
+			params.whereClause = params.whereClause || {};
+			params.whereClause.is_partner = true;
+		}
+
+		if ( hasError ) {
+			params.whereClause = params.whereClause || {};
+			params.whereClause.has_error = true;
+		}
+
+		const { extensionCount, extensions, extensionVersions } = await this.getExtensionData( params );
+		const extensionsTableArgs = await this._prepareExtensionsTableArgs( extensions, extensionVersions );
+
+		console.log( request.get() );
 
 		const data = {
 			tableArgs: extensionsTableArgs,
 			pagination: {
 				baseUrl: `/admin/extensions`,
-				total: total,
+				total: extensionCount,
 				perPage: params.perPage,
 				currentPage: params.paged,
 			},
-			searchString: params.s || '',
+			queryStrings: request.get(),
 		};
 
 		return view.render( 'dashboard/extension', data );
@@ -73,31 +88,50 @@ class ExtensionController {
 	 */
 	async getExtensionData( params ) {
 
-		let query = '';
-		let queryObject = {};
+		const extensionArgs = _.clone( params );
+		let hasError = false;
 
 		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
 		const errorSourceTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ErrorSourceModel.table }` + '`';
 		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
 		const urlErrorRelationshipTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ UrlErrorRelationshipModel.table }` + '`';
 
-		const extensionArgs = _.clone( params );
-
-		if ( extensionArgs.whereClause && extensionArgs.whereClause.error_count ) {
-			delete extensionArgs.whereClause.error_count;
+		if ( extensionArgs.whereClause && extensionArgs.whereClause.has_error ) {
+			hasError = !! extensionArgs.whereClause.has_error;
+			delete extensionArgs.whereClause.has_error;
 		}
 
-		queryObject = ExtensionModel.parseQueryArgs( extensionArgs );
+		let queryObject = ExtensionModel.parseQueryArgs( extensionArgs );
 
-		queryObject.select = `SELECT extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status`;
+		queryObject.select = `SELECT extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, count( DISTINCT url_error_relationships.error_slug ) AS errorCount, extension_versions.verification_status`;
 		queryObject.from += `\n INNER JOIN ${ extensionVersionTable } AS extension_versions ON extensions.extension_slug = extension_versions.extension_slug AND extensions.latest_version = extension_versions.version ` +
 							`\n LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
 							`\n LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `;
 		queryObject.groupby = `GROUP BY extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, extension_versions.verification_status`;
 
-		query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+		if ( hasError ) {
+			queryObject.orderby = queryObject.orderby.replace( 'ORDER BY ', 'ORDER BY errorCount DESC, ' );
+		}
+
+		let query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+
+		// Remove the limit before querying count query.
+		delete queryObject.limit;
+		let countQuery = `SELECT count(1) AS count FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+
+		if ( hasError ) {
+			query += ` WHERE errorCount != 0;`;
+			countQuery += ` WHERE errorCount != 0;`;
+		}
 
 		const extensions = await BigQuery.query( query, true );
+		let extensionCount = await BigQuery.query( countQuery );
+
+		if ( ! _.isEmpty( extensionCount ) ) {
+			extensionCount = extensionCount[ 0 ].count ? extensionCount[ 0 ].count : 0;
+		} else {
+			extensionCount = 0;
+		}
 
 		/**
 		 * Extension version query.
@@ -121,6 +155,7 @@ class ExtensionController {
 		const extensionVersions = await BigQuery.query( query, true );
 
 		return {
+			extensionCount: extensionCount,
 			extensions: extensions,
 			extensionVersions: extensionVersions,
 		};
@@ -131,12 +166,12 @@ class ExtensionController {
 	 *
 	 * @private
 	 *
-	 * @param {object} params Query params.
+	 * @param {object} extensions Extension list.
+	 * @param {object} extensionVersions Extension version list.
 	 *
 	 * @return {Promise<{valueCallback: function(*, *=): string, tableID: string, headings: {}, items: *, collapsible: {accordionClass: string, bodyCallback: function(*=): *}}>}
 	 */
-	async _prepareExtensionsTableArgs( params ) {
-		const { extensions, extensionVersions } = await this.getExtensionData( params );
+	async _prepareExtensionsTableArgs( extensions, extensionVersions ) {
 
 		const preparedItems = [];
 
@@ -152,6 +187,7 @@ class ExtensionController {
 				type: item.type,
 				latest_version: item.latest_version,
 				active_installs: humanFormat( item.active_installs ),
+				error_count: item.errorCount,
 				is_partner: {
 					extension_slug: item.extension_slug,
 					name: item.name,
@@ -369,11 +405,10 @@ class ExtensionController {
 
 		const user = await auth.getUser();
 
-
 		const item = {
 			extension_version_slug: postData.extensionVersionSlug,
 			verification_status: postData.verificationStatus,
-			verified_by : user.email || 'auto',
+			verified_by: user.email || 'auto',
 		};
 
 		try {
