@@ -1,9 +1,9 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
 const AuthorValidator = use( 'App/Validators/Author' );
 
-class BigQueryAuthor extends BigQueryBase {
+class Author extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -34,4 +34,4 @@ class BigQueryAuthor extends BigQueryBase {
 
 }
 
-module.exports = BigQueryAuthor;
+module.exports = Author;

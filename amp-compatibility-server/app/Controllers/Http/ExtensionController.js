@@ -5,11 +5,11 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const BigQuery = use( 'App/BigQuery' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ErrorModel = use( 'App/Models/BigQueryError' );
-const ErrorSourceModel = use( 'App/Models/BigQueryErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ErrorModel = use( 'App/Models/BigQuery/Error' );
+const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
 
 const View = use( 'View' );
 const Templates = use( 'App/Controllers/Templates' );

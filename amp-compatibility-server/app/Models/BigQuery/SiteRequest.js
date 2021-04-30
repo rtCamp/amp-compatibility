@@ -1,10 +1,10 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
 const SiteRequestValidator = use( 'App/Validators/SiteRequest' );
 const BigQuery = use( 'App/BigQuery' );
 
-class BigQuerySiteRequest extends BigQueryBase {
+class SiteRequest extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -59,4 +59,4 @@ class BigQuerySiteRequest extends BigQueryBase {
 
 }
 
-module.exports = BigQuerySiteRequest;
+module.exports = SiteRequest;

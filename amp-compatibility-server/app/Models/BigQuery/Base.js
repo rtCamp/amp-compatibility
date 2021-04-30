@@ -6,7 +6,7 @@ const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 const Encryption = use( 'Encryption' );
 
-class BigQueryBase {
+class Base {
 
 	/**
 	 * Table name that represented by model.
@@ -1020,4 +1020,4 @@ class BigQueryBase {
 	}
 }
 
-module.exports = BigQueryBase;
+module.exports = Base;

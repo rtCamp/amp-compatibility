@@ -4,7 +4,7 @@ const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
 // Models
-const SiteRequestModel = use( 'App/Models/BigQuerySiteRequest' );
+const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
 const GlobalCache = use( 'App/Helpers/GlobalCache' );
 const Utility = use( 'App/Helpers/Utility' );
 

@@ -4,7 +4,7 @@
 const Schema = use( 'Schema' );
 
 // Models
-const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
+const AmpValidatedUrlModel = use( 'App/Models/BigQuery/AmpValidatedUrl' );
 
 class BigQueryUpdateAmpValidatedUrlsSchema extends Schema {
 

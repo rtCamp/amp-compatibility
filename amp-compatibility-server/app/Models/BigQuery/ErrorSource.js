@@ -1,11 +1,11 @@
 'use strict';
 
-const BigQueryBase = use( 'App/Models/BigQueryBase' );
-const ErrorValidator = use( 'App/Validators/Error' );
+const BigQueryBase = use( 'App/Models/BigQuery/Base' );
+const ErrorSourceValidator = use( 'App/Validators/ErrorSource' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
-class BigQueryError extends BigQueryBase {
+class ErrorSource extends BigQueryBase {
 
 	/**
 	 * Table name that represented by model.
@@ -13,7 +13,7 @@ class BigQueryError extends BigQueryBase {
 	 * @returns {string} Table name.
 	 */
 	static get table() {
-		return 'errors';
+		return 'error_sources';
 	}
 
 	/**
@@ -22,7 +22,7 @@ class BigQueryError extends BigQueryBase {
 	 * @returns {string} primary key name.
 	 */
 	static get primaryKey() {
-		return 'error_slug';
+		return 'error_source_slug';
 	}
 
 	/**
@@ -33,8 +33,7 @@ class BigQueryError extends BigQueryBase {
 	static getPrimaryValue( data ) {
 
 		const hashData = _.clone( data );
-		delete hashData.slug;
-		delete hashData.error_slug;
+		delete hashData.error_source_slug;
 
 		return Utility.makeHash( hashData );
 	}
@@ -45,7 +44,7 @@ class BigQueryError extends BigQueryBase {
 	 * @returns {boolean|Object} Validator class.
 	 */
 	static get validator() {
-		return ErrorValidator;
+		return ErrorSourceValidator;
 	}
 
 	/**
@@ -58,6 +57,7 @@ class BigQueryError extends BigQueryBase {
 	static async prepareItem( item ) {
 
 		const parentCallback = BigQueryBase.prepareItem.bind( this );
+
 		item = await parentCallback( item );
 
 		// Item should be the object.
@@ -83,4 +83,4 @@ class BigQueryError extends BigQueryBase {
 
 }
 
-module.exports = BigQueryError;
+module.exports = ErrorSource;

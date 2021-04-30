@@ -7,8 +7,8 @@ const ComputeEngine = use( 'App/Controllers/ComputeEngine' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
 
 // Models
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
 
 // Helpers
 const Logger = use( 'Logger' );

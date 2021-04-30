@@ -7,12 +7,12 @@
 
 const BigQuery = use( 'App/BigQuery' );
 
-const SiteModel = use( 'App/Models/BigQuerySite' );
-const SiteToExtensionModel = use( 'App/Models/BigQuerySiteToExtension' );
-const AmpValidatedUrlModel = use( 'App/Models/BigQueryAmpValidatedUrl' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQueryUrlErrorRelationship' );
-const ExtensionModel = use( 'App/Models/BigQueryExtension' );
-const ExtensionVersionModel = use( 'App/Models/BigQueryExtensionVersion' );
+const SiteModel = use( 'App/Models/BigQuery/Site' );
+const SiteToExtensionModel = use( 'App/Models/BigQuery/SiteToExtension' );
+const AmpValidatedUrlModel = use( 'App/Models/BigQuery/AmpValidatedUrl' );
+const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
+const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 
 const Utility = use( 'App/Helpers/Utility' );
 
