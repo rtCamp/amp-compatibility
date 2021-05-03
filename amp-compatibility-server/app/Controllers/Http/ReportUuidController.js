@@ -14,6 +14,7 @@ const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
 const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
+const compareVersions = require( 'compare-versions' );
 
 class ReportUuidController {
 
@@ -343,7 +344,13 @@ class ReportUuidController {
 								value = `<span class="text-success" title="Up to date with latest version.">${ value.version }</span>`;
 
 							} else {
-								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <strong>&le;</strong> ${ value.latest_version }`;
+
+								const comparison = compareVersions( value.version, value.latest_version );
+								let comparisonSign = '&ne;';
+								comparisonSign = ( 1 === comparison ) ? '&gt;' : comparisonSign;
+								comparisonSign = ( -1 === comparison ) ? '&lt;' : comparisonSign;
+
+								value = `<span class="text-danger" title="Plugin is not up to date with latest version.">${ value.version }</span> <strong>${ comparisonSign }</strong> ${ value.latest_version }`;
 							}
 
 						} else {
