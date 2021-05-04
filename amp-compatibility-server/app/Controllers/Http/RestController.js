@@ -134,7 +134,7 @@ class RestController {
 
 		errorLog = errorLog.replace( /'/g, '`' );
 		errorLog = errorLog.split( "\n" );
-		errorLog = JSON.stringify(errorLog);
+		errorLog = JSON.stringify( errorLog );
 
 		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ SiteRequestModel.table }` + '`';
 		const preparedItem = SiteRequestModel._prepareItemForDB( item );
@@ -156,7 +156,7 @@ class RestController {
 
 		const summarizedData = {
 			site_url: requestData.site_url,
-			site_info: _.clone(requestData.site_info),
+			site_info: _.clone( requestData.site_info ),
 		};
 
 		summarizedData.wp_active_theme = {
