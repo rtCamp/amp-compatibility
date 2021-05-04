@@ -2,7 +2,7 @@
 
 const Base = use( 'App/Models/Base' );
 
-class SiteRequest extends Base {
+class ErrorSource extends Base {
 
 	/**
 	 * The primary key for the model.
@@ -14,7 +14,7 @@ class SiteRequest extends Base {
 	 * @static
 	 */
 	static get primaryKey() {
-		return 'site_request_id';
+		return 'error_source_slug';
 	}
 
 	/**
@@ -30,7 +30,6 @@ class SiteRequest extends Base {
 	static get updatedAtColumn() {
 		return '';
 	}
-
 }
 
-module.exports = SiteRequest;
+module.exports = ErrorSource;

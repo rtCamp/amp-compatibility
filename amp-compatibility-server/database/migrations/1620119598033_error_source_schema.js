@@ -10,7 +10,7 @@ class ErrorSourceSchema extends Schema {
 	 */
 	up() {
 		this.create( 'error_sources', ( table ) => {
-			table.string( 'source_slug' ).primary().comment( 'Hash of error source.' );
+			table.string( 'error_source_slug' ).primary().comment( 'Hash of error source.' );
 			table.string( 'type' ).comment( 'plugin|theme|block' );
 			table.string( 'extension_version_slug' ).notNullable();
 			table.string( 'name' ).comment( 'e.g. gravityforms' );

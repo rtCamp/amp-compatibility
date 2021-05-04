@@ -2,19 +2,20 @@
 
 const Base = use( 'App/Models/Base' );
 
-class SiteRequest extends Base {
+class SiteToExtension extends Base {
 
 	/**
-	 * The primary key for the model.
+	 * The attribute name for created at timestamp.
+	 * Disable created at column for current table.
 	 *
-	 * @attribute primaryKey
+	 * @attribute createdAtColumn
 	 *
 	 * @return {String}
 	 *
 	 * @static
 	 */
-	static get primaryKey() {
-		return 'site_request_id';
+	static get createdAtColumn() {
+		return '';
 	}
 
 	/**
@@ -30,7 +31,6 @@ class SiteRequest extends Base {
 	static get updatedAtColumn() {
 		return '';
 	}
-
 }
 
-module.exports = SiteRequest;
+module.exports = SiteToExtension;

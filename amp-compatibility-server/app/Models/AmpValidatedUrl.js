@@ -2,7 +2,7 @@
 
 const Base = use( 'App/Models/Base' );
 
-class Extension extends Base {
+class AmpValidatedUrl extends Base {
 
 	/**
 	 * The primary key for the model.
@@ -14,8 +14,8 @@ class Extension extends Base {
 	 * @static
 	 */
 	static get primaryKey() {
-		return 'extension_slug';
+		return 'page_url';
 	}
 }
 
-module.exports = Extension;
+module.exports = AmpValidatedUrl;

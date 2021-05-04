@@ -1,9 +1,21 @@
-'use strict'
+'use strict';
 
-/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
-const Model = use('Model')
+const Base = use( 'App/Models/Base' );
 
-class Site extends Model {
+class Site extends Base {
+
+	/**
+	 * The primary key for the model.
+	 *
+	 * @attribute primaryKey
+	 *
+	 * @return {String}
+	 *
+	 * @static
+	 */
+	static get primaryKey() {
+		return 'site_url';
+	}
 }
 
-module.exports = Site
+module.exports = Site;
