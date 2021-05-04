@@ -34,9 +34,7 @@ class WporgScraper extends Command {
 		return `wporg:scraper
 			 { --only-themes : To fetch and only themes data from wordpress.org. }
 			 { --only-plugins : To fetch and only plugins data from wordpress.org. }
-			 { --only-store-in-local : It will only store data in local directory, And won't import in BigQuery. }
 			 { --browse=@value : Predefined query ordering. Possible values are popular,featured,updated and new }
-			 { --use-stream : Use stream method to if possible. Fast but with certain limitation. Reference - //cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations }
 			 { --per-page=@value : Number of theme/plugin need to fetch per API call ( Min=2, Max=100, Default=100 ).. }
 			 { --theme-start-from=@value : From which page we need to start importing themes. Default 1 }
 			 { --plugin-start-from=@value : From which page we need to start importing plugins. Default 1 }`;
@@ -148,15 +146,6 @@ class WporgScraper extends Command {
 
 		try {
 
-			this.warn( 'Before start importing data make sure redis cache is up to date.' );
-			this.warn( 'Use command to update redis cache. "node ace cache"' + "\n" );
-
-			if ( this.options.useStream ) {
-				this.warn( 'We are using "Stream" method to insert records.' );
-				this.warn( 'It is fast but have certain limitation. Please check below document.' );
-				this.warn( '- https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations' + "\n" );
-			}
-
 			if ( true === flags.onlyThemes ) {
 				await this.importThemes();
 			}
@@ -166,8 +155,8 @@ class WporgScraper extends Command {
 			}
 
 			if ( null === flags.onlyPlugins && null === flags.onlyThemes ) {
-				await this.importPlugins();
 				await this.importThemes();
+				await this.importPlugins();
 			}
 
 			this.success( 'wp.org data is imported.' );
@@ -285,10 +274,6 @@ class WporgScraper extends Command {
 
 		for ( const index in responsePlugins ) {
 			const pluginData = responsePlugins[ index ];
-
-			if ( ! _.isObject( pluginData ) || ! _.has( pluginData, 'slug' ) ) {
-				continue;
-			}
 
 			try {
 				await this._savePlugin( pluginData );
@@ -419,93 +404,108 @@ class WporgScraper extends Command {
 
 		const responseData = await this._getThemesList( filter );
 		const responseThemes = responseData.themes;
-		let extensions = [];
-		let authors = [];
-		let authorRelationship = [];
-		let extensionVersions = [];
 
 		for ( const index in responseThemes ) {
 			const themeData = responseThemes[ index ];
 
-			if ( ! _.isObject( themeData ) || ! _.has( themeData, 'slug' ) ) {
-				continue;
-			}
-
-			// Store in local directory.
-			await this.saveJSON( 'theme', themeData );
-
-			if ( this.options.onlyStoreInLocal ) {
-				continue;
-			}
-
-			// Author data.
-			let author = await this.normalizeAuthor( themeData.author );
-
-			if ( _.isObject( author ) ) {
-				authors.push( author );
-			}
-
-			// Extension data.
-			const extension = await this.normalizeTheme( themeData );
-
-			if ( _.isObject( extension ) ) {
-				extensions.push( extension );
-
-				// Extension versions data.
-				extensionVersions.push( ExtensionVersionModel.getItemFromExtension( extension ) );
-			}
-
-			if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
-
-				// Author relationship data.
-				authorRelationship = authorRelationship.concat(
-					this.getAuthorRelationship( extension.extension_slug, [ author.author_profile ] ),
-				);
+			try {
+				await this._saveTheme( themeData );
+			} catch ( exception ) {
+				console.error( 'Fail to insert/update theme.', exception );
 			}
 
 		}
 
-		const response = {
-			extensions: await this.saveExtensions( extensions, this.saveOptions ),
-			authors: await AuthorModel.saveMany( authors, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
-		};
-
-		return response;
 	}
 
 	/**
-	 * Wrapper function to update extensions.
+	 * To normalize theme data from wp.org api response.
 	 *
-	 * @param {Array} extensions List of extensions.
-	 * @param {Object} options Save options.
+	 * @param {Object} data Response from wp.org data.
 	 *
-	 * @return {Promise<*>}
+	 * @returns {Promise<Boolean|Object>} Object on valid data otherwise false.
 	 */
-	async saveExtensions( extensions, options ) {
+	async normalizeTheme( data ) {
 
-		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
-		let slugs = [];
-
-		for ( const index in extensions ) {
-			slugs.push( extensions[ index ].extension_slug );
+		if ( ! data || 'object' !== typeof data ) {
+			return false;
 		}
 
-		slugs = _.map( slugs, ExtensionVersionModel._prepareValueForDB );
-		const updateQuery = `DELETE FROM ${ table } WHERE ${ ExtensionModel.primaryKey } IN ( ${ slugs.join( ', ' ) } );`;
+		const type = 'theme';
+		const averageRating = Utility.getAverageRating( data.ratings );
 
-		try {
-			await BigQuery.query( updateQuery );
+		let validatedData = {
+			wporg: true,
+			type: type,
+			name: data.name,
+			slug: data.slug,
+			latest_version: data.version.toString(),
+			requires_wp: data.requires,
+			tested_wp: '',
+			requires_php: data.requires_php,
+			average_rating: averageRating,
+			support_threads: '',
+			support_threads_resolved: '',
+			active_installs: data.active_installs || 0,
+			downloaded: data.downloaded || 0,
+			last_updated: data.last_updated || null,
+			date_added: null,
+			homepage_url: data.homepage,
+			short_description: data.description.replace( /\n/g, ' ' ), // @TODO: This should be handled during escaping.
+			download_url: data.versions[ data.version.toString() ],
+			author_url: '',
+			extension_url: data.preview_url,
+			preview_url: data.preview_url,
+			screenshot_url: data.screenshot_url,
+			tags: ( ! _.isEmpty( data.tags ) ) ? JSON.stringify( data.tags ) : '',
+			icon_url: '',
+		};
 
-			for ( const index in extensions ) {
-				await Cache.delete( extensions[ index ].extension_slug, ExtensionModel.table );
+		validatedData.extension_slug = ExtensionModel.getPrimaryValue( validatedData );
+
+		return validatedData;
+	}
+
+	/**
+	 * To save individual theme.
+	 *
+	 * @private
+	 *
+	 * @param {Object} themeData
+	 *
+	 * @return {Promise<void>}
+	 */
+	async _saveTheme( themeData ) {
+
+		if ( ! _.isObject( themeData ) || ! _.has( themeData, 'slug' ) ) {
+			throw 'Invalid object';
+		}
+
+		// Extension data.
+		const extension = await this.normalizeTheme( themeData );
+
+		await ExtensionModel.save( extension );
+
+		// Author data.
+		let author = await this.normalizeAuthor( themeData.author );
+
+		if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
+
+			/**
+			 * Save author.
+			 */
+			await AuthorModel.save( author );
+
+			/**
+			 * Save extension author relationship.
+			 */
+			const authorRelationships = this.getAuthorRelationship( extension.extension_slug, [ author.profile ] );
+
+			for ( const index in authorRelationships ) {
+				await AuthorRelationshipModel.save( authorRelationships[ index ] );
 			}
-		} catch ( exception ) {
-			console.log( exception );
-		}
 
-		return await ExtensionModel.saveMany( extensions, options );
+		}
 
 	}
 
@@ -557,59 +557,11 @@ class WporgScraper extends Command {
 		return {
 			user_nicename: data.user_nicename,
 			display_name: data.display_name,
-			author_profile: data.profile,
+			profile: data.profile,
 			avatar: data.avatar,
 			status: data.status || '',
 		};
 
-	}
-
-	/**
-	 * To normalize theme data from wp.org api response.
-	 *
-	 * @param {Object} data Response from wp.org data.
-	 *
-	 * @returns {Promise<Boolean|Object>} Object on valid data otherwise false.
-	 */
-	async normalizeTheme( data ) {
-
-		if ( ! data || 'object' !== typeof data ) {
-			return false;
-		}
-
-		const type = 'theme';
-		const averageRating = Utility.getAverageRating( data.ratings );
-
-		let validatedData = {
-			wporg: true,
-			type: type,
-			name: data.name,
-			slug: data.slug,
-			latest_version: data.version.toString(),
-			requires_wp: data.requires,
-			tested_wp: '',
-			requires_php: data.requires_php,
-			average_rating: averageRating,
-			support_threads: '',
-			support_threads_resolved: '',
-			active_installs: data.active_installs || 0,
-			downloaded: data.downloaded || 0,
-			last_updated: data.last_updated || null,
-			date_added: null,
-			homepage_url: data.homepage,
-			short_description: data.description.replace( /\n/g, ' ' ), // @TODO: This should be handled during escaping.
-			download_url: data.versions[ data.version.toString() ],
-			author_url: '',
-			extension_url: data.preview_url,
-			preview_url: data.preview_url,
-			screenshot_url: data.screenshot_url,
-			tags: ( ! _.isEmpty( data.tags ) ) ? JSON.stringify( data.tags ) : '',
-			icon_url: '',
-		};
-
-		validatedData.extension_slug = ExtensionModel.getPrimaryValue( validatedData );
-
-		return validatedData;
 	}
 
 	/**
@@ -668,29 +620,6 @@ class WporgScraper extends Command {
 		throw error;
 	}
 
-	/**
-	 * To save content of wp.org in respected JSON file.
-	 *
-	 * @param {String} type Either "plugin"
-	 * @param {Object} data Data that need to save.
-	 *
-	 * @return {Promise<boolean>} True on success otherwise False.
-	 */
-	async saveJSON( type, data ) {
-
-		if ( _.isEmpty( type ) || _.isEmpty( data ) ) {
-			return false;
-		}
-
-		let slug = data.slug || '';
-
-		type = type.toString().toLowerCase();
-		slug = slug.toString().toLowerCase();
-
-		const fileToSave = Helpers.appRoot() + `/data/${ type }/${ slug }/info.json`;
-
-		return ( await FileSystem.writeFile( fileToSave, Utility.jsonPrettyPrint( data ) ) );
-	}
 }
 
 module.exports = WporgScraper;

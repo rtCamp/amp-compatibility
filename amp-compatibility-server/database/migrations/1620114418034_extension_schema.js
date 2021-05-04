@@ -30,7 +30,7 @@ class ExtensionSchema extends Schema {
 			table.datetime( 'last_updated' ).defaultTo( null ).comment( 'Last update date of theme/plugin in wp.org.' );
 			table.datetime( 'date_added' ).defaultTo( null ).comment( 'Date for when theme/plugin in wp.org.' );
 			table.string( 'homepage_url' ).comment( 'Home page url of plugin/theme.' );
-			table.string( 'short_description' ).comment( 'Short description of plugin/theme.' );
+			table.text( 'short_description', [ 'longtext' ] ).comment( 'Short description of plugin/theme.' );
 			table.string( 'download_url' ).comment( 'Download url of plugin/theme.' );
 			table.string( 'author_url' ).comment( '' );
 			table.text( 'tags', [ 'longtext' ] ).comment( 'Tags of theme/plugin in JSON format.' );
