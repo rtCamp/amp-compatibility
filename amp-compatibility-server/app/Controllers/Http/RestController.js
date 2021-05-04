@@ -4,19 +4,14 @@ const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const AmpRequestValidator = use( 'App/Validators/AmpRequest' );
 
 // Models
-const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
-const GlobalCache = use( 'App/Helpers/GlobalCache' );
-const Utility = use( 'App/Helpers/Utility' );
+/** @typedef {import('../../Models/SiteRequest')} Session */
+const SiteRequestModel = use( 'App/Models/SiteRequest' );
 
 // Helpers
+const Database = use( 'Database' );
+const Utility = use( 'App/Helpers/Utility' );
 const Logger = use( 'Logger' );
-const BigQuery = use( 'App/BigQuery' );
-
-// Utilities
 const _ = require( 'underscore' );
-
-// For generating UUIDs
-const uuidv5 = require( 'uuid/v5' );
 
 class RestController {
 
@@ -40,10 +35,6 @@ class RestController {
 	 */
 	async store( { request } ) {
 
-		// @Todo: Move namespace to environment file.
-		// This is just a random UUID, we're using as namespace
-		const namespace = 'a70e42a6-9744-42f2-98ce-2fc670bc3391';
-
 		const requestData = request.post();
 
 		if ( _.isEmpty( requestData ) ) {
@@ -63,12 +54,12 @@ class RestController {
 		let summarizedData = _.clone( requestData );
 		summarizedData = await this.summarizeSiteRequest( summarizedData );
 
-		let uuid = uuidv5( JSON.stringify( requestData ), namespace );
+		let uuid = Utility.generateUUID( requestData );
 		uuid = `ampwp-${ uuid }`;
 
-		const existingRequest = await GlobalCache.get( uuid, 'site_requests' );
+		const siteRequest = await SiteRequestModel.find( uuid );
 
-		if ( existingRequest ) {
+		if ( siteRequest ) {
 			return {
 				status: 'ok',
 				data: {
@@ -78,21 +69,42 @@ class RestController {
 			};
 		}
 
-		requestData.error_log = requestData.error_log || {};
+		let response = false;
+		const transaction = await Database.beginTransaction();
 
-		Logger.info( 'Site: %s | UUID: %s', siteUrl, uuid );
+		try {
 
-		const item = {
-			site_request_id: uuid,
-			site_url: siteUrl,
-			status: 'pending',
-			created_at: Utility.getCurrentDateTime(),
-			raw_data: JSON.stringify( summarizedData ),
-			error_log: requestData.error_log.contents || '',
-		};
+			requestData.error_log = requestData.error_log || {};
 
-		const insertQuery = this.getInsertQuery( item );
-		const response = await BigQuery.query( insertQuery );
+			let errorLog = requestData.error_log.contents || '';
+			errorLog = errorLog.replace( /'/g, '`' );
+			errorLog = errorLog.split( "\n" );
+			errorLog = JSON.stringify( errorLog );
+
+			const item = {
+				site_request_id: uuid,
+				site_url: siteUrl,
+				raw_data: JSON.stringify( summarizedData ),
+				error_log: errorLog,
+			};
+
+			await Database.beginTransaction();
+
+			response = await SiteRequestModel.save( item, transaction );
+
+			requestData.uuid = uuid;
+			await RequestQueueController.createJob( requestData );
+
+			// Commit the transaction.
+			await transaction.commit();
+
+		} catch ( exception ) {
+
+			// Rollback the transaction.
+			await transaction.rollback();
+
+			Logger.crit( 'Fail to store data.', exception );
+		}
 
 		if ( false === response ) {
 			return {
@@ -102,12 +114,6 @@ class RestController {
 				},
 			};
 		}
-
-		requestData.uuid = uuid;
-
-		await RequestQueueController.createJob( requestData );
-
-		await GlobalCache.set( uuid, 'pending', 'site_requests' );
 
 		return {
 			status: 'ok',

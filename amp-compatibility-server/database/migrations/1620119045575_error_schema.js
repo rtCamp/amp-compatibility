@@ -53,7 +53,7 @@ class ErrorSchema extends Schema {
 			table.string( 'required_child_count' );
 			table.string( 'item' );
 			table.string( 'extra' );
-			table.text( 'error_log', [ 'longtext' ] ).notNullable();
+			table.specificType( 'raw_data', 'mediumblob' ).notNullable();
 			table.timestamp( 'created_at' );
 		} );
 	}

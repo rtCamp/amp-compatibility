@@ -2,10 +2,12 @@
 
 const Helpers = use( 'Helpers' );
 const Logger = use( 'Logger' );
+const Env = use( 'Env' );
 
 const _ = require( 'underscore' );
 const crypto = require( 'crypto' );
 const { exec } = require( 'child_process' );
+const uuidv5 = require( 'uuid/v5' );
 
 class Utility {
 
@@ -158,6 +160,33 @@ class Utility {
 
 		const hash = crypto.createHash( 'sha256' ).update( data ).digest( 'hex' );
 		return hash;
+	}
+
+	/**
+	 * To generate UUID value of provided data.
+	 *
+	 * @param {Object|Array|String|Number} data Data for that need UUID value.
+	 *
+	 * @return {String} UUID value of provided data.
+	 */
+	static generateUUID( data ) {
+
+		if ( _.isEmpty( data ) ) {
+			return '';
+		}
+
+		if ( _.isNumber( data ) ) {
+			data = data.toString();
+		} else if ( _.isArray( data ) ) {
+			data = JSON.stringify( data );
+		} else if ( _.isObject( data ) ) {
+			data = JSON.stringify( data );
+		}
+
+		const namespace = Env.get( 'UUID_KEY', 'a70e42a6-9744-42f2-98ce-2fc670bc3391' );
+		const uuid = uuidv5( data, namespace );
+
+		return uuid;
 	}
 
 	/**

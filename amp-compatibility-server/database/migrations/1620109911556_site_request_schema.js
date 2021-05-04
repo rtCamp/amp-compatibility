@@ -13,8 +13,8 @@ class SiteRequestSchema extends Schema {
 			table.string( 'site_request_id', 50 ).primary();
 			table.string( 'site_url' ).notNullable();
 			table.string( 'status' ).defaultTo( 'pending' ).notNullable();
-			table.text( 'raw_data', [ 'longtext' ] ).notNullable();
-			table.text( 'error_log', [ 'longtext' ] );
+			table.specificType( 'raw_data', 'mediumblob' ).notNullable();
+			table.specificType( 'error_log', 'mediumblob' );
 			table.timestamp( 'created_at' );
 
 			table.index( [ 'status' ] );

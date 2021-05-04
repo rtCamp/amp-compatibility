@@ -30,7 +30,7 @@ class ErrorSourceSchema extends Schema {
 			table.string( 'block_content_index' );
 			table.string( 'block_attrs' );
 			table.string( 'shortcode' );
-			table.text( 'raw_data', [ 'longtext' ] ).notNullable();
+			table.specificType( 'raw_data', 'mediumblob' ).notNullable();
 			table.timestamp( 'created_at' );
 
 			table.foreign( 'extension_version_slug' ).references( 'extension_versions.extension_version_slug' );

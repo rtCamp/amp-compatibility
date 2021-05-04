@@ -5,7 +5,6 @@ const Model = use( 'Model' );
 
 // Utilities
 const Utility = use( 'App/Helpers/Utility' );
-const { exit } = require( 'process' );
 const _ = require( 'underscore' );
 
 class Base extends Model {
@@ -111,9 +110,10 @@ class Base extends Model {
 	/**
 	 * To create record if not exists otherwise find and update the record.
 	 *
-	 * @param item
-	 * @param trx
-	 * @return {Promise<void>}
+	 * @param {object} item Record data.
+	 * @param {object} trx Transaction object to be used
+	 *
+	 * @return {Promise<boolean>} Whether or not the model was persisted
 	 */
 	static async save( item, trx ) {
 
@@ -140,7 +140,7 @@ class Base extends Model {
 
 		instance.merge( item );
 
-		await instance.save( trx );
+		return ( await instance.save( trx ) );
 
 	}
 
@@ -169,9 +169,9 @@ class Base extends Model {
 	 */
 	async setPrimaryValue() {
 
-		// if ( this.constructor.getPrimaryValue ) {
-		// 	this.primaryKeyValue( this.constructor.getPrimaryValue( this.toObject() ) );
-		// }
+		if ( this.constructor.getPrimaryValue ) {
+			this.primaryKeyValue( this.constructor.getPrimaryValue( this.toObject() ) );
+		}
 
 	}
 
