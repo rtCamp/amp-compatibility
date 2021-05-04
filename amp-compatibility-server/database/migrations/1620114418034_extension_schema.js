@@ -10,7 +10,7 @@ class ExtensionSchema extends Schema {
 	 */
 	up() {
 		this.create( 'extensions', ( table ) => {
-			table.string( 'extension_slug', 100 ).unique().comment( 'Slug of extension. `${type}-${extension_slug}` e.g. plugin-woocommerce' );
+			table.string( 'extension_slug', 100 ).primary().comment( 'Slug of extension. `${type}-${extension_slug}` e.g. plugin-woocommerce' );
 			table.boolean( 'wporg' ).defaultTo( false ).comment( 'True if it is wp.org plugin/theme.' );
 			table.string( 'type', 50 ).notNullable().comment( 'Type of extension. Possible values plugin|theme.' );
 			table.string( 'name' ).notNullable().comment( 'e.g. Redirection' );
