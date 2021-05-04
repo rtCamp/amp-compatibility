@@ -16,7 +16,7 @@ class ExtensionVersionSchema extends Schema {
 			table.string( 'type' ).notNullable().comment( 'Type of extension. Possible values plugin|theme.' );
 			table.string( 'slug' ).notNullable().comment( 'Slug of theme/plugin. e.g. redirection.' );
 			table.string( 'version' ).notNullable().comment( 'Version of theme/plugin e.g. 4.5' );
-			table.integer( 'error_count' ).unsigned().comment( 'Auto calculated field.' );
+			table.integer( 'error_count' ).defaultTo(0).unsigned().comment( 'Auto calculated field.' );
 			table.string( 'compatibility_score' ).comment( 'Auto calculated field.' );
 			table.string( 'verification_status' ).defaultTo( 'unknown' ).comment( 'Default unknown' );
 			table.string( 'verified_by' );

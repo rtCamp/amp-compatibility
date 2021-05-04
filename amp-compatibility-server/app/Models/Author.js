@@ -1,18 +1,20 @@
 'use strict';
 
 const Base = use( 'App/Models/Base' );
+const AuthorValidator = use( 'App/Validators/Author' );
 
 class Author extends Base {
 
 	/**
-	 * The foreign key for the model.
+	 * The primary key for the model.
 	 *
-	 * @attribute foreignKey
+	 * @attribute primaryKey
 	 *
 	 * @return {String}
 	 *
+	 * @static
 	 */
-	static get foreignKey() {
+	static get primaryKey() {
 		return 'profile';
 	}
 
@@ -42,6 +44,15 @@ class Author extends Base {
 	 */
 	static get updatedAtColumn() {
 		return '';
+	}
+
+	/**
+	 * Validator class name, To verify the data.
+	 *
+	 * @returns {boolean|Object} Validator class.
+	 */
+	static get validator() {
+		return AuthorValidator;
 	}
 
 }

@@ -14,7 +14,7 @@ class AuthorRelationship extends Base {
 		return {
 			hash: 'string|required',
 			extension_slug: 'string|required',
-			author_profile: 'url|required',
+			profile: 'url|required',
 		};
 	}
 
@@ -26,7 +26,7 @@ class AuthorRelationship extends Base {
 	static get sanitizationRules() {
 		return {
 			extension_slug: 'slug',
-			author_profile: 'to_url',
+			profile: 'to_url',
 		};
 	}
 

@@ -1,6 +1,7 @@
 'use strict';
 
 const Base = use( 'App/Models/Base' );
+const SiteRequestValidator = use( 'App/Validators/SiteRequest' );
 
 class SiteRequest extends Base {
 
@@ -29,6 +30,26 @@ class SiteRequest extends Base {
 	 */
 	static get updatedAtColumn() {
 		return '';
+	}
+
+	/**
+	 * Validator class name, To verify the data.
+	 *
+	 * @returns {boolean|Object} Validator class.
+	 */
+	static get validator() {
+		return SiteRequestValidator;
+	}
+
+	/**
+	 * Default values for each field.
+	 *
+	 * @returns {{}} default values.
+	 */
+	static get defaults() {
+		return {
+			status: 'pending',
+		};
 	}
 
 }

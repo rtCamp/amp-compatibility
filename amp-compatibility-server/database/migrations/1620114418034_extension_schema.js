@@ -22,11 +22,11 @@ class ExtensionSchema extends Schema {
 			table.string( 'requires_wp', 50 ).comment( 'Requires WordPress version e.g. 5.0' );
 			table.string( 'tested_wp', 50 ).comment( 'Plugin/Theme is tested up to version e.g. 5.5.3' );
 			table.string( 'requires_php', 50 ).comment( 'Require PHP version e.g. 5.6' );
-			table.integer( 'average_rating' ).unsigned().comment( 'wp.org data Average raging of plugin/theme' );
-			table.integer( 'support_threads' ).unsigned().comment( 'wp.org data e.g. 117' );
-			table.integer( 'support_threads_resolved' ).unsigned().comment( 'wp.org data e.g. 117' );
-			table.bigInteger( 'active_installs' ).unsigned().comment( 'Active install count from wp.org' );
-			table.bigInteger( 'downloaded' ).unsigned().comment( 'Download count from wp.org' );
+			table.integer( 'average_rating' ).defaultTo( 0 ).unsigned().comment( 'wp.org data Average raging of plugin/theme' );
+			table.integer( 'support_threads' ).defaultTo( 0 ).unsigned().comment( 'wp.org data e.g. 117' );
+			table.integer( 'support_threads_resolved' ).defaultTo( 0 ).unsigned().comment( 'wp.org data e.g. 117' );
+			table.bigInteger( 'active_installs' ).defaultTo( 0 ).unsigned().comment( 'Active install count from wp.org' );
+			table.bigInteger( 'downloaded' ).defaultTo( 0 ).unsigned().comment( 'Download count from wp.org' );
 			table.datetime( 'last_updated' ).defaultTo( null ).comment( 'Last update date of theme/plugin in wp.org.' );
 			table.datetime( 'date_added' ).defaultTo( null ).comment( 'Date for when theme/plugin in wp.org.' );
 			table.string( 'homepage_url' ).comment( 'Home page url of plugin/theme.' );

@@ -1,6 +1,9 @@
 'use strict';
 
 const Base = use( 'App/Models/Base' );
+const ErrorValidator = use( 'App/Validators/Error' );
+const Utility = use( 'App/Helpers/Utility' );
+const _ = require( 'underscore' );
 
 class Error extends Base {
 
@@ -29,6 +32,29 @@ class Error extends Base {
 	 */
 	static get updatedAtColumn() {
 		return '';
+	}
+
+	/**
+	 * Primary key of the table.
+	 *
+	 * @returns {string} primary key name.
+	 */
+	static getPrimaryValue( data ) {
+
+		const hashData = _.clone( data );
+		delete hashData.slug;
+		delete hashData.error_slug;
+
+		return Utility.makeHash( hashData );
+	}
+
+	/**
+	 * Validator class name, To verify the data.
+	 *
+	 * @returns {boolean|Object} Validator class.
+	 */
+	static get validator() {
+		return ErrorValidator;
 	}
 }
 

@@ -11,13 +11,13 @@ class AmpValidatedUrlSchema extends Schema {
 	up() {
 		this.create( 'amp_validated_urls', ( table ) => {
 			table.string( 'site_url' ).notNullable();
-			table.string( 'page_url' ).primary().comment( 'Page url without protocol. e.g. amp-wp.test/sample-page/' );
+			table.string( 'page_url' ).primary().comment( 'Page url without protocol. e.g. amp-wp.test/sample-page' );
 			table.string( 'object_type' ).comment( 'Anything from post_type,taxonomy,search,404' );
 			table.string( 'object_subtype' ).comment( 'Name of post type or taxonomy.' );
-			table.string( 'css_size_before' ).comment( 'Total CSS size prior to minification => "213,812 Bytes"' );
-			table.string( 'css_size_after' ).comment( 'Total CSS size after minification => "39,371 B"' );
-			table.string( 'css_size_excluded' ).comment( 'Excluded minified CSS size (0 stylesheets) => "0 Bytes"' );
-			table.float( 'css_budget_percentage' ).comment( 'Percentage of used CSS budget (75KB) => "52.0%"' );
+			table.integer( 'css_size_before' ).defaultTo( 0 ).comment( 'Total CSS size prior to minification => "213,812 Bytes"' );
+			table.integer( 'css_size_after' ).defaultTo( 0 ).comment( 'Total CSS size after minification => "39,371 B"' );
+			table.integer( 'css_size_excluded' ).defaultTo( 0 ).comment( 'Excluded minified CSS size (0 stylesheets) => "0 Bytes"' );
+			table.float( 'css_budget_percentage' ).defaultTo( 0 ).comment( 'Percentage of used CSS budget (75KB) => "52.0%"' );
 			table.string( 'site_request_id' ).notNullable();
 			table.timestamps();
 

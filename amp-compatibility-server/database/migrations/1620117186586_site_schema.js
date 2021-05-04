@@ -19,7 +19,7 @@ class SiteSchema extends Schema {
 			table.boolean( 'wp_https_status' );
 			table.string( 'wp_multisite' ).comment( 'E.g. subdomain|subdirectory|false' );
 			table.string( 'wp_active_theme' ).comment( '' );
-			table.boolean( 'object_cache_status' ).comment( 'Object cache enabled.' );
+			table.boolean( 'object_cache_status' ).defaultTo( false ).comment( 'Object cache enabled.' );
 			table.string( 'libxml_version' ).comment( 'libxml version' );
 			table.boolean( 'is_defined_curl_multi' ).comment( 'Whether the curl_multi functions are defined.' );
 			table.boolean( 'stylesheet_transient_caching' ).comment( 'Whether stylesheet transient caching is disabled' );
