@@ -17,8 +17,8 @@ class ExtensionSchema extends Schema {
 			table.string( 'slug' ).notNullable().comment( 'e.g. redirection' );
 			table.string( 'latest_version', 50 ).notNullable().comment( 'Latest version of plugin/theme e.g. 4.9.2' );
 			table.string( 'extension_url', 512 ).comment( 'Url for theme/plugin.' );
-			table.string( 'theme_preview_url', 512 ).comment( 'Preview URL of theme/plugin e.g. https://wp-wporg.com/prime-spa' );
-			table.string( 'theme_screenshot_url', 512 ).comment( 'Screenshot of plugin/theme e.g. //ts.w.org/wp-content/themes/prime-spa/screenshot.png?ver=1.0.0' );
+			table.string( 'preview_url', 512 ).comment( 'Preview URL of theme/plugin e.g. https://wp-wporg.com/prime-spa' );
+			table.string( 'screenshot_url', 512 ).comment( 'Screenshot of plugin/theme e.g. //ts.w.org/wp-content/themes/prime-spa/screenshot.png?ver=1.0.0' );
 			table.string( 'requires_wp', 50 ).comment( 'Requires WordPress version e.g. 5.0' );
 			table.string( 'tested_wp', 50 ).comment( 'Plugin/Theme is tested up to version e.g. 5.5.3' );
 			table.string( 'requires_php', 50 ).comment( 'Require PHP version e.g. 5.6' );
@@ -33,7 +33,7 @@ class ExtensionSchema extends Schema {
 			table.string( 'short_description' ).comment( 'Short description of plugin/theme.' );
 			table.string( 'download_url' ).comment( 'Download url of plugin/theme.' );
 			table.string( 'author_url' ).comment( '' );
-			table.json( 'tags' ).comment( 'Tags of theme/plugin in JSON format.' );
+			table.text( 'tags', [ 'longtext' ] ).comment( 'Tags of theme/plugin in JSON format.' );
 			table.string( 'icon_url' ).comment( 'Icon URL' );
 			table.boolean( 'is_partner' ).defaultTo( false ).comment( 'Is partner plugin' );
 			table.timestamps();

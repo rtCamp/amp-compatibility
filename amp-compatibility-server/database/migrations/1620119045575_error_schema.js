@@ -16,8 +16,8 @@ class ErrorSchema extends Schema {
 			table.string( 'code' ).comment( 'AMP error code e.g. DISALLOWED_TAG' );
 			table.string( 'type' ).comment( 'e.g. js_error | css | html_tag | html_attribute' );
 			table.string( 'node_type' ).comment( 'AMP error attribute.' );
-			table.json( 'node_attributes' );
-			table.json( 'element_attributes' );
+			table.text( 'node_attributes' );
+			table.text( 'element_attributes' );
 			table.string( 'spec_name' );
 			table.string( 'text' );
 			table.string( 'sources' );
@@ -53,7 +53,7 @@ class ErrorSchema extends Schema {
 			table.string( 'required_child_count' );
 			table.string( 'item' );
 			table.string( 'extra' );
-			table.json( 'raw_data' ).notNullable();
+			table.text( 'error_log', [ 'longtext' ] ).notNullable();
 			table.timestamp( 'created_at' );
 		} );
 	}

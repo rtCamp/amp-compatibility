@@ -10,6 +10,7 @@ class UrlErrorRelationshipSchema extends Schema {
 	 */
 	up() {
 		this.create( 'url_error_relationships', ( table ) => {
+			table.string( 'hash' ).primary();
 			table.string( 'page_url' ).notNullable();
 			table.string( 'error_slug' ).notNullable();
 			table.string( 'error_source_slug' ).notNullable();

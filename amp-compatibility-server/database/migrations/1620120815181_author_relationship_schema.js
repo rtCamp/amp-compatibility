@@ -10,6 +10,7 @@ class AuthorRelationshipSchema extends Schema {
 	 */
 	up() {
 		this.create( 'author_relationships', ( table ) => {
+			table.string( 'hash' ).primary();
 			table.string( 'extension_slug' ).notNullable();
 			table.string( 'profile' ).notNullable();
 
