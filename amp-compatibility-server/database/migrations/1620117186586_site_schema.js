@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class SiteSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'sites', ( table ) => {
 			table.string( 'site_url' ).primary().comment( 'amp-wp.test' );
@@ -35,6 +39,9 @@ class SiteSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'sites' );
 	}

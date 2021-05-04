@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class AmpValidatedUrlSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'amp_validated_urls', ( table ) => {
 			table.string( 'site_url' ).notNullable();
@@ -22,6 +26,9 @@ class AmpValidatedUrlSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'amp_validated_urls' );
 	}

@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class AuthorRelationshipSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'author_relationships', ( table ) => {
 			table.string( 'extension_slug' ).notNullable();
@@ -14,6 +18,9 @@ class AuthorRelationshipSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'author_relationships' );
 	}

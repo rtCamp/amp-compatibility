@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class ErrorSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'errors', ( table ) => {
 			table.string( 'error_slug' ).primary().comment( 'Hash of the error data.' );
@@ -54,6 +58,9 @@ class ErrorSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'errors' );
 	}

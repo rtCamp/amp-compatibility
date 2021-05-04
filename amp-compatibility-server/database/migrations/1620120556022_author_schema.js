@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class AuthorSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'authors', ( table ) => {
 			table.string( 'user_nicename' ).comment( 'Author\'s nice name e.g. themepalace' );
@@ -14,6 +18,9 @@ class AuthorSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'authors' );
 	}

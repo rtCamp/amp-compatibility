@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class UrlErrorRelationshipSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'url_error_relationships', ( table ) => {
 			table.string( 'page_url' ).notNullable();
@@ -16,6 +20,9 @@ class UrlErrorRelationshipSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'url_error_relationships' );
 	}

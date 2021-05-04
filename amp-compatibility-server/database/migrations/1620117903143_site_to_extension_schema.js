@@ -4,6 +4,10 @@
 const Schema = use( 'Schema' );
 
 class SiteToExtensionSchema extends Schema {
+
+	/**
+	 * To create MySQL Table.
+	 */
 	up() {
 		this.create( 'site_to_extensions', ( table ) => {
 			table.string( 'site_url' ).notNullable();
@@ -15,6 +19,9 @@ class SiteToExtensionSchema extends Schema {
 		} );
 	}
 
+	/**
+	 * To drop MySQL Table.
+	 */
 	down() {
 		this.drop( 'site_to_extensions' );
 	}
