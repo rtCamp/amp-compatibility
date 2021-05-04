@@ -22,7 +22,7 @@ class ExtensionVersionSchema extends Schema {
 			table.string( 'verified_by' );
 			table.timestamps();
 
-			table.foreign( 'extension_slug' ).references( 'extensions.extension_slug' )
+			table.foreign( 'extension_slug' ).references( 'extensions.extension_slug' );
 
 			table.index( 'extension_slug' );
 			table.index( 'type' );
