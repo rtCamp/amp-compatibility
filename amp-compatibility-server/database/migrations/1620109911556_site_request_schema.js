@@ -12,7 +12,7 @@ class SiteRequestSchema extends Schema {
 		this.create( 'site_requests', ( table ) => {
 			table.string( 'site_request_id', 50 ).primary();
 			table.string( 'site_url' ).notNullable();
-			table.string( 'status' ).defaultTo( 'pending' );
+			table.string( 'status' ).defaultTo( 'pending' ).notNullable();
 			table.json( 'raw_data' ).notNullable();
 			table.text( 'error_log', [ 'longtext' ] );
 			table.timestamp( 'created_at' );
