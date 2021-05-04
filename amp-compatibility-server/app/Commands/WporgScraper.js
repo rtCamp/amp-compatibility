@@ -5,10 +5,10 @@ const { Command } = require( '@adonisjs/ace' );
 const { getPluginsList, getThemesList } = require( 'wporg-api-client' );
 
 // Models
-const AuthorModel = use( 'App/Models/BigQuery/Author' );
-const AuthorRelationshipModel = use( 'App/Models/BigQuery/AuthorRelationship' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const AuthorModel = use( 'App/Models/Author' );
+const AuthorRelationshipModel = use( 'App/Models/AuthorRelationship' );
+const ExtensionModel = use( 'App/Models/Extension' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 // Helpers
 const Utility = use( 'App/Helpers/Utility' );
@@ -207,11 +207,7 @@ class WporgScraper extends Command {
 			this.info( `-------------------- Start of Plugin page ${ page } / ${ totalPages } --------------------` );
 			stopwatch.start();
 
-			const results = await this.importPluginsByPage( page );
-
-			if ( ! this.options.onlyStoreInLocal ) {
-				Logger.info( Utility.jsonPrettyPrint( results ) );
-			}
+			await this.importPluginsByPage( page );
 
 			stopwatch.stop();
 			this.info( `-------------------- End of Plugin page ${ page } / ${ totalPages } ----------------------` + "\n" );
@@ -272,12 +268,12 @@ class WporgScraper extends Command {
 	 *
 	 * @param {Integer} page Page number that need import.
 	 *
-	 * @returns {Promise<boolean|Object>} Object of response of BigQuery on success, Otherwise false.
+	 * @returns void
 	 */
 	async importPluginsByPage( page ) {
 
 		if ( ! _.isNumber( page ) ) {
-			return false;
+			return;
 		}
 
 		const filter = _.defaults( {
@@ -286,10 +282,6 @@ class WporgScraper extends Command {
 
 		const responseData = await this._getPluginsList( filter );
 		const responsePlugins = responseData.plugins;
-		let extensions = [];
-		let authors = [];
-		let authorRelationship = [];
-		let extensionVersions = [];
 
 		for ( const index in responsePlugins ) {
 			const pluginData = responsePlugins[ index ];
@@ -298,46 +290,113 @@ class WporgScraper extends Command {
 				continue;
 			}
 
-			// Store in local directory.
-			await this.saveJSON( 'plugin', pluginData );
-
-			if ( this.options.onlyStoreInLocal ) {
-				continue;
-			}
-
-			// Author data.
-			let author = {
-				author_profile: pluginData.author_profile,
-			};
-
-			// Extension data.
-			const extension = await this.normalizePlugin( pluginData );
-
-			if ( _.isObject( extension ) ) {
-				extensions.push( extension );
-
-				// Extension versions data.
-				extensionVersions.push( ExtensionVersionModel.getItemFromExtension( extension ) );
-			}
-
-			if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
-
-				// Author relationship data.
-				authorRelationship = authorRelationship.concat(
-					this.getAuthorRelationship( extension.extension_slug, [ author.author_profile ] ),
-				);
+			try {
+				await this._savePlugin( pluginData );
+			} catch ( exception ) {
+				console.error( 'Fail to insert/update plugin', exception );
 			}
 
 		}
 
-		const response = {
-			extensions: await this.saveExtensions( extensions, this.saveOptions ),
-			authors: await AuthorModel.saveMany( authors, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
-			authorRelationships: await AuthorRelationshipModel.saveMany( authorRelationship, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
-			extensionVersions: await ExtensionVersionModel.saveMany( extensionVersions, _.defaults( this.saveOptions, { allowUpdate: false } ) ),
+	}
+
+	/**
+	 * To normalize plugin data from wp.org api response.
+	 *
+	 * @param {Object} data Response from wp.org data.
+	 *
+	 * @returns {Promise<Boolean|Object>} Object on valid data otherwise false.
+	 */
+	async normalizePlugin( data ) {
+
+		if ( ! data || 'object' !== typeof data ) {
+			return false;
+		}
+
+		const type = 'plugin';
+		const averageRating = Utility.getAverageRating( data.ratings );
+
+		const validatedData = {
+			extension_slug: `${ type }-${ data.slug }`,
+			wporg: true,
+			type: type,
+			name: data.name,
+			slug: data.slug,
+			latest_version: data.version.toString(),
+			requires_wp: data.requires,
+			tested_wp: data.tested || '',
+			requires_php: data.requires_php,
+			average_rating: averageRating,
+			support_threads: data.support_threads || 0,
+			support_threads_resolved: data.support_threads_resolved || 0,
+			active_installs: data.active_installs || 0,
+			downloaded: data.downloaded || 0,
+			last_updated: Utility.convertWpOrgDatetime( data.last_updated ) || null,
+			date_added: data.added || null,
+			homepage_url: data.homepage,
+			short_description: data.short_description.replace( /\n/g, ' ' ), // @TODO: This should be handled during escaping.
+			download_url: data.download_link,
+			author_url: '',
+			extension_url: data.preview_url,
+			preview_url: data.preview_url,
+			screenshot_url: data.screenshot_url,
+			tags: _.isArray( data.tags ) ? JSON.stringify( data.tags ) : '',
+			icon_url: data.icons[ '2x' ] || '',
 		};
 
-		return response;
+		validatedData.extension_slug = ExtensionModel.getPrimaryValue( validatedData );
+
+		return validatedData;
+	}
+
+	/**
+	 * To save individual plugin.
+	 *
+	 * @private
+	 *
+	 * @param {Object} pluginData
+	 *
+	 * @return {Promise<void>}
+	 */
+	async _savePlugin( pluginData ) {
+
+		if ( ! _.isObject( pluginData ) || ! _.has( pluginData, 'slug' ) ) {
+			throw 'Invalid object';
+		}
+
+		/**
+		 * Save extension info.
+		 *
+		 * @note Extension model will handle extension version data importing.
+		 *
+		 * @type {Boolean|Object}
+		 */
+		const extension = await this.normalizePlugin( pluginData );
+
+		await ExtensionModel.save( extension );
+
+		// Author data.
+		let author = {
+			profile: pluginData.author_profile,
+		};
+
+		if ( ! _.isEmpty( extension ) && ! _.isEmpty( author ) ) {
+
+			/**
+			 * Save author.
+			 */
+			await AuthorModel.save( author );
+
+			/**
+			 * Save extension author relationship.
+			 */
+			const authorRelationships = this.getAuthorRelationship( extension.extension_slug, [ author.profile ] );
+
+			for ( const index in authorRelationships ) {
+				await AuthorRelationshipModel.save( authorRelationships[ index ] );
+			}
+
+		}
 
 	}
 
@@ -470,7 +529,7 @@ class WporgScraper extends Command {
 
 			const authorRelationship = {
 				extension_slug: extensionSlug,
-				author_profile: authorProfiles[ index ],
+				profile: authorProfiles[ index ],
 			};
 
 			authorRelationship[ AuthorRelationshipModel.primaryKey ] = AuthorRelationshipModel.getPrimaryValue( authorRelationship );
@@ -546,55 +605,6 @@ class WporgScraper extends Command {
 			screenshot_url: data.screenshot_url,
 			tags: ( ! _.isEmpty( data.tags ) ) ? JSON.stringify( data.tags ) : '',
 			icon_url: '',
-		};
-
-		validatedData.extension_slug = ExtensionModel.getPrimaryValue( validatedData );
-
-		return validatedData;
-	}
-
-	/**
-	 * To normalize plugin data from wp.org api response.
-	 *
-	 * @param {Object} data Response from wp.org data.
-	 *
-	 * @returns {Promise<Boolean|Object>} Object on valid data otherwise false.
-	 */
-	async normalizePlugin( data ) {
-
-		if ( ! data || 'object' !== typeof data ) {
-			return false;
-		}
-
-		const type = 'plugin';
-		const averageRating = Utility.getAverageRating( data.ratings );
-
-		const validatedData = {
-			extension_slug: `${ type }-${ data.slug }`,
-			wporg: true,
-			type: type,
-			name: data.name,
-			slug: data.slug,
-			latest_version: data.version.toString(),
-			requires_wp: data.requires,
-			tested_wp: data.tested || '',
-			requires_php: data.requires_php,
-			average_rating: averageRating,
-			support_threads: data.support_threads || 0,
-			support_threads_resolved: data.support_threads_resolved || 0,
-			active_installs: data.active_installs || 0,
-			downloaded: data.downloaded || 0,
-			last_updated: Utility.convertWpOrgDatetime( data.last_updated ) || null,
-			date_added: data.added || null,
-			homepage_url: data.homepage,
-			short_description: data.short_description.replace( /\n/g, ' ' ), // @TODO: This should be handled during escaping.
-			download_url: data.download_link,
-			author_url: '',
-			extension_url: data.preview_url,
-			preview_url: data.preview_url,
-			screenshot_url: data.screenshot_url,
-			tags: _.isArray( data.tags ) ? JSON.stringify( data.tags ) : '',
-			icon_url: data.icons[ '2x' ] || '',
 		};
 
 		validatedData.extension_slug = ExtensionModel.getPrimaryValue( validatedData );
