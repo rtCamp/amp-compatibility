@@ -8,16 +8,11 @@ const { getPluginsList, getThemesList } = require( 'wporg-api-client' );
 const AuthorModel = use( 'App/Models/Author' );
 const AuthorRelationshipModel = use( 'App/Models/AuthorRelationship' );
 const ExtensionModel = use( 'App/Models/Extension' );
-const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 // Helpers
 const Utility = use( 'App/Helpers/Utility' );
-const Cache = use( 'App/Helpers/Cache' );
-const FileSystem = use( 'App/Helpers/FileSystem' );
 const Stopwatch = use( 'App/Helpers/Stopwatch' );
 const Logger = use( 'Logger' );
-const Helpers = use( 'Helpers' );
-const BigQuery = use( 'App/BigQuery' );
 
 // Utilities
 const { exit } = require( 'process' );
@@ -160,9 +155,9 @@ class WporgScraper extends Command {
 			}
 
 			this.success( 'wp.org data is imported.' );
-		} catch ( e ) {
-			console.log( e );
-			this.error( 'Command ended with errors.' );
+		} catch ( exception ) {
+			Logger.error( 'Command ended with errors.' );
+			Logger.error( exception );
 		}
 
 		exit( 1 );
@@ -185,7 +180,7 @@ class WporgScraper extends Command {
 		const totalPages = parseInt( responseData.info.pages ) || 0;
 
 		if ( ! _.isNumber( totalPages ) ) {
-			this.error( 'Failed to fetch plugins data.' );
+			Logger.error( 'Failed to fetch plugins data.' );
 			return;
 		}
 
@@ -226,7 +221,7 @@ class WporgScraper extends Command {
 		const totalPages = parseInt( responseData.info.pages ) || 0;
 
 		if ( ! _.isNumber( totalPages ) ) {
-			this.error( 'Failed to fetch themes.' );
+			Logger.error( 'Failed to fetch themes.' );
 			return;
 		}
 
@@ -236,11 +231,7 @@ class WporgScraper extends Command {
 			this.info( `-------------------- Start of Theme page ${ page } / ${ totalPages } --------------------` );
 			stopwatch.start();
 
-			const results = await this.importThemesByPage( page );
-
-			if ( ! this.options.onlyStoreInLocal ) {
-				Logger.info( Utility.jsonPrettyPrint( results ) );
-			}
+			await this.importThemesByPage( page );
 
 			stopwatch.stop();
 			this.info( `-------------------- End of Theme page ${ page } / ${ totalPages } ----------------------` + "\n" );
@@ -278,7 +269,8 @@ class WporgScraper extends Command {
 			try {
 				await this._savePlugin( pluginData );
 			} catch ( exception ) {
-				console.error( 'Fail to insert/update plugin', exception );
+				const slug = pluginData.slug || '';
+				Logger.error( "Fail to insert/update plugin. '%s' \n%s\n--------------------------", slug, exception );
 			}
 
 		}
@@ -411,7 +403,8 @@ class WporgScraper extends Command {
 			try {
 				await this._saveTheme( themeData );
 			} catch ( exception ) {
-				console.error( 'Fail to insert/update theme.', exception );
+				const slug = themeData.slug || '';
+				Logger.error( "Fail to insert/update theme. '%s' \n%s\n--------------------------", slug, exception );
 			}
 
 		}
@@ -583,7 +576,7 @@ class WporgScraper extends Command {
 				const responseData = await getPluginsList( filter );
 				return responseData.data;
 			} catch ( exception ) {
-				this.warn( `Failed to fetch plugin data on "${ attempts }" attempt.` );
+				Logger.warning( `Failed to fetch plugin data on "${ attempts }" attempt.` );
 				error = exception;
 			}
 
@@ -611,7 +604,7 @@ class WporgScraper extends Command {
 				const responseData = await getThemesList( filter );
 				return responseData.data;
 			} catch ( exception ) {
-				this.warn( `Failed to fetch theme data on "${ attempts }" attempt.` );
+				Logger.warning( `Failed to fetch theme data on "${ attempts }" attempt.` );
 				error = exception;
 			}
 
