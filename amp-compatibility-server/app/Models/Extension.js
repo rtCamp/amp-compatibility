@@ -1,6 +1,8 @@
 'use strict';
 
+/** @type {typeof import('./Base')} */
 const Base = use( 'App/Models/Base' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 const ExtensionValidator = use( 'App/Validators/Extension' );
 const _ = require( 'underscore' );
 
@@ -52,6 +54,22 @@ class Extension extends Base {
 			last_updated: null,
 			date_added: null,
 		};
+	}
+
+	/**
+	 * After record create event.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async afterCreate() {
+		await this.createExtensionVersions();
+	}
+
+	async createExtensionVersions() {
+
+		const extensionVersion = ExtensionVersionModel.getItemFromExtension( this.toObject() );
+
+		await ExtensionVersionModel.save( extensionVersion );
 	}
 }
 

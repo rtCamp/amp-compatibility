@@ -13,7 +13,7 @@ class Author extends Base {
 	static get rules() {
 		return {
 			profile: 'url|required',
-			user_nicename: 'string|required',
+			user_nicename: 'string',
 			avatar: 'url',
 			display_name: 'string',
 			status: 'string',

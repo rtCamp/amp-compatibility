@@ -86,9 +86,9 @@ class ExtensionVersion extends Base {
 			type: extensionDetail.type,
 			slug: extensionDetail.slug,
 			version: extensionDetail.latest_version.toString(),
+			extension_slug: extensionDetail.extension_slug,
 		};
 
-		data.extension_slug = ExtensionModel.getPrimaryValue( data );
 		data.extension_version_slug = this.getPrimaryValue( data );
 
 		return data;
