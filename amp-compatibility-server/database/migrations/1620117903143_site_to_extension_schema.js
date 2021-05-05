@@ -10,6 +10,7 @@ class SiteToExtensionSchema extends Schema {
 	 */
 	up() {
 		this.create( 'site_to_extensions', ( table ) => {
+			table.string( 'hash' ).primary();
 			table.string( 'site_url' ).notNullable();
 			table.string( 'extension_version_slug' ).notNullable();
 			table.string( 'amp_suppressed', 50 ).comment( 'Plugin version when it was suppressed.' );

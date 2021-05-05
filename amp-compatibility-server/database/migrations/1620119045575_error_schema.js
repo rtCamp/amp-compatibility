@@ -19,7 +19,7 @@ class ErrorSchema extends Schema {
 			table.text( 'node_attributes' );
 			table.text( 'element_attributes' );
 			table.string( 'spec_name' );
-			table.string( 'text' );
+			table.specificType( 'text', 'mediumblob' );
 			table.string( 'sources' );
 			table.string( 'attributes' );
 			table.string( 'attribute' );

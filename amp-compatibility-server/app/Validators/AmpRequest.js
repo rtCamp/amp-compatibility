@@ -101,9 +101,9 @@ class AmpRequest extends Base {
 			 */
 			'error_sources.*.error_slug': 'string|required',
 			'error_sources.*.error_source_slug': 'string|required',
-			// 'error_sources.*.extension_version_slug': 'string|required',
 			'error_sources.*.type': 'in:plugin,theme,block,core',
 			'error_sources.*.name': 'string',
+			// 'error_sources.*.version': 'string',
 			'error_sources.*.file': 'string',
 			'error_sources.*.line': 'integer',
 			'error_sources.*.function': 'string',

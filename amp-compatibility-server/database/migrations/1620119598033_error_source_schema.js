@@ -23,12 +23,12 @@ class ErrorSourceSchema extends Schema {
 			table.string( 'handle' ).comment( 'e.g. gform_masked_input' );
 			table.string( 'dependency_handle' );
 			table.string( 'extra_key' );
-			table.string( 'text' );
+			table.specificType( 'text', 'mediumblob' );
 			table.string( 'filter' );
 			table.string( 'sources' );
 			table.string( 'block_name' );
 			table.string( 'block_content_index' );
-			table.string( 'block_attrs' );
+			table.text( 'block_attrs', 'longtext' );
 			table.string( 'shortcode' );
 			table.specificType( 'raw_data', 'mediumblob' ).notNullable();
 			table.timestamp( 'created_at' );

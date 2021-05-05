@@ -107,8 +107,42 @@ class Base extends Model {
 		return false;
 	}
 
+	static async getIfExists( item ) {
+
+		const primaryKey = this.primaryKey;
+
+		if ( _.isEmpty( item ) || ! _.isObject( item ) ) {
+			throw {
+				message: 'Please provide valid object',
+				data: item,
+			};
+		}
+
+		if ( _.isEmpty( item[ primaryKey ] ) && 'function' === typeof this.getPrimaryValue ) {
+
+			item[ primaryKey ] = this.getPrimaryValue( item );
+		}
+
+		if ( _.isEmpty( item[ primaryKey ] ) ) {
+			throw {
+				message: 'Primary key is missing and not able to set.',
+				data: item,
+			};
+		}
+
+		if ( this.validator ) {
+			item = await this.validator.sanitize( item );
+		}
+
+		const instance = await this.find( item[ primaryKey ] );
+
+		return instance ? instance : false;
+	}
+
 	/**
 	 * To create record if not exists otherwise find and update the record.
+	 *
+	 * @static
 	 *
 	 * @param {object} item Record data.
 	 * @param {object} trx Transaction object to be used
@@ -117,31 +151,39 @@ class Base extends Model {
 	 */
 	static async save( item, trx ) {
 
-		const primaryKey = this.primaryKey;
+		let instance = await this.getIfExists( item );
 
-		if ( _.isEmpty( item ) || ! _.isObject( item ) ) {
-			throw 'Please provide valid object';
+		if ( ! instance ) {
+			instance = ( new this() );
 		}
-
-		if ( _.isEmpty( item[ primaryKey ] ) && this.getPrimaryValue ) {
-
-			item[ primaryKey ] = this.getPrimaryValue( item );
-		}
-
-		if ( _.isEmpty( item[ primaryKey ] ) ) {
-			throw 'Primary key is missing and not able to set.';
-		}
-
-		if ( this.validator ) {
-			item = await this.validator.sanitize( item );
-		}
-
-		let instance = await this.find( item[ primaryKey ] ) || ( new this() );
 
 		instance.merge( item );
 
 		return ( await instance.save( trx ) );
 
+	}
+
+	/**
+	 * To create record if not exists.
+	 *
+	 * @static
+	 *
+	 * @param {object} item Record data.
+	 * @param {object} trx Transaction object to be used
+	 *
+	 * @return {Promise<boolean>} Whether or not the model was persisted
+	 */
+	static async createIfNotExists( item, trx ) {
+
+		const instance = await this.getIfExists( item );
+
+		if ( instance ) {
+			return false;
+		}
+
+		await this.create( item, trx );
+
+		return true;
 	}
 
 	/**
@@ -158,7 +200,7 @@ class Base extends Model {
 		let item = this.toObject();
 		item = await this.constructor.validator.sanitize( item );
 
-		this.fill( item );
+		this.merge( item );
 
 	}
 
@@ -170,7 +212,7 @@ class Base extends Model {
 	async setPrimaryValue() {
 
 		if ( this.constructor.getPrimaryValue ) {
-			this.primaryKeyValue( this.constructor.getPrimaryValue( this.toObject() ) );
+			this.primaryKeyValue = this.constructor.getPrimaryValue( this.toObject() );
 		}
 
 	}
@@ -186,14 +228,14 @@ class Base extends Model {
 			return;
 		}
 
-		let item = this.toObject();
+		const item = this.toObject();
 		const validation = await this.constructor.validator.validateAll( item );
 
 		if ( validation.fails() ) {
-			console.log( item );
+			console.trace( item );
 			console.table( validation.messages() );
 
-			throw 'Validaation failed';
+			throw 'Validation failed';
 		}
 	}
 

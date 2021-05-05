@@ -39,14 +39,15 @@ class Error extends Base {
 	 *
 	 * @returns {string} primary key name.
 	 */
-	static getPrimaryValue( data ) {
-
-		const hashData = _.clone( data );
-		delete hashData.slug;
-		delete hashData.error_slug;
-
-		return Utility.makeHash( hashData );
-	}
+	// static getPrimaryValue( data ) {
+	//
+	// 	const hashData = _.clone( data );
+	// 	delete hashData.slug;
+	// 	delete hashData.error_slug;
+	// 	delete hashData.raw_data;
+	//
+	// 	return Utility.makeHash( hashData );
+	// }
 
 	/**
 	 * Validator class name, To verify the data.
@@ -55,6 +56,26 @@ class Error extends Base {
 	 */
 	static get validator() {
 		return ErrorValidator;
+	}
+
+	beforeSave() {
+
+		const item = this.toObject();
+		const rawData = {};
+
+		for ( const index in item ) {
+
+			if ( 'raw_data' !== index && item[ index ] ) {
+				rawData[ index ] = item[ index ];
+			}
+		}
+
+		this.merge(
+			{
+				raw_data: Utility.jsonPrettyPrint( rawData ),
+			},
+		);
+
 	}
 }
 

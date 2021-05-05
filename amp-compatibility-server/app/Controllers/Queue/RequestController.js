@@ -3,19 +3,19 @@
 const Base = use( 'App/Controllers/Queue/Base' );
 
 // Models
-const AmpValidatedUrlModel = use( 'App/Models/BigQuery/AmpValidatedUrl' );
-const AuthorModel = use( 'App/Models/BigQuery/Author' );
-const AuthorRelationshipModel = use( 'App/Models/BigQuery/AuthorRelationship' );
-const ErrorModel = use( 'App/Models/BigQuery/Error' );
-const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
-const SiteModel = use( 'App/Models/BigQuery/Site' );
-const SiteToExtensionModel = use( 'App/Models/BigQuery/SiteToExtension' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
-const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
+const SiteRequestModel = use( 'App/Models/SiteRequest' );
+const SiteModel = use( 'App/Models/Site' );
+const SiteToExtensionModel = use( 'App/Models/SiteToExtension' );
+const ExtensionModel = use( 'App/Models/Extension' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const ErrorModel = use( 'App/Models/Error' );
+const ErrorSourceModel = use( 'App/Models/ErrorSource' );
+const AmpValidatedUrlModel = use( 'App/Models/AmpValidatedUrl' );
+const UrlErrorRelationshipModel = use( 'App/Models/UrlErrorRelationship' );
+// const AuthorModel = use( 'App/Models/Author' );
+// const AuthorRelationshipModel = use( 'App/Models/AuthorRelationship' );
 
-const GlobalCache = use( 'App/Helpers/GlobalCache' );
+const Database = use( 'Database' );
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -62,6 +62,15 @@ class RequestController extends Base {
 	}
 
 	/**
+	 * How many times the job should be automatically retried in case of failure.
+	 *
+	 * @returns {number}
+	 */
+	static get retries() {
+		return 1;
+	}
+
+	/**
 	 * Action before starting worker.
 	 *
 	 * @param {Object} options Options pass in startWorker.
@@ -74,6 +83,7 @@ class RequestController extends Base {
 
 		this.onJobSucceeded = this.onJobSucceeded.bind( this );
 		this.onJobRetrying = this.onJobRetrying.bind( this );
+		this.onJobFailed = this.onJobFailed.bind( this );
 
 		// Terminate the worker if all jobs are completed
 		this.queue.on( 'job succeeded', this.onJobSucceeded );
@@ -97,19 +107,12 @@ class RequestController extends Base {
 	static async onJobSucceeded( jobId, result ) {
 		Logger.info( 'Result: Site: %s | Job ID: %s', this.jobName, jobId );
 
-		const updateQuery = SiteRequestModel.getUpdateQuery(
-			{
-				site_request_id: this.job.data.uuid,
-				status: 'success',
-			},
-		);
+		await SiteRequestModel.save( {
+			site_request_id: this.job.data.uuid,
+			status: 'success',
+		} );
 
-		await SiteRequestModel._executeQueries( [ updateQuery ] );
-
-		await GlobalCache.set( this.job.data.uuid, 'success', 'site_requests' );
-
-		const preparedLog = this.prepareLog( result );
-		console.log( preparedLog );
+		console.log( Utility.jsonPrettyPrint( result ) );
 	}
 
 	/**
@@ -119,14 +122,10 @@ class RequestController extends Base {
 	 */
 	static async onJobFailed() {
 
-		const updateQuery = SiteRequestModel.getUpdateQuery(
-			{
-				site_request_id: this.job.data.uuid,
-				status: 'fail',
-			},
-		);
-		await SiteRequestModel._executeQueries( [ updateQuery ] );
-		await GlobalCache.set( this.job.data.uuid, 'fail', 'site_requests' );
+		await SiteRequestModel.save( {
+			site_request_id: this.job.data.uuid,
+			status: 'fail',
+		} );
 
 	}
 
@@ -148,140 +147,45 @@ class RequestController extends Base {
 		// @Todo: To use stream method. We need to make sure that same site don't request more then one time within 2 hours.
 		let response = {};
 
+		const data = _.clone( job.data );
+
+		this.jobName = data.site_url;
+		this.job = _.clone( job );
+		this.isSyntheticJob = ( !! data.site_info.is_synthetic_data );
+
 		try {
-
-			const data = _.clone( job.data );
-			const siteUrl = data.site_url;
-
-			this.jobName = siteUrl;
-			this.job = job;
-			this.isSyntheticJob = ( !! data.site_info.is_synthetic_data );
 
 			response.isSynthetic = this.isSyntheticJob;
 
 			Logger.info( ' Site: %s | Job ID: %s started.', this.jobName, job.id );
 
-			// Prepare site_info.
-			response.site = await this.saveSite( data.site_info );
+			// Save Extensions && it's versions. (before site table have it's foreign key)
+			response.extensions = await this.saveExtensions( data );
+			job.reportProgress( 15 );
 
-			job.reportProgress( 10 );
-
-			// Prepare extensions ( themes/plugins )
-			const themes = data.themes || [];
-
-			response.themes = await this.saveThemes( themes );
-			job.reportProgress( 20 );
-
-			response.plugins = await this.savePlugins( data.plugins );
+			// Save errors.
+			response.errors = await this.saveErrors( data );
 			job.reportProgress( 30 );
 
-			// Site to extension.
-			const siteToExtensionItems = [];
-			const siteToExtensionExcluded = [];
+			// Save error sources.
+			response.errorsSources = await this.saveErrorSources( data );
+			job.reportProgress( 45 );
 
-			// Prepare site to extension data for themes.
-			const insertedThemes = [
-				...response.themes.extensionVersions.inserted.itemIds,
-				...response.themes.extensionVersions.updated.itemIds,
-				...response.themes.extensionVersions.ignored.itemIds,
-			];
-
-			for ( const index in themes ) {
-				const item = themes[ index ];
-
-				if ( '1' !== item.is_active ) {
-					continue;
-				}
-
-				const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
-					type: 'theme',
-					slug: item.slug,
-					version: item.version.toString(),
-				} );
-
-				if ( ! insertedThemes.includes( extensionVersionSlug ) ) {
-					siteToExtensionExcluded.push( extensionVersionSlug );
-					continue;
-				}
-
-				/**
-				 * Then do not include common themes that is used to generate synthetic data
-				 * while we process synthetic site.
-				 */
-				if ( this.isSyntheticJob && this.syntheticThemes.includes( item.slug ) ) {
-					siteToExtensionExcluded.push( extensionVersionSlug );
-					continue;
-				}
-
-				siteToExtensionItems.push( {
-					site_url: siteUrl,
-					extension_version_slug: extensionVersionSlug,
-					amp_suppressed: '',
-				} );
-
-			}
-
-			// Prepare site to extension data for plugins.
-			const insertedPlugins = [
-				...response.plugins.extensionVersions.inserted.itemIds,
-				...response.plugins.extensionVersions.updated.itemIds,
-				...response.plugins.extensionVersions.ignored.itemIds,
-			];
-
-			for ( const index in data.plugins ) {
-				const item = data.plugins[ index ];
-
-				if ( '1' !== item.is_active ) {
-					continue;
-				}
-
-				const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
-					type: 'plugin',
-					slug: item.slug,
-					version: item.version.toString(),
-				} );
-
-				if ( ! insertedPlugins.includes( extensionVersionSlug ) ) {
-					siteToExtensionExcluded.push( extensionVersionSlug );
-					continue;
-				}
-
-				/**
-				 * Then do not include common plugins that is used to generate synthetic data
-				 * while we process synthetic site.
-				 */
-				if ( this.isSyntheticJob && this.syntheticPlugins.includes( item.slug ) ) {
-					siteToExtensionExcluded.push( extensionVersionSlug );
-					continue;
-				}
-
-				siteToExtensionItems.push( {
-					site_url: siteUrl,
-					extension_version_slug: extensionVersionSlug,
-					amp_suppressed: item.is_suppressed,
-				} );
-
-			}
-
-			response.siteToExtension = await this.saveSiteToExtension( siteUrl, siteToExtensionItems );
-			response.siteToExtension.excluded = siteToExtensionExcluded || [];
-			job.reportProgress( 40 );
-
-			response.errors = await this.saveErrors( data.errors );
+			// Save site info.
+			response.site = await this.saveSite( data );
 			job.reportProgress( 50 );
 
-			response.errorSources = await this.saveErrorSources( data.error_sources );
-			job.reportProgress( 60 );
+			// Save site to extension info.
+			response.siteToExtensions = await this.saveSiteToExtensions( data );
+			job.reportProgress( 70 );
 
-			response.urls = await this.saveValidatedUrls( siteUrl, data.urls );
+			// Save amp validate URLs and URL error mapping.
+			response.validatedURLs = await this.saveValidatedUrls( data );
 			job.reportProgress( 100 );
-
-			Logger.info( ' Site: %s | Job ID: %s completed.', this.jobName, job.id );
 
 		} catch ( exception ) {
 
-			Logger.error( 'Site: %s | Job ID: %s failed.', this.jobName, job.id );
-			console.error( exception );
+			Logger.crit( "Site: %s | Job ID: %s failed. \n      %s", this.jobName, job.id, exception );
 
 			throw exception;
 		}
@@ -290,254 +194,237 @@ class RequestController extends Base {
 	}
 
 	/**
-	 * To save site data.
+	 * To save extension information.
 	 *
-	 * @param {Object} site Site data.
-	 *
-	 * @returns {Object} Response of
-	 */
-	static async saveSite( site ) {
-
-		const data = _.clone( site );
-
-		data.wp_active_theme = ExtensionVersionModel.getPrimaryValue( {
-			type: 'theme',
-			slug: data.wp_active_theme.slug || '',
-			version: data.wp_active_theme.version || '',
-		} );
-
-		data.amp_supported_post_types = data.amp_supported_post_types || [];
-		data.amp_supported_post_types = JSON.stringify( data.amp_supported_post_types );
-
-		data.amp_supported_templates = data.amp_supported_templates || [];
-		data.amp_supported_templates = JSON.stringify( data.amp_supported_templates );
-
-		data.is_synthetic_data = data.is_synthetic_data || false;
-
-		return await SiteModel.saveMany( [ data ] );
-
-	}
-
-	/**
-	 * To save themes data.
-	 *
-	 * @param {Array} themes List of theme data.
-	 *
-	 * @returns {Object}
-	 */
-	static async saveThemes( themes ) {
-
-		const preparedItems = [];
-		const preparedItemVersions = [];
-		let response = {};
-
-		for ( const index in themes ) {
-			const item = themes[ index ];
-			let preparedItem = {
-				type: 'theme',
-				name: item.name,
-				slug: item.slug,
-				latest_version: item.version,
-				requires_wp: item.requires_wp,
-				requires_php: item.requires_php,
-				tags: JSON.stringify( item.tags ),
-			};
-
-			preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
-
-			if ( preparedItem ) {
-				preparedItems.push( preparedItem );
-				preparedItemVersions.push( ExtensionVersionModel.getItemFromExtension( preparedItem ) );
-			}
-
-		}
-
-		/**
-		 * We won't be updating exiting records.
-		 * Because we can't fully trust website data.
-		 * And we already have verify data of wp.org theme.
-		 */
-		try {
-
-			// @Todo: Save author detail.
-
-			response = {
-				extensions: ( await ExtensionModel.saveMany( preparedItems, {
-					allowUpdate: false,
-				} ) ),
-				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
-					allowUpdate: false,
-				} ) ),
-			};
-		} catch ( exception ) {
-			response = exception;
-		}
-
-		return response;
-
-	}
-
-	/**
-	 * To save plugins data.
-	 *
-	 * @param {Array} plugins List of plugin data.
-	 *
-	 * @returns {Object}
-	 */
-	static async savePlugins( plugins ) {
-
-		const preparedItems = [];
-		const preparedItemVersions = [];
-		let response = {};
-
-		for ( const index in plugins ) {
-			const item = plugins[ index ];
-			let preparedItem = {
-				type: 'plugin',
-				name: item.name,
-				slug: item.slug,
-				latest_version: item.version,
-				requires_wp: item.requires_wp,
-				requires_php: item.requires_php,
-			};
-
-			preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
-
-			if ( preparedItem ) {
-				preparedItems.push( preparedItem );
-				preparedItemVersions.push( ExtensionVersionModel.getItemFromExtension( preparedItem ) );
-			}
-
-		}
-
-		/**
-		 * We won't be updating exiting records.
-		 * Because we can't fully trust website data.
-		 * And we already have verify data of wp.org theme.
-		 */
-		try {
-
-			// @Todo: Save author detail.
-
-			response = {
-				extensions: ( await ExtensionModel.saveMany( preparedItems, {
-					allowUpdate: false,
-				} ) ),
-				extensionVersions: ( await ExtensionVersionModel.saveMany( preparedItemVersions, {
-					allowUpdate: false,
-				} ) ),
-			};
-		} catch ( exception ) {
-			response = exception;
-		}
-
-		return response;
-	}
-
-	/**
-	 * Add site to extensions (plugin) relationship.
-	 *
-	 * @param {String} siteUrl Site URL
-	 * @param {Array} itemsToInsert Prepared list to insert in site to extension table.
+	 * @param {object} requestData Request data.
 	 *
 	 * @returns {Promise<void>}
 	 */
-	static async saveSiteToExtension( siteUrl, itemsToInsert ) {
+	static async saveExtensions( requestData ) {
 
-		let response = {};
-		const saveOptions = {
-			allowUpdate: false,
-			useStream: true,
-		};
+		const response = {};
+		const themes = requestData.themes || [];
+		const plugins = requestData.plugins || [];
 
 		/**
-		 * We won't be updating exiting records.
-		 * Because we can't fully trust website data.
-		 * And we already have verify data of wp.org theme.
+		 * Theme.
 		 */
-		try {
+		if ( ! _.isEmpty( themes ) ) {
+			for ( const index in themes ) {
+				const item = themes[ index ];
+				let preparedItem = {
+					type: 'theme',
+					name: item.name,
+					slug: item.slug,
+					latest_version: item.version,
+					requires_wp: item.requires_wp,
+					requires_php: item.requires_php,
+					tags: JSON.stringify( item.tags ),
+				};
 
-			response.delete = ( await SiteToExtensionModel.deleteRows( { site_url: siteUrl } ) );
-			response.insert = ( await SiteToExtensionModel.saveMany( itemsToInsert, saveOptions ) );
+				preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
 
-		} catch ( exception ) {
-			response.delete = exception;
+				response[ preparedItem.extension_slug ] = await ExtensionModel.createIfNotExists( preparedItem );
+			}
+		}
+
+		/**
+		 * Plugins.
+		 */
+		if ( ! _.isEmpty( plugins ) ) {
+			for ( const index in plugins ) {
+				const item = plugins[ index ];
+				let preparedItem = {
+					type: 'plugin',
+					name: item.name,
+					slug: item.slug,
+					latest_version: item.version,
+					requires_wp: item.requires_wp,
+					requires_php: item.requires_php,
+				};
+
+				preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
+
+				response[ preparedItem.extension_slug ] = await ExtensionModel.createIfNotExists( preparedItem );
+			}
 		}
 
 		return response;
-
 	}
 
 	/**
 	 * To save site errors.
 	 *
-	 * @param {Array} errors List of error.
+	 * @param {object} requestData Request data.
 	 *
 	 * @returns {Promise<void>}
 	 */
-	static async saveErrors( errors ) {
+	static async saveErrors( requestData ) {
 
-		let response = {};
-		const saveOptions = {
-			allowUpdate: false,
-			useStream: true,
-		};
+		const response = {};
+		const errors = requestData.errors || [];
 
-		try {
-			response = await ErrorModel.saveMany( errors, saveOptions );
-		} catch ( exception ) {
-			response = exception;
+		if ( _.isEmpty( errors ) ) {
+			return response;
+		}
+
+		for ( const index in errors ) {
+
+			const error = errors[ index ];
+			const errorSlug = error.error_slug || ''; // ErrorModel.getPrimaryValue( error );
+
+			if ( ! errorSlug ) {
+				continue;
+			}
+
+			response[ errorSlug ] = await ErrorModel.save( error );
 		}
 
 		return response;
 	}
 
 	/**
-	 * To save error sources.
+	 * To save error source information.
 	 *
-	 * @param {Array} errorSources List of error sources.
-	 *
-	 * @returns {Promise<void>}
+	 * @param {object} requestData Request data.
+	 * @return {Promise<{}>}
 	 */
-	static async saveErrorSources( errorSources ) {
+	static async saveErrorSources( requestData ) {
 
-		let response = {};
-		const itemsToInsert = [];
+		const errorSources = _.clone( requestData.error_sources ) || [];
+		const response = {};
 		const allowedTypes = [ 'theme', 'plugin' ];
 
-		try {
+		if ( _.isEmpty( errorSources ) ) {
+			return response;
+		}
 
-			for ( const index in errorSources ) {
+		for ( const index in errorSources ) {
 
-				const errorSource = errorSources[ index ];
+			const errorSource = _.clone( errorSources[ index ] );
+			const errorSourceSlug = errorSource.error_source_slug || '';
 
-				/**
-				 * Only include source of plugins and themes.
-				 * And don't include wp-core's code for error sources.
-				 */
-				if ( 'string' !== typeof errorSource.type || ! allowedTypes.includes( errorSource.type ) ) {
-					continue;
-				}
-
-				errorSource.extension_version_slug = ExtensionVersionModel.getPrimaryValue( {
-					slug: errorSource.name,
-					type: errorSource.type,
-					version: errorSource.version,
-				} );
-
-				delete errorSource.version;
-				delete errorSource.error_slug;
-
-				itemsToInsert.push( errorSource );
-
+			/**
+			 * Only include source of plugins and themes.
+			 * And don't include wp-core's code for error sources.
+			 */
+			if ( _.isEmpty( errorSourceSlug ) || 'string' !== typeof errorSource.type || ! allowedTypes.includes( errorSource.type ) ) {
+				continue;
 			}
 
-			response = await ErrorSourceModel.saveMany( itemsToInsert, {
-				allowUpdate: false,
-				useStream: true,
+			errorSource.extension_version_slug = await ExtensionVersionModel.getPrimaryValue( {
+				slug: errorSource.name,
+				type: errorSource.type,
+				version: errorSource.version,
 			} );
-		} catch ( exception ) {
-			response = exception;
+
+			// @TODO: Prevent unwanted field to being inserted in query.
+			delete errorSource.version;
+			delete errorSource.error_slug;
+			delete errorSource.widget_id;
+			delete errorSource.post_id;
+
+			// @TODO remove this.
+			if ( _.isEmpty( errorSource.extension_version_slug ) ) {
+				continue;
+			}
+
+			response[ errorSourceSlug ] = await ErrorSourceModel.save( errorSource );
+
+		}
+
+		return response;
+
+	}
+
+	/**
+	 * To save site data.
+	 *
+	 * @param {Object} requestData Request data.
+	 *
+	 * @returns {Object}
+	 */
+	static async saveSite( requestData ) {
+
+		const site = _.clone( requestData.site_info ) || {};
+
+		site.wp_active_theme = ExtensionVersionModel.getPrimaryValue( {
+			type: 'theme',
+			slug: site.wp_active_theme.slug || '',
+			version: site.wp_active_theme.version || '',
+		} );
+
+		site.amp_supported_post_types = site.amp_supported_post_types || [];
+		site.amp_supported_post_types = JSON.stringify( site.amp_supported_post_types );
+
+		site.amp_supported_templates = site.amp_supported_templates || [];
+		site.amp_supported_templates = JSON.stringify( site.amp_supported_templates );
+
+		site.is_synthetic_data = site.is_synthetic_data || false;
+
+		return ( await SiteModel.save( site ) );
+
+	}
+
+	/**
+	 * To save site to extensions.
+	 *
+	 * @param {Object} requestData Request data.
+	 *
+	 * @returns {Object}
+	 */
+	static async saveSiteToExtensions( requestData ) {
+
+		const response = {};
+		const siteURL = requestData.site_url;
+		const themes = requestData.themes || [];
+		const plugins = requestData.plugins || [];
+
+		/**
+		 * Theme.
+		 */
+		if ( ! _.isEmpty( themes ) ) {
+			for ( const index in themes ) {
+				const item = themes[ index ];
+
+				let preparedItem = {
+					site_url: siteURL,
+					amp_suppressed: item.is_suppressed || '',
+				};
+
+				preparedItem.extension_version_slug = ExtensionVersionModel.getPrimaryValue( {
+					type: 'theme',
+					name: item.name,
+					slug: item.slug,
+					version: item.version,
+				} );
+
+				await SiteToExtensionModel.query().where( 'site_url', siteURL ).delete();
+				response[ preparedItem.extension_version_slug ] = await SiteToExtensionModel.save( preparedItem );
+			}
+		}
+
+		/**
+		 * Plugins
+		 */
+		if ( ! _.isEmpty( plugins ) ) {
+			for ( const index in plugins ) {
+				const item = plugins[ index ];
+
+				let preparedItem = {
+					site_url: siteURL,
+					amp_suppressed: item.is_suppressed || '',
+				};
+
+				preparedItem.extension_version_slug = ExtensionVersionModel.getPrimaryValue( {
+					type: 'plugin',
+					name: item.name,
+					slug: item.slug,
+					version: item.version,
+				} );
+
+				response[ preparedItem.extension_version_slug ] = await SiteToExtensionModel.save( preparedItem );
+			}
 		}
 
 		return response;
@@ -547,37 +434,28 @@ class RequestController extends Base {
 	/**
 	 * To save site's validated URL.
 	 *
-	 * @param {String} siteUrl Site url
-	 * @param {Array} urls Validated URls.
+	 * @param {Object} requestData Request data.
 	 *
 	 * @returns {Promise<void>}
 	 */
-	static async saveValidatedUrls( siteUrl, urls ) {
+	static async saveValidatedUrls( requestData ) {
 
-		let response = {
-			ampValidatedUrl: {},
-			urlErrorRelationship: {
-				excluded: [],
-			},
-		};
-		const itemsToInsert = [];
-		const relationshipItemsToInsert = [];
-		let insertedAmpValidatedUrl = [];
-		let pageURLChunks = [];
-
-		const saveOptions = {
-			allowUpdate: false,
-			useStream: true,
-		};
+		const siteURL = requestData.site_url;
+		const urls = requestData.urls || [];
+		const response = {};
 
 		/**
 		 * Urls
 		 */
 		for ( const pageIndex in urls ) {
 			const item = urls[ pageIndex ];
+			const errors = urls[ pageIndex ].errors || [];
+			const pageURL = sanitizor.toUrl( item.url );
+			const pageResponse = {};
+
 			const preparedItem = {
-				site_url: siteUrl,
-				page_url: item.url,
+				site_url: siteURL,
+				page_url: pageURL,
 				object_type: item.object_type,
 				object_subtype: item.object_subtype,
 				css_size_before: item.css_size_before,
@@ -587,167 +465,45 @@ class RequestController extends Base {
 				site_request_id: this.job.data.uuid,
 			};
 
-			itemsToInsert.push( preparedItem );
+			/**
+			 * Save AMP validate URL record.
+			 */
+			pageResponse.page = await AmpValidatedUrlModel.save( preparedItem );
 
-		}
+			/**
+			 * Delete all previous url error relation related to page.
+			 */
+			pageResponse.relationDelete = await UrlErrorRelationshipModel.query().where( 'page_url', pageURL ).delete();
 
-		let pageURLs = _.pluck( itemsToInsert, 'page_url' );
-		pageURLs = _.map( pageURLs, sanitizor.toUrl );
-		pageURLs = _.uniq( pageURLs );
-		pageURLChunks = _.chunk( pageURLs, 1000 );
+			pageResponse.relationships = {};
 
-		try {
-
-			const deleteResponse = [];
-			for ( const index in pageURLChunks ) {
-				const pageURLChunk = pageURLChunks[ index ];
-				deleteResponse[ index ] = await AmpValidatedUrlModel.deleteRows( {
-					site_url: siteUrl,
-					page_url: pageURLChunk,
-				} );
-			}
-
-			response.ampValidatedUrl.delete = deleteResponse;
-
-			response.ampValidatedUrl.insert = await AmpValidatedUrlModel.saveMany( itemsToInsert, saveOptions );
-
-			insertedAmpValidatedUrl = [
-				...response.ampValidatedUrl.insert.inserted.itemIds,
-				...response.ampValidatedUrl.insert.updated.itemIds,
-				...response.ampValidatedUrl.insert.ignored.itemIds,
-			];
-
-		} catch ( exception ) {
-
-			response.ampValidatedUrl.delete = exception;
-
-		}
-
-		this.job.reportProgress( 70 );
-
-		/**
-		 * Url error relationships
-		 */
-		for ( const pageIndex in urls ) {
-			const urlData = urls[ pageIndex ];
-			const pageUrl = urlData.url;
-			const sanitizedPageUrl = sanitizor.toUrl( pageUrl );
-			const pageErrors = urlData.errors;
-
-			for ( const errorIndex in pageErrors ) {
-				const errorData = pageErrors[ errorIndex ];
+			/**
+			 * Insert new url error relation related to page.
+			 */
+			for ( const errorIndex in errors ) {
+				const errorData = errors[ errorIndex ];
 				const errorSlug = errorData.error_slug;
 				const errorSources = errorData.sources;
 
 				for ( const errorSourceIndex in errorSources ) {
 
 					const relationshipItem = {
-						site_url: siteUrl,
-						page_url: pageUrl,
+						site_url: siteURL,
+						page_url: pageURL,
 						error_slug: errorSlug,
 						error_source_slug: errorSources[ errorSourceIndex ],
 					};
 
-					/**
-					 * Do not insert relationship of page
-					 */
-					if ( ! insertedAmpValidatedUrl.includes( sanitizedPageUrl ) ) {
-						response.urlErrorRelationship.excluded.push( relationshipItem );
-						continue;
-					}
-
-					relationshipItemsToInsert.push( relationshipItem );
+					pageResponse.relationships[ pageURL ] = await UrlErrorRelationshipModel.save( relationshipItem );
 
 				}
-
 			}
 
-		}
-
-		try {
-
-			const deleteResponse = [];
-			for ( const index in pageURLChunks ) {
-				const pageURLChunk = pageURLChunks[ index ];
-				deleteResponse[ index ] = await UrlErrorRelationshipModel.deleteRows( {
-					site_url: siteUrl,
-					page_url: pageURLChunk,
-				} );
-			}
-
-			response.ampValidatedUrl.delete = deleteResponse;
-
-			this.job.reportProgress( 80 );
-
-			response.urlErrorRelationship.insert = await UrlErrorRelationshipModel.saveMany( relationshipItemsToInsert, saveOptions );
-
-		} catch ( exception ) {
-			response.urlErrorRelationship.delete = exception;
+			response[ pageURL ] = pageResponse;
 		}
 
 		return response;
 
-	}
-
-	static prepareLog( result ) {
-
-		const response = {};
-		const prepareLog = ( log ) => {
-
-			let preparedLog = {};
-
-			if ( _.has( log, 'code' ) || _.has( log, 'message' ) ) {
-				preparedLog = {
-					code: log.code || '',
-					message: log.message || '',
-				};
-			} else if ( _.has( log, 'requestedCount' ) ) {
-
-				preparedLog = {
-					requestedCount: parseInt( log.requestedCount ) || 0,
-					inserted: parseInt( log.inserted.count ) || 0,
-					updated: parseInt( log.updated.count ) || 0,
-					invalid: parseInt( log.invalid.count ) || 0,
-					ignored: parseInt( log.ignored.count ) || 0,
-				};
-				preparedLog.total = ( preparedLog.inserted + preparedLog.updated + preparedLog.invalid + preparedLog.ignored );
-			}
-
-			return preparedLog;
-		};
-
-		for ( const key in result ) {
-
-			if ( 'isSynthetic' === key ) {
-				response[ key ] = result[ key ];
-			} else if ( [ 'themes', 'plugins' ].includes( key ) ) {
-
-				response[ `${ key }_extensions` ] = prepareLog( result[ key ].extensions );
-				response[ `${ key }_extensionVersions` ] = prepareLog( result[ key ].extensionVersions );
-
-			} else if ( [ 'siteToExtension' ].includes( key ) ) {
-
-				response[ `${ key }_delete` ] = prepareLog( result[ key ].delete || {} );
-				response[ `${ key }_insert` ] = prepareLog( result[ key ].insert || {} );
-				response[ `${ key }_excluded` ] = result[ key ].excluded.length; // Foreign key check fail.
-
-			} else if ( [ 'urls' ].includes( key ) ) {
-
-				response[ `${ key }_ampValidatedUrl_delete` ] = prepareLog( result[ key ].ampValidatedUrl.delete || {} );
-				response[ `${ key }_ampValidatedUrl_insert` ] = prepareLog( result[ key ].ampValidatedUrl.insert || {} );
-
-				response[ `${ key }_urlErrorRelationship_delete` ] = prepareLog( result[ key ].urlErrorRelationship.delete || {} );
-				response[ `${ key }_urlErrorRelationship_insert` ] = prepareLog( result[ key ].urlErrorRelationship.insert || {} );
-				response[ `${ key }_urlErrorRelationship_excluded` ] = result[ key ].urlErrorRelationship.excluded.length; // Foreign key check fail.
-
-			} else {
-
-				response[ key ] = prepareLog( result[ key ] );
-
-			}
-		}
-
-		return response;
 	}
 
 }

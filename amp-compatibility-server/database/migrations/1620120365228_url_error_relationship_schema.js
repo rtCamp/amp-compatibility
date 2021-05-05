@@ -11,10 +11,12 @@ class UrlErrorRelationshipSchema extends Schema {
 	up() {
 		this.create( 'url_error_relationships', ( table ) => {
 			table.string( 'hash' ).primary();
+			table.string( 'site_url' ).notNullable();
 			table.string( 'page_url' ).notNullable();
 			table.string( 'error_slug' ).notNullable();
 			table.string( 'error_source_slug' ).notNullable();
 
+			table.foreign( 'site_url' ).references( 'sites.site_url' );
 			table.foreign( 'page_url' ).references( 'amp_validated_urls.page_url' );
 			table.foreign( 'error_slug' ).references( 'errors.error_slug' );
 			table.foreign( 'error_source_slug' ).references( 'error_sources.error_source_slug' );

@@ -35,6 +35,10 @@ class ExtensionVersion extends Base {
 			return '';
 		}
 
+		if ( _.isEmpty( data.type ) || _.isEmpty( data.slug ) || _.isEmpty( data.version ) ) {
+			return '';
+		}
+
 		const version = data
 			.version
 			.toString()

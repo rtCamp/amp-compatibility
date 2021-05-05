@@ -31,7 +31,7 @@ class SiteSchema extends Schema {
 			table.string( 'amp_supported_post_types' ).comment( 'Theme templates with enable/disable status' );
 			table.string( 'amp_supported_templates' );
 			table.boolean( 'amp_mobile_redirect' );
-			table.boolean( 'amp_reader_theme' );
+			table.string( 'amp_reader_theme' );
 			table.boolean( 'is_synthetic_data' ).defaultTo( false ).comment( 'Is data for this site is auto generated or not. Default False' );
 			table.timestamps();
 

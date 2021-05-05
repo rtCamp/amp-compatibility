@@ -39,13 +39,13 @@ class ErrorSource extends Base {
 	 *
 	 * @returns {string} primary key name.
 	 */
-	static getPrimaryValue( data ) {
-
-		const hashData = _.clone( data );
-		delete hashData.error_source_slug;
-
-		return Utility.makeHash( hashData );
-	}
+	// static getPrimaryValue( data ) {
+	//
+	// 	const hashData = _.clone( data );
+	// 	delete hashData.error_source_slug;
+	//
+	// 	return Utility.makeHash( hashData );
+	// }
 
 	/**
 	 * Validator class name, To verify the data.
@@ -54,6 +54,18 @@ class ErrorSource extends Base {
 	 */
 	static get validator() {
 		return ErrorSourceValidator;
+	}
+
+	beforeSave() {
+
+		const item = this.toObject();
+
+		this.merge(
+			{
+				raw_data: Utility.jsonPrettyPrint( item ),
+			},
+		);
+
 	}
 
 }
