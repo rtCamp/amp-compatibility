@@ -1,56 +1,63 @@
-<div>
-	<table id="{{tableID}}" class="table table-sm table-responsive {{classes}}">
-		<thead>
-		<tr>
-			@each( ( value, key ) in items[0] )
-			@if( headings[key] )
-				<th scope="col" class="{{key}}">{{ headings[key] }}</th>
-			@else
-				<th scope="col" class="{{key}}">{{ upperFirst( snackCaseToString( key ) ) }}</th>
-			@endif
-
-			@endeach
-
-			@if( collapsible )
-				<th class="text-center" >-</th>
-			@endif
-		</tr>
-		</thead>
-		<tbody>
-		@each( ( item, index ) in items )
-		<tr>
-			@each( ( value, key ) in item )
-			@if( valueCallback )
-				<td scope="col" class="{{key}}">{{{ valueCallback( key, value )  }}}</td>
-			@else
-				<td scope="col" class="{{key}}">{{{  value }}}</td>
-			@endif
-			@endeach
-
-			@if( collapsible )
-				<td class="text-center">
-					<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-							data-bs-target="#collapse-{{tableID}}-{{index}}" aria-controls="collapse-{{tableID}}-{{index}}"
-							aria-expanded="false">
-					</button>
-				</td>
-			@endif
-		</tr>
-
-		@if( collapsible )
+@if( ! items[0] )
+	<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
+		<p class="lead fw-normal">There isn't any data.</p>
+	</div>
+@else
+	<div>
+		<table id="{{tableID}}" class="table table-sm table-responsive {{classes}}">
+			<thead>
 			<tr>
-				<td colspan="12" class="hiddenRow">
-					<div id="collapse-{{tableID}}-{{index}}" class="accordion-collapse collapse" aria-labelledby="collapse-{{tableID}}-{{index}}">
-						<div class="accordion-body {{ collapsible.accordionClass  }}">
-							@if( collapsible.bodyCallback )
-								{{{ collapsible.bodyCallback( item )  }}}
-							@endif
-						</div>
-					</div>
-				</td>
+				@each( ( value, key ) in items[0] )
+					@if( headings[key] )
+						<th scope="col" class="{{key}}">{{ headings[key] }}</th>
+					@else
+						<th scope="col" class="{{key}}">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+					@endif
+
+				@endeach
+				@if( collapsible )
+					<th class="text-center">-</th>
+				@endif
 			</tr>
-		@endif
-		@endeach
-		</tbody>
-	</table>
-</div>
+			</thead>
+			<tbody>
+			@each( ( item, index ) in items )
+			<tr>
+				@each( ( value, key ) in item )
+				@if( valueCallback )
+					<td scope="col" class="{{key}}">{{{ valueCallback( key, value )  }}}</td>
+				@else
+					<td scope="col" class="{{key}}">{{{  value }}}</td>
+				@endif
+				@endeach
+
+				@if( collapsible )
+					<td class="text-center">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+								data-bs-target="#collapse-{{tableID}}-{{index}}"
+								aria-controls="collapse-{{tableID}}-{{index}}"
+								aria-expanded="false">
+						</button>
+					</td>
+				@endif
+			</tr>
+
+			@if( collapsible )
+				<tr>
+					<td colspan="12" class="hiddenRow">
+						<div id="collapse-{{tableID}}-{{index}}" class="accordion-collapse collapse"
+							 aria-labelledby="collapse-{{tableID}}-{{index}}">
+							<div class="accordion-body {{ collapsible.accordionClass  }}">
+								@if( collapsible.bodyCallback )
+									{{{ collapsible.bodyCallback( item )  }}}
+								@endif
+							</div>
+						</div>
+					</td>
+				</tr>
+			@endif
+			@endeach
+			</tbody>
+		</table>
+	</div>
+@endif

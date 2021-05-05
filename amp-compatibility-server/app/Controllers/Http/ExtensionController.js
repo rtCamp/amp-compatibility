@@ -63,8 +63,6 @@ class ExtensionController {
 		const { extensionCount, extensions, extensionVersions } = await this.getExtensionData( params );
 		const extensionsTableArgs = await this._prepareExtensionsTableArgs( extensions, extensionVersions );
 
-		console.log( request.get() );
-
 		const data = {
 			tableArgs: extensionsTableArgs,
 			pagination: {
@@ -136,23 +134,29 @@ class ExtensionController {
 		/**
 		 * Extension version query.
 		 */
+		let extensionVersions = [];
 		let extensionSlugs = _.pluck( extensions, 'extension_slug' );
-		extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
 
-		queryObject = {
-			select: 'SELECT extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.verified_by',
-			from: `FROM ${ extensionVersionTable } AS extension_versions ` +
-				  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
-				  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
-				  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
-			where: `WHERE extensions.extension_slug IN ( ${ extensionSlugs.join( ', ' ) } )`,
-			groupby: 'GROUP BY extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.verification_status, extension_versions.verified_by',
-			orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
-		};
+		if ( ! _.isEmpty( extensionSlugs ) ) {
 
-		query = _.toArray( queryObject ).join( "\n" );
+			extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
 
-		const extensionVersions = await BigQuery.query( query, true );
+			queryObject = {
+				select: 'SELECT extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.verified_by',
+				from: `FROM ${ extensionVersionTable } AS extension_versions ` +
+					  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
+					  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
+					  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
+				where: `WHERE extensions.extension_slug IN ( ${ extensionSlugs.join( ', ' ) } )`,
+				groupby: 'GROUP BY extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.verification_status, extension_versions.verified_by',
+				orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
+			};
+
+			query = _.toArray( queryObject ).join( "\n" );
+
+			extensionVersions = await BigQuery.query( query, true );
+
+		}
 
 		return {
 			extensionCount: extensionCount,
