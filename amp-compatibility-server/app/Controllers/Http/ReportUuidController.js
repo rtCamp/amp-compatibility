@@ -70,7 +70,13 @@ class ReportUuidController {
 							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
 							break;
 						case 'created_at':
-							value = value.replace( 'T', ' ' );
+							value = ( _.isObject( value ) ) ? value.value : value;
+							const dateObject = new Date( value );
+							const date = ( '0' + dateObject.getDate() ).slice( -2 );
+							const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
+							const year = dateObject.getFullYear();
+
+							value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
 							break;
 					}
 
