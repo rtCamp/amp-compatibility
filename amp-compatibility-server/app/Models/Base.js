@@ -232,11 +232,152 @@ class Base extends Model {
 		const validation = await this.constructor.validator.validateAll( item );
 
 		if ( validation.fails() ) {
-			console.trace( item );
 			console.table( validation.messages() );
-
+			console.trace( item );
 			throw 'Validation failed';
 		}
+	}
+
+	// From BigQuery base.
+
+	/**
+	 * To parse query arguments.
+	 *
+	 * @param {Object} args Page query parama.
+	 *
+	 * @return {{select: string, limit: string, orderby: string, from: string, where: string, groupby: string}}
+	 */
+	static parseQueryArgs( args ) {
+
+		const params = _.defaults( args, {
+			paged: 1,
+			perPage: -1,
+			whereClause: {},
+			orderby: {},
+			s: '',
+			searchFields: [],
+		} );
+
+		let queryObject = {
+			select: 'SELECT *',
+			from: `FROM ${ this.table } AS ${ this.table } `,
+			where: 'WHERE 1=1 ',
+			groupby: '',
+			orderby: '',
+		};
+
+		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
+			const paged = params.paged ? params.paged - 1 : 0;
+			const offset = paged * params.perPage;
+			queryObject.limit = `LIMIT ${ params.perPage } OFFSET ${ offset }`;
+		}
+
+		if ( ! _.isEmpty( params.whereClause ) && _.isObject( params.whereClause ) ) {
+
+			const whereFields = [];
+			const preparedField = this._prepareItemForDB( params.whereClause );
+
+			for ( let key in preparedField ) {
+
+				if ( ! preparedField[ key ] || _.isEmpty( preparedField[ key ] ) ) {
+					continue;
+				}
+
+				if ( _.isArray( preparedField[ key ] ) ) {
+					let preparedValues = _.map( preparedField[ key ], this._prepareValueForDB );
+					whereFields.push( `${ this.table }.${ key } IN ( ${ preparedValues.join( ', ' ) } )` );
+				} else {
+					whereFields.push( `${ this.table }.${ key } = ${ preparedField[ key ] }` );
+				}
+
+			}
+
+			const additionalWhereClause = whereFields.join( ' AND ' );
+
+			if ( additionalWhereClause ) {
+				queryObject.where += ` AND ${ whereFields.join( ' AND ' ) } `;
+			}
+
+		}
+
+		if ( ! _.isEmpty( params.orderby ) && _.isObject( params.orderby ) ) {
+			const orderByObject = [];
+
+			for ( let field in params.orderby ) {
+				orderByObject.push( `${ this.table }.${ field } ${ params.orderby[ field ] }` );
+			}
+
+			queryObject.orderby = `ORDER BY ${ orderByObject.join( ', ' ) }`;
+		}
+
+		/**
+		 * Add clause for search.
+		 */
+		if ( params.s && ! _.isEmpty( params.searchFields ) && _.isArray( params.searchFields ) ) {
+			const searchObject = [];
+
+			for ( let index in params.searchFields ) {
+				searchObject.push( `${ this.table }.${ params.searchFields[ index ] } LIKE '%${ params.s }%'` );
+			}
+
+			queryObject.where += ` AND ( ${ searchObject.join( ' OR ' ) } ) `;
+		}
+
+		return queryObject;
+	}
+
+	/**
+	 * To prepare object database.
+	 *
+	 * @private
+	 *
+	 * @param {Object} item Item to prepare for DB.
+	 *
+	 * @returns {Object}
+	 */
+	static _prepareItemForDB( item ) {
+
+		if ( _.isEmpty( item ) || ! _.isObject( item ) ) {
+			return {};
+		}
+
+		const prepareItem = {};
+
+		for ( let key in item ) {
+			let preparedValue = this._prepareValueForDB( item[ key ] );
+			let preparedKey = '`' + key + '`';
+			prepareItem[ preparedKey ] = preparedValue; //.replace( /\n/g, ' ' ).replace( /\t/g, ' ' );
+		}
+
+		return prepareItem;
+	}
+
+	/**
+	 * To prepare field value for Database.
+	 *
+	 * @private
+	 *
+	 * @param {any} value Value that need to prepare for database insertion.
+	 *
+	 * @returns {string} Prepared value.
+	 */
+	static _prepareValueForDB( value ) {
+
+		let dbValue = value;
+
+		if ( 'UUID' === value ) {
+			dbValue = 'GENERATE_UUID()';
+		} else if ( 'string' === typeof value ) {
+			dbValue = `"${ value.toString().replace( /"/g, '\'' ) }"`;
+		} else if ( 'boolean' === typeof value ) {
+			dbValue = ( value ) ? 'true' : 'false';
+		}
+
+		if ( ! dbValue ) {
+			dbValue = 'null';
+		}
+
+		return dbValue;
 	}
 
 }

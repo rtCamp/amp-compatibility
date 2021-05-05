@@ -51,8 +51,6 @@ class Extension extends Base {
 			support_threads_resolved: 0,
 			active_installs: 0,
 			downloaded: 0,
-			last_updated: null,
-			date_added: null,
 		};
 	}
 

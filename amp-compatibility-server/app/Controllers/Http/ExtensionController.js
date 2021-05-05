@@ -4,16 +4,15 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const BigQuery = use( 'App/BigQuery' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ErrorModel = use( 'App/Models/BigQuery/Error' );
-const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
+const Database = use( 'Database' );
+
+const ExtensionModel = use( 'App/Models/Extension' );
+const ErrorSourceModel = use( 'App/Models/ErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const UrlErrorRelationshipModel = use( 'App/Models/UrlErrorRelationship' );
 
 const View = use( 'View' );
 const Templates = use( 'App/Controllers/Templates' );
-const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 const humanFormat = require( 'human-format' );
 const { validateAll } = use( 'Validator' );
@@ -89,10 +88,10 @@ class ExtensionController {
 		const extensionArgs = _.clone( params );
 		let hasError = false;
 
-		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
-		const errorSourceTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ErrorSourceModel.table }` + '`';
-		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
-		const urlErrorRelationshipTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ UrlErrorRelationshipModel.table }` + '`';
+		const extensionTable = '`' + `${ ExtensionModel.table }` + '`';
+		const errorSourceTable = '`' + `${ ErrorSourceModel.table }` + '`';
+		const extensionVersionTable = '`' + `${ ExtensionVersionModel.table }` + '`';
+		const urlErrorRelationshipTable = '`' + `${ UrlErrorRelationshipModel.table }` + '`';
 
 		if ( extensionArgs.whereClause && extensionArgs.whereClause.has_error ) {
 			hasError = !! extensionArgs.whereClause.has_error;
@@ -111,19 +110,19 @@ class ExtensionController {
 			queryObject.orderby = queryObject.orderby.replace( 'ORDER BY ', 'ORDER BY errorCount DESC, ' );
 		}
 
-		let query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+		let query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } ) AS extension_detail`;
 
 		// Remove the limit before querying count query.
 		delete queryObject.limit;
-		let countQuery = `SELECT count(1) AS count FROM ( ${ _.toArray( queryObject ).join( "\n" ) } )`;
+		let countQuery = `SELECT count(1) AS count FROM ( ${ _.toArray( queryObject ).join( "\n" ) } ) AS extension_detail`;
 
 		if ( hasError ) {
 			query += ` WHERE errorCount != 0;`;
 			countQuery += ` WHERE errorCount != 0;`;
 		}
 
-		const extensions = await BigQuery.query( query, true );
-		let extensionCount = await BigQuery.query( countQuery );
+		const [ extensions ] = await Database.raw( query );
+		let [ extensionCount ] = await Database.raw( countQuery );
 
 		if ( ! _.isEmpty( extensionCount ) ) {
 			extensionCount = extensionCount[ 0 ].count ? extensionCount[ 0 ].count : 0;
@@ -154,7 +153,7 @@ class ExtensionController {
 
 			query = _.toArray( queryObject ).join( "\n" );
 
-			extensionVersions = await BigQuery.query( query, true );
+			[ extensionVersions ] = await Database.raw( query );
 
 		}
 
@@ -228,13 +227,13 @@ class ExtensionController {
 					case 'updated_at':
 					case 'created_at':
 					case 'last_updated':
-						value = ( _.isObject( value ) ) ? value.value : value;
 						const dateObject = new Date( value );
 						const date = ( '0' + dateObject.getDate() ).slice( -2 );
 						const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
 						const year = dateObject.getFullYear();
+						const dateString = `${ year }-${ month }-${ date }`;
 
-						value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
+						value = `<time datetime="${ dateString }" title="${ dateString }">${ dateString }</time>`;
 						break;
 					case 'is_partner':
 						const checked = !! value.is_partner;
@@ -346,7 +345,9 @@ class ExtensionController {
 
 	async update( { request } ) {
 		const postData = request.post();
-		let response = {};
+		let response = {
+			status: 'fail',
+		};
 
 		const rules = {
 			extensionSlug: 'required|string',
@@ -372,13 +373,16 @@ class ExtensionController {
 		};
 
 		try {
-			const updateQuery = await ExtensionModel.getUpdateQuery( item );
+			const result = await ExtensionModel.save( item );
 
-			await BigQuery.query( updateQuery );
-			response = {
-				status: 'ok',
-			};
+			if ( result ) {
+				response = {
+					status: 'ok',
+				};
+			}
+
 		} catch ( exception ) {
+
 			console.log( exception );
 			response = {
 				status: 'ok',
@@ -401,7 +405,9 @@ class ExtensionController {
 	async extensionVersionUpdate( { request, auth } ) {
 
 		const postData = request.post();
-		let response = {};
+		let response = {
+			status: 'fail',
+		};
 
 		const rules = {
 			extensionVersionSlug: 'required|string',
@@ -431,13 +437,17 @@ class ExtensionController {
 		};
 
 		try {
-			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
+			const result = await ExtensionVersionModel.save( item );
 
-			await BigQuery.query( updateQuery );
-			response = {
-				status: 'ok',
-			};
+			if ( result ) {
+				response = {
+					status: 'ok',
+				};
+			}
+
 		} catch ( exception ) {
+
+			console.log( exception );
 			response = {
 				status: 'ok',
 				data: exception,

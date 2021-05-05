@@ -27,8 +27,8 @@ class ExtensionSchema extends Schema {
 			table.integer( 'support_threads_resolved' ).defaultTo( 0 ).unsigned().comment( 'wp.org data e.g. 117' );
 			table.bigInteger( 'active_installs' ).defaultTo( 0 ).unsigned().comment( 'Active install count from wp.org' );
 			table.bigInteger( 'downloaded' ).defaultTo( 0 ).unsigned().comment( 'Download count from wp.org' );
-			table.datetime( 'last_updated' ).defaultTo( null ).comment( 'Last update date of theme/plugin in wp.org.' );
-			table.datetime( 'date_added' ).defaultTo( null ).comment( 'Date for when theme/plugin in wp.org.' );
+			table.string( 'last_updated' ).comment( 'Last update date of theme/plugin in wp.org.' );
+			table.string( 'date_added' ).comment( 'Date for when theme/plugin in wp.org.' );
 			table.string( 'homepage_url' ).comment( 'Home page url of plugin/theme.' );
 			table.text( 'short_description', [ 'longtext' ] ).comment( 'Short description of plugin/theme.' );
 			table.string( 'download_url' ).comment( 'Download url of plugin/theme.' );
