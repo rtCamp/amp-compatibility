@@ -126,13 +126,13 @@ class ReportUuidController {
 
 		requestData.urls = requestData.urls || [];
 
-		let errorLog = siteRequest.error_log || '';
+		let errorLog = Utility.maybeParseJSON( siteRequest.error_log ) || '';
 
-		try {
-			errorLog = JSON.parse( errorLog );
+		if ( _.isString( errorLog ) ) {
+			const regex = /","|\["|"\]/gm;
+			errorLog = errorLog.replace( regex, "\n" );
+		} else if ( _.isArray( errorLog ) ) {
 			errorLog = errorLog.join( "\n" );
-		} catch ( error ) {
-			// Do nothing.
 		}
 
 		const infoBoxList = {
