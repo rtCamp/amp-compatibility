@@ -18,6 +18,7 @@ class ExtensionVersionSchema extends Schema {
 			table.string( 'version' ).notNullable().comment( 'Version of theme/plugin e.g. 4.5' );
 			table.integer( 'error_count' ).defaultTo(0).unsigned().comment( 'Auto calculated field.' );
 			table.string( 'compatibility_score' ).comment( 'Auto calculated field.' );
+			table.boolean( 'has_synthetic_data' ).defaultTo( false ).comment('Flag for if this extension version has synthetic data or not.');
 			table.string( 'verification_status' ).defaultTo( 'unknown' ).comment( 'Default unknown' );
 			table.string( 'verified_by' );
 			table.timestamps();

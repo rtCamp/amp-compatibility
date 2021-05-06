@@ -225,6 +225,19 @@ class RequestController extends Base {
 				preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
 
 				response[ preparedItem.extension_slug ] = await ExtensionModel.createIfNotExists( preparedItem );
+
+				/**
+				 * Insert extension version
+				 */
+				if ( ! response[ preparedItem.extension_slug ] ) {
+					await ExtensionVersionModel.createIfNotExists( {
+						extension_slug: preparedItem.extension_slug,
+						type: 'theme',
+						slug: item.slug,
+						version: item.version,
+					} );
+				}
+
 			}
 		}
 
@@ -246,6 +259,16 @@ class RequestController extends Base {
 				preparedItem.extension_slug = ExtensionModel.getPrimaryValue( preparedItem );
 
 				response[ preparedItem.extension_slug ] = await ExtensionModel.createIfNotExists( preparedItem );
+
+				if ( ! response[ preparedItem.extension_slug ] ) {
+					await ExtensionVersionModel.createIfNotExists( {
+						extension_slug: preparedItem.extension_slug,
+						type: 'plugin',
+						slug: item.slug,
+						version: item.version,
+					} );
+				}
+
 			}
 		}
 

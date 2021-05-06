@@ -30,7 +30,7 @@ class WporgScraper extends Command {
 			 { --only-themes : To fetch and only themes data from wordpress.org. }
 			 { --only-plugins : To fetch and only plugins data from wordpress.org. }
 			 { --browse=@value : Predefined query ordering. Possible values are popular,featured,updated and new }
-			 { --per-page=@value : Number of theme/plugin need to fetch per API call ( Min=2, Max=100, Default=100 ).. }
+			 { --per-page=@value : Number of theme/plugin need to fetch per API call ( Min=2, Max=100, Default=100 ) }
 			 { --theme-start-from=@value : From which page we need to start importing themes. Default 1 }
 			 { --plugin-start-from=@value : From which page we need to start importing plugins. Default 1 }`;
 	}
