@@ -485,13 +485,13 @@ class ReportUuidController {
 						break;
 					case 'updated_at':
 					case 'created_at':
-						value = ( _.isObject( value ) ) ? value.value : value;
 						const dateObject = new Date( value );
 						const date = ( '0' + dateObject.getDate() ).slice( -2 );
 						const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
 						const year = dateObject.getFullYear();
+						const dateString = `${ year }-${ month }-${ date }`;
 
-						value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
+						value = `<time datetime="${ dateString }" title="${ dateString }">${ dateString }</time>`;
 						break;
 					case 'errors':
 						value = _.size( value ) || 0;
