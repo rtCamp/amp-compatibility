@@ -77,7 +77,7 @@ class ExtensionController {
 	}
 
 	/**
-	 * To query BigQuery and get result of extension and extension version.
+	 * To query and get result of extension and extension version.
 	 *
 	 * @param {Object} params
 	 *

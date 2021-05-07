@@ -303,7 +303,7 @@ class ReportUuidController {
 			} );
 
 			/**
-			 * Set default values. If data is not available in BigQuery
+			 * Set default values. If data is not available in database.
 			 */
 			extensionVersionData[ extensionVersionSlug ] = _.defaults( extensionVersionData[ extensionVersionSlug ], plugin );
 			extensionData[ extensionSlug ] = _.defaults( extensionData[ extensionSlug ], plugin );
