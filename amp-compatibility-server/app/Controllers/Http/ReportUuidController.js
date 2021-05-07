@@ -4,12 +4,13 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
+const Database = use( 'Database' );
 
-const SiteRequestModel = use( 'App/Models/BigQuery/SiteRequest' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ErrorModel = use( 'App/Models/BigQuery/Error' );
-const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const SiteRequestModel = use( 'App/Models/SiteRequest' );
+const ExtensionModel = use( 'App/Models/Extension' );
+const ErrorModel = use( 'App/Models/Error' );
+const ErrorSourceModel = use( 'App/Models/ErrorSource' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );
@@ -34,6 +35,12 @@ class ReportUuidController {
 		params = _.defaults( params, {
 			paged: 1,
 			perPage: 50,
+			selectFields: [
+				'site_request_id',
+				'site_url',
+				'status',
+				'created_at',
+			],
 			s: request.input( 's' ) || '',
 			searchFields: [
 				'site_request_id',
@@ -44,19 +51,11 @@ class ReportUuidController {
 			},
 		} );
 
-		const items = await SiteRequestModel.getRows( params, true );
-		const total = await SiteRequestModel.getCount( params, true );
+		const { data, total } = await SiteRequestModel.getResult( params );
 
-		for ( const index in items ) {
-			items[ index ].created_at = items[ index ].created_at ? items[ index ].created_at.value : '';
-			delete ( items[ index ].created_on );
-			delete ( items[ index ].raw_data );
-			delete ( items[ index ].error_log );
-		}
-
-		const data = {
+		const viewData = {
 			tableArgs: {
-				items: _.toArray( items ),
+				items: _.toArray( data ),
 				headings: {
 					site_request_id: 'UUID',
 				},
@@ -70,13 +69,12 @@ class ReportUuidController {
 							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
 							break;
 						case 'created_at':
-							value = ( _.isObject( value ) ) ? value.value : value;
 							const dateObject = new Date( value );
 							const date = ( '0' + dateObject.getDate() ).slice( -2 );
 							const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
 							const year = dateObject.getFullYear();
 
-							value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
+							value = `<time datetime="${ value }" title="${ value }">${ year }-${ month }-${ date }</time>`;
 							break;
 					}
 
@@ -92,7 +90,7 @@ class ReportUuidController {
 			searchString: params.s || '',
 		};
 
-		return view.render( 'dashboard/reports/uuid/list', data );
+		return view.render( 'dashboard/reports/uuid/list', viewData );
 	}
 
 	/**
@@ -114,19 +112,21 @@ class ReportUuidController {
 			return view.render( 'dashboard/reports/uuid/not-found' );
 		}
 
-		const siteRequest = await SiteRequestModel.getRow( uuid );
+		let siteRequest = await SiteRequestModel.getIfExists( { site_request_id: uuid } );
 
 		if ( ! siteRequest ) {
 			return view.render( 'dashboard/reports/uuid/not-found' );
 		}
 
-		const rawData = siteRequest.raw_data.trim();
+		siteRequest = siteRequest.toObject();
+
+		const rawData = siteRequest.raw_data.toString();
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
 
 		requestData.urls = requestData.urls || [];
 
-		let errorLog = Utility.maybeParseJSON( siteRequest.error_log ) || '';
+		let errorLog = Utility.maybeParseJSON( siteRequest.error_log.toString() ) || '';
 
 		if ( _.isString( errorLog ) ) {
 			const regex = /","|\["|"\]/gm;
@@ -142,8 +142,7 @@ class ReportUuidController {
 					UUID: uuid,
 					site_URL: siteRequest.site_url,
 					status: siteRequest.status,
-					URL_Counts: requestData.urls.length || 0,
-					// errorCount: 0,
+					URL_Counts: _.size( requestData.urls ) || 0,
 					request_Date: siteRequest.created_at.value,
 				},
 				valueCallback: ( key, value ) => {
@@ -152,7 +151,7 @@ class ReportUuidController {
 							value = `<pre class="m-0">${ value }</pre>`;
 							break;
 						case 'site_URL':
-							value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
+							value = `<a href="/admin/report/site/${ value }" target="_blank" title="${ value }">${ value }</a>`;
 							break;
 						case 'request_Date':
 							value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
@@ -261,7 +260,7 @@ class ReportUuidController {
 		}
 
 		const preparedPluginList = {};
-		const extensionSlugList = [];
+		let extensionSlugList = [];
 		const extensionSlugVersionList = [];
 
 		for ( const index in plugins ) {
@@ -287,7 +286,7 @@ class ReportUuidController {
 
 		}
 
-		const extensionData = await ExtensionModel.getRows( {
+		const { data: extensionData } = await ExtensionModel.getResult( {
 			whereClause: {
 				extension_slug: extensionSlugList,
 			},
@@ -445,19 +444,23 @@ class ReportUuidController {
 		}
 
 		if ( ! _.isEmpty( errorData ) ) {
-			errorData = await ErrorModel.getRows( {
+			const { data } = await ErrorModel.getResult( {
 				whereClause: {
 					error_slug: _.unique( _.keys( errorData ) ),
 				},
 			} );
+
+			errorData = data;
 		}
 
 		if ( ! _.isEmpty( errorSourceData ) ) {
-			errorSourceData = await ErrorSourceModel.getRows( {
+			const { data } = await ErrorSourceModel.getResult( {
 				whereClause: {
 					error_source_slug: _.unique( _.keys( errorSourceData ) ),
 				},
 			} );
+
+			errorSourceData = data;
 		}
 
 		const urlTableArgs = {
@@ -491,7 +494,7 @@ class ReportUuidController {
 						value = `<time datetime="${ value }" title="${ value.replace( 'T', ' ' ) }">${ year }-${ month }-${ date }</time>`;
 						break;
 					case 'errors':
-						value = value.length || 0;
+						value = _.size( value ) || 0;
 					default:
 						value = `<div class="text-center">${ value }</div>`;
 						break;

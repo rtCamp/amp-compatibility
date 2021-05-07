@@ -57,7 +57,7 @@ class ReportSiteController {
 		const urlTableArgs = await reportUuidController.prepareValidateURLArgs( preparedValidateUrls );
 
 		let infoBoxList = this._getInfoboxList( siteInfo );
-		infoBoxList.requestInfo.items.URL_Counts = preparedValidateUrls.length || 0;
+		infoBoxList.requestInfo.items.URL_Counts = _.size( preparedValidateUrls.length ) || 0;
 
 		return view.render( 'dashboard/reports/site/show', {
 			infoBoxList,

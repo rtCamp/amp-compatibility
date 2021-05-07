@@ -2,6 +2,7 @@
 
 /** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
 const Model = use( 'Model' );
+const Database = use( 'Database' );
 
 // Utilities
 const Utility = use( 'App/Helpers/Utility' );
@@ -239,6 +240,96 @@ class Base extends Model {
 	}
 
 	// From BigQuery base.
+
+	/**
+	 * To parse query arguments.
+	 *
+	 * @param {Object} args Page query params.
+	 *
+	 * @return {{select: string, limit: string, orderby: string, from: string, where: string, groupby: string}}
+	 */
+	static async _prepareQuery( args ) {
+
+		const params = _.defaults( args, {
+			selectFields: [],
+			paged: 1,
+			perPage: 1000,
+			whereClause: {},
+			orderby: {},
+			s: '',
+			searchFields: [],
+		} );
+
+		let query = Database.from( this.table );
+
+		if ( ! _.isEmpty( params.selectFields ) && _.isArray( params.selectFields ) ) {
+
+			let selectFields = [ ...params.selectFields, this.primaryKey ];
+			selectFields = _.unique( selectFields );
+
+			query = query.select( selectFields );
+		}
+
+		if ( ! _.isEmpty( params.whereClause ) && _.isObject( params.whereClause ) ) {
+
+			for ( const field in params.whereClause ) {
+				const value = params.whereClause[ field ];
+
+				if ( _.isArray( value ) ) {
+					query = query.where( field, 'IN', value );
+				} else {
+					query = query.where( field, value );
+				}
+			}
+		}
+
+		/**
+		 * Add clause for search.
+		 */
+		if ( params.s && ! _.isEmpty( params.searchFields ) && _.isArray( params.searchFields ) ) {
+
+			for ( const index in params.searchFields ) {
+				query.orWhere( params.searchFields[ index ], 'LIKE', `%${ params.s }%` );
+			}
+		}
+
+		if ( ! _.isEmpty( params.orderby ) && _.isObject( params.orderby ) ) {
+
+			for ( let field in params.orderby ) {
+				query = query.orderBy( field, params.orderby[ field ] );
+			}
+		}
+
+		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
+			query = query.paginate( params.paged, params.perPage );
+		}
+
+		return query;
+	}
+
+	/**
+	 * Get BigQuery from current table by args.
+	 *
+	 * @param {Object} args
+	 *
+	 * @return {Promise<*>}
+	 */
+	static async getResult( args ) {
+
+		let result = await this._prepareQuery( args );
+
+		const preparedItems = {};
+
+		for ( const index in result.data ) {
+			const item = result.data[ index ];
+			preparedItems[ item[ this.primaryKey ] ] = item;
+		}
+
+		result.data = preparedItems;
+
+		return result;
+
+	}
 
 	/**
 	 * To parse query arguments.
