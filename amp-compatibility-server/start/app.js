@@ -75,6 +75,7 @@ const commands = [
 	'App/Commands/UserRemove',
 	'App/Commands/SyntheticDataStart',
 	'App/Commands/AdhocSyntheticDataAdd',
+	'App/Commands/ExtensionMappingUpdate',
 	'App/Commands/ExtensionVersionVerify',
 ];
 
