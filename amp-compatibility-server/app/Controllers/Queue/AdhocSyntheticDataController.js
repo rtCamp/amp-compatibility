@@ -92,7 +92,7 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 		/**
 		 * Check if job was able to send AMP data or not.
 		 */
-		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+		if ( -1 === result.toString().indexOf( '"status":"ok"' ) ) {
 
 			job.options._logs[ currentTry ] = {
 				status: 'fail',

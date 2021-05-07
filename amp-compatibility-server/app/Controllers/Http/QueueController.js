@@ -60,7 +60,6 @@ class QueueController {
 				currentDate.setSeconds( 0 );
 				currentDate.setDate( currentDate.getDate() + ( dow + ( 7 - currentDate.getDay() ) ) % 7 );
 
-				console.log(currentDate);
 				pageDescription = `The next synthetic data run is scheduled on "<b>${ currentDate.toUTCString() }</b>"`;
 				break;
 			case 'adhoc-synthetic-queue':

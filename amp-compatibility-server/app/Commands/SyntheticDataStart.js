@@ -2,18 +2,19 @@
 
 const { Command } = require( '@adonisjs/ace' );
 
+const Database = use( 'Database' );
+
 // Controllers
 const ComputeEngine = use( 'App/Controllers/ComputeEngine' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
 
 // Models
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const ExtensionModel = use( 'App/Models/Extension' );
 
 // Helpers
 const Logger = use( 'Logger' );
 const Storage = use( 'Storage' );
-const BigQuery = use( 'App/BigQuery' );
 const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const { exit } = require( 'process' );
@@ -225,7 +226,6 @@ class SyntheticDataStart extends Command {
 	 */
 	async updateSuccessJobs() {
 
-		const table = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
 		const queueHealth = await this.queue.checkHealth();
 		const successJobCount = parseInt( queueHealth.succeeded );
 		const queueJobs = await this.queue.getJobs( 'succeeded', { size: successJobCount } ) || [];
@@ -235,15 +235,17 @@ class SyntheticDataStart extends Command {
 			extensions.push( queueJobs[ index ].data.domain );
 		}
 
-		extensions = _.map( extensions, ExtensionVersionModel._prepareValueForDB );
 		const extensionChunks = _.chunk( extensions, 200 );
 
 		for ( const index in extensionChunks ) {
 			const chunk = extensionChunks[ index ];
-			const updateQuery = `UPDATE ${ table } SET has_synthetic_data = true WHERE ${ ExtensionVersionModel.primaryKey } IN ( ${ chunk.join( ', ' ) } );`;
 
 			try {
-				const response = await BigQuery.query( updateQuery );
+
+				const response = await ExtensionVersionModel.query()
+															.where( 'extension_version_slug', 'IN', chunk )
+															.update( { 'has_synthetic_data': true } );
+
 				console.log( response );
 			} catch ( exception ) {
 				console.error( exception );
@@ -288,8 +290,8 @@ class SyntheticDataStart extends Command {
 	 */
 	async refillQueue() {
 
-		const versionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
-		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
+		const versionTable = '`' + `${ ExtensionVersionModel.table }` + '`';
+		const extensionTable = '`' + `${ ExtensionModel.table }` + '`';
 
 		let query = `SELECT extension_versions.extension_version_slug, extension_versions.type, extension_versions.slug, extension_versions.version
 			FROM ${ versionTable } AS extension_versions
@@ -337,7 +339,7 @@ class SyntheticDataStart extends Command {
 
 		query += ';';
 
-		const result = await BigQuery.query( query );
+		const [ result ] = await Database.raw( query );
 		let count = 0;
 
 		if ( _.isArray( result ) && ! _.isEmpty( result ) ) {

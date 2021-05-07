@@ -3,12 +3,11 @@
 const Base = use( 'App/Controllers/Queue/Base' );
 const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
-const BigQuery = use( 'App/BigQuery' );
 const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Storage = use( 'Storage' );
 
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
@@ -166,7 +165,7 @@ class SyntheticDataController extends Base {
 		/**
 		 * Check if job was able to send AMP data or not.
 		 */
-		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+		if ( -1 === result.toString().indexOf( '"status":"ok"' ) ) {
 
 			job.options._logs[ currentTry ] = {
 				status: 'fail',
@@ -183,8 +182,7 @@ class SyntheticDataController extends Base {
 		};
 
 		try {
-			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
-			response = await BigQuery.query( updateQuery );
+			response = await ExtensionVersionModel.save( item );
 		} catch ( exception ) {
 			console.error( exception );
 		}
