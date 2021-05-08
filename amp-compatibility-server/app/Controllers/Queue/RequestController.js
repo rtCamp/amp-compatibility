@@ -12,10 +12,7 @@ const ErrorModel = use( 'App/Models/Error' );
 const ErrorSourceModel = use( 'App/Models/ErrorSource' );
 const AmpValidatedUrlModel = use( 'App/Models/AmpValidatedUrl' );
 const UrlErrorRelationshipModel = use( 'App/Models/UrlErrorRelationship' );
-// const AuthorModel = use( 'App/Models/Author' );
-// const AuthorRelationshipModel = use( 'App/Models/AuthorRelationship' );
 
-const Database = use( 'Database' );
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -71,6 +68,90 @@ class RequestController extends Base {
 	}
 
 	/**
+	 * Database model for queue;
+	 *
+	 * @return {*}
+	 */
+	static get databaseModel() {
+		return SiteRequestModel;
+	}
+
+	static async _createDBRecord( data, jobID ) {
+
+		let response = {};
+		const siteUrl = data.site_url || '';
+		const summarizedData = await this.summarizeSiteRequest( _.clone( data ) );
+		let isSynthetic = data.site_info || {};
+		isSynthetic = !! isSynthetic.is_synthetic_data || false;
+
+		let errorLog = data.error_log || {};
+		errorLog = errorLog.contents || '';
+		errorLog = errorLog.replace( /'/g, '`' );
+		errorLog = errorLog.split( "\n" );
+		errorLog = JSON.stringify( errorLog );
+
+		const item = {
+			uuid: jobID,
+			site_url: siteUrl,
+			data: JSON.stringify( summarizedData ),
+			error_log: errorLog,
+			is_synthetic: isSynthetic,
+		};
+
+		response = await this.databaseModel.save( item );
+
+	}
+
+	/**
+	 * To summarize site request data to store in raw format
+	 *
+	 * @param {Object} requestData Request data.
+	 *
+	 * @return {Promise<{site_url: *, site_info: *}>}
+	 */
+	static async summarizeSiteRequest( requestData ) {
+
+		const summarizedData = {
+			site_url: requestData.site_url,
+			site_info: _.clone( requestData.site_info ),
+		};
+
+		summarizedData.wp_active_theme = {
+			name: requestData.site_info.wp_active_theme.name,
+			slug: requestData.site_info.wp_active_theme.slug,
+			version: requestData.site_info.wp_active_theme.version,
+		};
+
+		delete ( summarizedData.site_info.wp_active_theme );
+
+		/**
+		 * Plugin summary.
+		 */
+		summarizedData.plugins = [];
+
+		for ( const index in requestData.plugins ) {
+			const plugin = requestData.plugins[ index ];
+
+			summarizedData.plugins.push( {
+				name: plugin.name,
+				slug: plugin.slug,
+				version: plugin.version,
+				is_suppressed: plugin.is_suppressed,
+			} );
+
+		}
+
+		/**
+		 * Validated URL Summary.
+		 */
+		summarizedData.errorCount = _.size( requestData.errors ) || 0;
+		summarizedData.errorSourceCount = _.size( requestData.error_sources ) || 0;
+		summarizedData.urls = _.clone( requestData.urls );
+
+		return summarizedData;
+	}
+
+	/**
 	 * Action before starting worker.
 	 *
 	 * @param {Object} options Options pass in startWorker.
@@ -83,12 +164,10 @@ class RequestController extends Base {
 
 		this.onJobSucceeded = this.onJobSucceeded.bind( this );
 		this.onJobRetrying = this.onJobRetrying.bind( this );
-		this.onJobFailed = this.onJobFailed.bind( this );
 
 		// Terminate the worker if all jobs are completed
 		this.queue.on( 'job succeeded', this.onJobSucceeded );
 		this.queue.on( 'job retrying', this.onJobRetrying );
-		this.queue.on( 'job failed', this.onJobFailed );
 
 		this.queue.on( 'job progress', ( jobId, progress ) => {
 			Logger.debug( `Site: ${ this.jobName } reported progress: ${ progress }%` );
@@ -106,27 +185,7 @@ class RequestController extends Base {
 	 */
 	static async onJobSucceeded( jobId, result ) {
 		Logger.info( 'Result: Site: %s | Job ID: %s', this.jobName, jobId );
-
-		await SiteRequestModel.save( {
-			site_request_id: this.job.data.uuid,
-			status: 'success',
-		} );
-
 		console.log( Utility.jsonPrettyPrint( result ) );
-	}
-
-	/**
-	 * Callback function on failure of the job.
-	 *
-	 * @return {Promise<void>}
-	 */
-	static async onJobFailed() {
-
-		await SiteRequestModel.save( {
-			site_request_id: this.job.data.uuid,
-			status: 'fail',
-		} );
-
 	}
 
 	static onJobRetrying( jobId, error ) {
@@ -149,6 +208,7 @@ class RequestController extends Base {
 
 		const data = _.clone( job.data );
 
+		this.siteRequestUUID = job.id;
 		this.jobName = data.site_url;
 		this.job = _.clone( job );
 		this.isSyntheticJob = ( !! data.site_info.is_synthetic_data );
@@ -485,7 +545,7 @@ class RequestController extends Base {
 				css_size_after: item.css_size_after,
 				css_size_excluded: item.css_size_excluded,
 				css_budget_percentage: item.css_budget_percentage,
-				site_request_id: this.job.data.uuid,
+				site_request_uuid: this.siteRequestUUID,
 			};
 
 			/**

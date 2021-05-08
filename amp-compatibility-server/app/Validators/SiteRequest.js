@@ -12,7 +12,7 @@ class SiteRequest extends Base {
 	 */
 	static get rules() {
 		return {
-			site_request_id: 'string|required',
+			uuid: 'string|required',
 			site_url: 'string|url|required',
 			status: 'string|in:pending,success,fail',
 		};

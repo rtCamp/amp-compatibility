@@ -1,6 +1,7 @@
 'use strict';
 
 const SyntheticDataController = use( 'App/Controllers/Queue/SyntheticDataController' );
+const AdhocSyntheticJobModel = use( 'App/Models/AdhocSyntheticJob' );
 const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
 const Utility = use( 'App/Helpers/Utility' );
@@ -20,7 +21,16 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 	 * @returns {string} Queue name
 	 */
 	static get queueName() {
-		return 'adhoc_synthetic_data_queue';
+		return 'adhoc_synthetic';
+	}
+
+	/**
+	 * Database model for queue;
+	 *
+	 * @return {*}
+	 */
+	static get databaseModel() {
+		return AdhocSyntheticJobModel;
 	}
 
 	/**

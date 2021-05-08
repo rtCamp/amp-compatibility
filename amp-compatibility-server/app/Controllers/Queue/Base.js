@@ -50,7 +50,10 @@ class Base {
 	 * @returns {String} Job ID.
 	 */
 	static getJobID( jobData ) {
-		return Utility.makeHash( jobData );
+
+		const uuid = Utility.generateUUID( jobData );
+
+		return `ampwp-${ uuid }`;
 	}
 
 	/**
@@ -72,7 +75,7 @@ class Base {
 	}
 
 	/**
-	 * To create job
+	 * To create job.
 	 *
 	 * @param {Object} data
 	 *
@@ -84,9 +87,100 @@ class Base {
 			return false;
 		}
 
-		const jobId = await this.getJobID( data );
+		const jobID = await this.getJobID( data );
 
-		return await this.queue.createJob( data ).retries( this.retries ).setId( jobId ).save();
+		if ( this.databaseModel ) {
+			await this._createDBRecord( data, jobID );
+		}
+
+		return await this.queue.createJob( data ).retries( this.retries ).setId( jobID ).save();
+	}
+
+	/**
+	 * Action before starting worker.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	static async _beforeStartWorker() {
+		this._onJobSucceeded = this._onJobSucceeded.bind( this );
+		this._onJobFailed = this._onJobFailed.bind( this );
+
+		// Terminate the worker if all jobs are completed
+		this.queue.on( 'job succeeded', this._onJobSucceeded );
+		this.queue.on( 'job failed', this._onJobFailed );
+	}
+
+	/**
+	 * To create database record of job.
+	 *
+	 * @private
+	 *
+	 * @param {Object} data Job data
+	 * @param {string} jobID Job ID.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async _createDBRecord( data, jobID ) {
+
+		if ( ! this.databaseModel ) {
+			return;
+		}
+
+		await this.databaseModel.create( {
+			uuid: jobID,
+			data: JSON.stringify( data ),
+		} );
+
+	}
+
+	/**
+	 * Callback function on success of the job.
+	 *
+	 * @param {String} jobID Job ID.
+	 * @param {Object} result Response from worker.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async _onJobSucceeded( jobID, result ) {
+
+		if ( ! this.databaseModel ) {
+			return;
+		}
+
+		const job = await this.queue.getJob( jobID );
+		const logs = job.options._logs || {};
+
+		await this.databaseModel.save( {
+			uuid: jobID,
+			status: 'success',
+			result: JSON.stringify( result ),
+			logs: JSON.stringify( logs ),
+		} );
+
+	}
+
+	/**
+	 * Callback function on failure of the job.
+	 *
+	 * @param {String} jobID Job ID.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async _onJobFailed( jobID ) {
+
+		if ( ! this.databaseModel ) {
+			return;
+		}
+
+		const job = await this.queue.getJob( jobID );
+		const logs = job.options._logs || {};
+
+		await this.databaseModel.save( {
+			uuid: jobID,
+			status: 'fail',
+			logs: JSON.stringify( logs ),
+		} );
+
 	}
 
 	/**
@@ -107,6 +201,7 @@ class Base {
 
 		this.processJob = this.processJob.bind( this );
 
+		await this._beforeStartWorker();
 		await this.beforeStartWorker( options );
 
 		let concurrency = parseInt( options.concurrency || this.concurrency );

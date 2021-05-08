@@ -18,11 +18,11 @@ class AmpValidatedUrlSchema extends Schema {
 			table.integer( 'css_size_after' ).defaultTo( 0 ).comment( 'Total CSS size after minification => "39,371 B"' );
 			table.integer( 'css_size_excluded' ).defaultTo( 0 ).comment( 'Excluded minified CSS size (0 stylesheets) => "0 Bytes"' );
 			table.float( 'css_budget_percentage' ).defaultTo( 0 ).comment( 'Percentage of used CSS budget (75KB) => "52.0%"' );
-			table.string( 'site_request_id' ).notNullable();
+			table.string( 'site_request_uuid' ).notNullable();
 			table.timestamps();
 
 			table.foreign( 'site_url' ).references( 'sites.site_url' );
-			table.foreign( 'site_request_id' ).references( 'site_requests.site_request_id' );
+			table.foreign( 'site_request_uuid' ).references( 'site_requests.uuid' );
 		} );
 	}
 

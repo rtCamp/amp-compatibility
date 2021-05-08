@@ -8,6 +8,7 @@ const FileSystem = use( 'App/Helpers/FileSystem' );
 const Storage = use( 'Storage' );
 
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const SyntheticJobModel = use( 'App/Models/SyntheticJob' );
 
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
@@ -24,7 +25,7 @@ class SyntheticDataController extends Base {
 	 * @returns {string} Queue name
 	 */
 	static get queueName() {
-		return 'synthetic_data_queue';
+		return 'synthetic';
 	}
 
 	static get concurrency() {
@@ -41,14 +42,38 @@ class SyntheticDataController extends Base {
 	}
 
 	/**
-	 * To get jobs ID.
+	 * Database model for queue;
 	 *
-	 * @param {Object} jobData Job data.
-	 *
-	 * @returns {String} Job ID.
+	 * @return {*}
 	 */
-	static getJobID( jobData ) {
-		return jobData.domain || '';
+	static get databaseModel() {
+		return SyntheticJobModel;
+	}
+
+	/**
+	 * To create database record of job.
+	 *
+	 * @private
+	 *
+	 * @param {Object} data Job data
+	 * @param {string} jobID Job ID.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async _createDBRecord( data, jobID ) {
+
+		if ( ! this.databaseModel ) {
+			return;
+		}
+
+		const domain = data.domain || '';
+
+		await this.databaseModel.create( {
+			uuid: jobID,
+			domain: domain,
+			data: JSON.stringify( data ),
+		} );
+
 	}
 
 	/**
@@ -74,18 +99,16 @@ class SyntheticDataController extends Base {
 	 */
 	static async startWorker( options ) {
 
-		this.processJob = this.processJob.bind( this );
-
-		await this.beforeStartWorker( options );
-
 		let concurrency = parseInt( options.concurrency || this.concurrency );
 
 		if ( ! _.isNumber( concurrency ) || concurrency > this.concurrency ) {
 			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency, concurrency );
-			concurrency = this.concurrency;
+			options.concurrency = this.concurrency;
 		}
 
-		return this.queue.process( concurrency, this.processJob );
+		const startWorker = Base.startWorker.bind( this );
+
+		return await startWorker( options );
 	}
 
 	/**

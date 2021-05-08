@@ -1,9 +1,8 @@
 'use strict';
 
 const Base = use( 'App/Models/Base' );
-const SiteRequestValidator = use( 'App/Validators/SiteRequest' );
 
-class SiteRequest extends Base {
+class SyntheticJob extends Base {
 
 	/**
 	 * The primary key for the model.
@@ -28,16 +27,7 @@ class SiteRequest extends Base {
 	 *
 	 */
 	static get foreignKey() {
-		return 'site_request_uuid';
-	}
-
-	/**
-	 * Validator class name, To verify the data.
-	 *
-	 * @returns {boolean|Object} Validator class.
-	 */
-	static get validator() {
-		return SiteRequestValidator;
+		return 'synthetic_job_uuid';
 	}
 
 	/**
@@ -50,7 +40,6 @@ class SiteRequest extends Base {
 			status: 'pending',
 		};
 	}
-
 }
 
-module.exports = SiteRequest;
+module.exports = SyntheticJob;

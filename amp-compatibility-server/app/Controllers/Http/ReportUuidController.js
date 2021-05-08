@@ -36,14 +36,14 @@ class ReportUuidController {
 			paged: 1,
 			perPage: 50,
 			selectFields: [
-				'site_request_id',
+				'site_request_uuid',
 				'site_url',
 				'status',
 				'created_at',
 			],
 			s: request.input( 's' ) || '',
 			searchFields: [
-				'site_request_id',
+				'site_request_uuid',
 				'site_url',
 			],
 			orderby: {
@@ -57,12 +57,12 @@ class ReportUuidController {
 			tableArgs: {
 				items: _.toArray( data ),
 				headings: {
-					site_request_id: 'UUID',
+					site_request_uuid: 'UUID',
 				},
 				valueCallback: ( key, value ) => {
 
 					switch ( key ) {
-						case 'site_request_id':
+						case 'site_request_uuid':
 							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
 							break;
 						case 'site_url':
@@ -112,7 +112,7 @@ class ReportUuidController {
 			return view.render( 'dashboard/reports/uuid/not-found' );
 		}
 
-		let siteRequest = await SiteRequestModel.getIfExists( { site_request_id: uuid } );
+		let siteRequest = await SiteRequestModel.getIfExists( { site_request_uuid: uuid } );
 
 		if ( ! siteRequest ) {
 			return view.render( 'dashboard/reports/uuid/not-found' );
@@ -480,7 +480,7 @@ class ReportUuidController {
 					case 'url':
 						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 						break;
-					case 'site_request_id':
+					case 'site_request_uuid':
 						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 10 ) }</a>`;
 						break;
 					case 'updated_at':
