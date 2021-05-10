@@ -42,7 +42,7 @@ class ReportUuidController {
 			],
 			s: request.input( 's' ) || '',
 			searchFields: [
-				'site_request_uuid',
+				'uuid',
 				'site_url',
 			],
 			orderby: {
