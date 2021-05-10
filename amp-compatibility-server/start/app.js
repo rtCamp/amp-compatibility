@@ -71,7 +71,6 @@ const aliases = {
 const commands = [
 	'App/Commands/WporgScraper',
 	'App/Commands/WorkerStart',
-	'App/Commands/CacheUpdate',
 	'App/Commands/UserCreate',
 	'App/Commands/UserRemove',
 	'App/Commands/SyntheticDataStart',

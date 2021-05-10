@@ -2,7 +2,7 @@
 
 const { Command } = require( '@adonisjs/ace' );
 
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Helpers = use( 'Helpers' );
 
@@ -38,17 +38,27 @@ class ExtensionMappingUpdate extends Command {
 		const themes = {};
 
 		try {
+			let rows = [];
 			let currentPage = 0;
-			let nextQuery = {
-				autoPaginate: false,
+			const params = {
+				perPage: 10000,
+				paged: currentPage,
+				orderby: {
+					//active_installs: 'DESC',
+					slug: 'ASC',
+				},
 			};
 
 			do {
-				let rows = [];
-				let apiResponse = {};
-				currentPage++;
 
-				[ rows, nextQuery, apiResponse ] = await ExtensionVersionModel.getBigQueryTable.getRows( nextQuery );
+				params.paged++;
+
+				const result = await ExtensionVersionModel.getResult( params );
+				rows = result.data || [];
+
+				if ( _.isEmpty( rows ) ) {
+					break;
+				}
 
 				for ( const index in rows ) {
 					const row = rows[ index ];
@@ -93,7 +103,7 @@ class ExtensionMappingUpdate extends Command {
 					}
 				}
 
-			} while ( _.isObject( nextQuery ) );
+			} while ( ! _.isEmpty( rows ) );
 
 			const pluginPath = Helpers.publicPath( '/data/wporg_mapping/plugins.json' );
 			const themePath = Helpers.publicPath( '/data/wporg_mapping/themes.json' );
@@ -106,6 +116,7 @@ class ExtensionMappingUpdate extends Command {
 			console.log( exception );
 		}
 
+		process.exit( 1 );
 	}
 
 }

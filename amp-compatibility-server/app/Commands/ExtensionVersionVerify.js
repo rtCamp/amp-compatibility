@@ -2,18 +2,11 @@
 
 const { Command } = require( '@adonisjs/ace' );
 
-const BigQuery = use( 'App/BigQuery' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ErrorModel = use( 'App/Models/BigQuery/Error' );
-const ErrorSourceModel = use( 'App/Models/BigQuery/ErrorSource' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
+const ExtensionController = use( 'App/Controllers/Http/ExtensionController' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
-const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 const compareVersions = require( 'compare-versions' );
-
-const ExtensionController = use( 'App/Controllers/Http/ExtensionController' );
 
 class ExtensionVersionVerify extends Command {
 
@@ -45,7 +38,7 @@ class ExtensionVersionVerify extends Command {
 		let extensionVersions = [];
 
 		const params = {
-			perPage: 100,
+			perPage: 10000,
 			paged: 1,
 			orderby: {
 				active_installs: 'DESC',
@@ -102,8 +95,11 @@ class ExtensionVersionVerify extends Command {
 						};
 
 						try {
-							const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
-							await BigQuery.query( updateQuery );
+							const result = await ExtensionVersionModel.save( item );
+
+							if ( ! result ) {
+								throw `Fail to update ${ extensionVersion.extension_version_slug }`;
+							}
 
 							this.info( `${ extensionVersion.extension_version_slug } marked as "Auto Pass"` );
 						} catch ( exception ) {

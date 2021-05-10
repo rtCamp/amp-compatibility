@@ -12,10 +12,9 @@ class SiteRequest extends Base {
 	 */
 	static get rules() {
 		return {
-			site_request_id: 'string|required',
+			uuid: 'string|required',
 			site_url: 'string|url|required',
-			status: 'string|in:pending,success,fail|required',
-			created_at: 'date|required',
+			status: 'string|in:pending,success,fail',
 		};
 	}
 
@@ -28,7 +27,6 @@ class SiteRequest extends Base {
 		return {
 			site_url: 'to_url',
 			status: 'slug',
-			created_at: 'to_date',
 		};
 	}
 }

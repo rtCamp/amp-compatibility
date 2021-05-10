@@ -24,7 +24,7 @@ class Site extends Base {
 			object_cache_status: 'boolean',
 			libxml_version: 'number',
 			is_defined_curl_multi: 'boolean|required',
-			stylesheet_transient_caching: 'boolean|required',
+			stylesheet_transient_caching: 'boolean',
 			loopback_requests: 'boolean|required',
 			amp_mode: 'string|in:standard,reader,transitional,off|required',
 			amp_version: 'string',
@@ -35,7 +35,7 @@ class Site extends Base {
 			amp_mobile_redirect: 'boolean|required',
 			amp_reader_theme: 'string',
 			is_synthetic_data: 'boolean|required',
-			updated_at: 'date|required',
+			updated_at: 'date',
 		};
 	}
 

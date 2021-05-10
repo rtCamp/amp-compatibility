@@ -3,12 +3,12 @@
 const Base = use( 'App/Controllers/Queue/Base' );
 const WordPressSite = use( 'App/Controllers/Sites/WordPressSite' );
 const Logger = use( 'Logger' );
-const BigQuery = use( 'App/BigQuery' );
 const Utility = use( 'App/Helpers/Utility' );
 const FileSystem = use( 'App/Helpers/FileSystem' );
 const Storage = use( 'Storage' );
 
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const SyntheticJobModel = use( 'App/Models/SyntheticJob' );
 
 const { exit } = require( 'process' );
 const _ = require( 'underscore' );
@@ -25,7 +25,7 @@ class SyntheticDataController extends Base {
 	 * @returns {string} Queue name
 	 */
 	static get queueName() {
-		return 'synthetic_data_queue';
+		return 'synthetic';
 	}
 
 	static get concurrency() {
@@ -42,14 +42,38 @@ class SyntheticDataController extends Base {
 	}
 
 	/**
-	 * To get jobs ID.
+	 * Database model for queue;
 	 *
-	 * @param {Object} jobData Job data.
-	 *
-	 * @returns {String} Job ID.
+	 * @return {*}
 	 */
-	static getJobID( jobData ) {
-		return jobData.domain || '';
+	static get databaseModel() {
+		return SyntheticJobModel;
+	}
+
+	/**
+	 * To create database record of job.
+	 *
+	 * @private
+	 *
+	 * @param {Object} data Job data
+	 * @param {string} jobID Job ID.
+	 *
+	 * @return {Promise<void>}
+	 */
+	static async _createDBRecord( data, jobID ) {
+
+		if ( ! this.databaseModel ) {
+			return;
+		}
+
+		const domain = data.domain || '';
+
+		await this.databaseModel.create( {
+			uuid: jobID,
+			domain: domain,
+			data: JSON.stringify( data ),
+		} );
+
 	}
 
 	/**
@@ -75,18 +99,16 @@ class SyntheticDataController extends Base {
 	 */
 	static async startWorker( options ) {
 
-		this.processJob = this.processJob.bind( this );
-
-		await this.beforeStartWorker( options );
-
 		let concurrency = parseInt( options.concurrency || this.concurrency );
 
 		if ( ! _.isNumber( concurrency ) || concurrency > this.concurrency ) {
 			Logger.debug( 'Changing concurrency to: %s instead of previous value: %s', this.concurrency, concurrency );
-			concurrency = this.concurrency;
+			options.concurrency = this.concurrency;
 		}
 
-		return this.queue.process( concurrency, this.processJob );
+		const startWorker = Base.startWorker.bind( this );
+
+		return await startWorker( options );
 	}
 
 	/**
@@ -166,7 +188,7 @@ class SyntheticDataController extends Base {
 		/**
 		 * Check if job was able to send AMP data or not.
 		 */
-		if ( -1 === result.toString().indexOf( '{"status":"ok"}' ) ) {
+		if ( -1 === result.toString().indexOf( '"status":"ok"' ) ) {
 
 			job.options._logs[ currentTry ] = {
 				status: 'fail',
@@ -183,8 +205,7 @@ class SyntheticDataController extends Base {
 		};
 
 		try {
-			const updateQuery = await ExtensionVersionModel.getUpdateQuery( item );
-			response = await BigQuery.query( updateQuery );
+			response = await ExtensionVersionModel.save( item );
 		} catch ( exception ) {
 			console.error( exception );
 		}

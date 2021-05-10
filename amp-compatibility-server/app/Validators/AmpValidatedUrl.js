@@ -22,8 +22,7 @@ class AmpValidatedUrl extends Base {
 			css_size_after: 'float|required',
 			css_size_excluded: 'float|required',
 			css_budget_percentage: 'float|required',
-			updated_at: 'date|required',
-			site_request_id: 'string|required',
+			site_request_uuid: 'string|required',
 		};
 	}
 
@@ -42,7 +41,6 @@ class AmpValidatedUrl extends Base {
 			css_size_after: 'to_float',
 			css_size_excluded: 'to_float',
 			css_budget_percentage: 'to_float',
-			updated_at: 'date',
 		};
 	}
 }

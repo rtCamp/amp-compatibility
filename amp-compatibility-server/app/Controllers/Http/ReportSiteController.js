@@ -5,16 +5,14 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
 
-const BigQuery = use( 'App/BigQuery' );
+const Database = use( 'Database' );
 
-const SiteModel = use( 'App/Models/BigQuery/Site' );
-const SiteToExtensionModel = use( 'App/Models/BigQuery/SiteToExtension' );
-const AmpValidatedUrlModel = use( 'App/Models/BigQuery/AmpValidatedUrl' );
-const UrlErrorRelationshipModel = use( 'App/Models/BigQuery/UrlErrorRelationship' );
-const ExtensionModel = use( 'App/Models/BigQuery/Extension' );
-const ExtensionVersionModel = use( 'App/Models/BigQuery/ExtensionVersion' );
-
-const Utility = use( 'App/Helpers/Utility' );
+const SiteModel = use( 'App/Models/Site' );
+const SiteToExtensionModel = use( 'App/Models/SiteToExtension' );
+const AmpValidatedUrlModel = use( 'App/Models/AmpValidatedUrl' );
+const UrlErrorRelationshipModel = use( 'App/Models/UrlErrorRelationship' );
+const ExtensionModel = use( 'App/Models/Extension' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 const ReportUuidController = use( 'App/Controllers/Http/ReportUuidController' );
 const _ = require( 'underscore' );
@@ -40,7 +38,7 @@ class ReportSiteController {
 			return view.render( 'dashboard/reports/site/not-found' );
 		}
 
-		const siteInfo = await SiteModel.getRow( site );
+		const siteInfo = await SiteModel.getIfExists( { site_url: site } );
 
 		if ( ! siteInfo ) {
 			return view.render( 'dashboard/reports/site/not-found' );
@@ -57,7 +55,7 @@ class ReportSiteController {
 		const urlTableArgs = await reportUuidController.prepareValidateURLArgs( preparedValidateUrls );
 
 		let infoBoxList = this._getInfoboxList( siteInfo );
-		infoBoxList.requestInfo.items.URL_Counts = preparedValidateUrls.length || 0;
+		infoBoxList.requestInfo.items.URL_Counts = _.size( preparedValidateUrls.length ) || 0;
 
 		return view.render( 'dashboard/reports/site/show', {
 			infoBoxList,
@@ -193,9 +191,9 @@ class ReportSiteController {
 	 */
 	async _getPlugins( site ) {
 
-		const extensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionModel.table }` + '`';
-		const siteToExtensionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ SiteToExtensionModel.table }` + '`';
-		const extensionVersionTable = '`' + `${ BigQuery.config.projectId }.${ BigQuery.config.dataset }.${ ExtensionVersionModel.table }` + '`';
+		const extensionTable = '`' + `${ ExtensionModel.table }` + '`';
+		const siteToExtensionTable = '`' + `${ SiteToExtensionModel.table }` + '`';
+		const extensionVersionTable = '`' + `${ ExtensionVersionModel.table }` + '`';
 
 		let query = '';
 		let queryObject = {
@@ -211,7 +209,7 @@ class ReportSiteController {
 			query += `\n ${ queryObject[ index ] }`;
 		}
 
-		const items = await BigQuery.query( query, true );
+		const [ items ] = await Database.raw( query );
 
 		return items;
 	}
@@ -227,13 +225,13 @@ class ReportSiteController {
 	 */
 	async _getValidateURLs( site ) {
 
-		const validateUrls = await AmpValidatedUrlModel.getRows( {
+		const { data: validateUrls } = await AmpValidatedUrlModel.getResult( {
 			whereClause: {
 				site_url: site,
 			},
 		} );
 
-		const urlErrorRelationships = await UrlErrorRelationshipModel.getRows( {
+		const { data: urlErrorRelationships } = await UrlErrorRelationshipModel.getResult( {
 				whereClause: {
 					site_url: site,
 				},

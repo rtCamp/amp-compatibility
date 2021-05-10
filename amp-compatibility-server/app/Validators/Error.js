@@ -23,7 +23,6 @@ class Error extends Base {
 			node_attributes: 'string',
 			element_attributes: 'string',
 			spec_name: 'string',
-			text: 'string',
 			sources: 'string',
 			attributes: 'string',
 			attribute: 'string',
