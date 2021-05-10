@@ -116,7 +116,6 @@ class ExtensionMappingUpdate extends Command {
 			console.log( exception );
 		}
 
-		process.exit( 1 );
 	}
 
 }
