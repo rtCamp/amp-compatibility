@@ -29,7 +29,7 @@ class SiteSchema extends Schema {
 			table.boolean( 'amp_plugin_configured' );
 			table.boolean( 'amp_all_templates_supported' ).comment( 'AMP plugin settings' );
 			table.string( 'amp_supported_post_types' ).comment( 'Theme templates with enable/disable status' );
-			table.string( 'amp_supported_templates' );
+			table.text( 'amp_supported_templates', 'mediumtext' );
 			table.boolean( 'amp_mobile_redirect' );
 			table.string( 'amp_reader_theme' );
 			table.boolean( 'is_synthetic_data' ).defaultTo( false ).comment( 'Is data for this site is auto generated or not. Default False' );
