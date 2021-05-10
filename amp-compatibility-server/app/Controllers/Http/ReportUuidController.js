@@ -56,12 +56,12 @@ class ReportUuidController {
 			tableArgs: {
 				items: _.toArray( data ),
 				headings: {
-					site_request_uuid: 'UUID',
+					uuid: 'UUID',
 				},
 				valueCallback: ( key, value ) => {
 
 					switch ( key ) {
-						case 'site_request_uuid':
+						case 'uuid':
 							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
 							break;
 						case 'site_url':
@@ -111,7 +111,7 @@ class ReportUuidController {
 			return view.render( 'dashboard/reports/uuid/not-found' );
 		}
 
-		let siteRequest = await SiteRequestModel.getIfExists( { site_request_uuid: uuid } );
+		let siteRequest = await SiteRequestModel.getIfExists( { uuid: uuid } );
 
 		if ( ! siteRequest ) {
 			return view.render( 'dashboard/reports/uuid/not-found' );
@@ -119,7 +119,7 @@ class ReportUuidController {
 
 		siteRequest = siteRequest.toObject();
 
-		const rawData = siteRequest.raw_data.toString();
+		const rawData = siteRequest.data.toString();
 		const requestData = JSON.parse( rawData );
 		const allSiteInfo = requestData.site_info || {};
 
