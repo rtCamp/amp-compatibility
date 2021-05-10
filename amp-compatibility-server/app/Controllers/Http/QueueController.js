@@ -118,7 +118,7 @@ class QueueController {
 				case 'succeeded':
 					job.actions = {
 						retry: queueJob.id,
-						report: `https://datastudio.google.com/reporting/33e24fa4-a3e3-49ff-b2e1-8ba235a7424f/page/pb40B?params=%7B%22df230%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${ site_domain }%22%7D `,
+						report: `/admin/report/site/${ site_domain }`,
 					};
 					break;
 				case 'failed':
