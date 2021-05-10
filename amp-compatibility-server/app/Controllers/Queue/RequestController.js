@@ -360,7 +360,7 @@ class RequestController extends Base {
 				continue;
 			}
 
-			response[ errorSlug ] = await ErrorModel.save( error );
+			response[ errorSlug ] = await ErrorModel.createIfNotExists( error );
 		}
 
 		return response;
@@ -412,7 +412,7 @@ class RequestController extends Base {
 				continue;
 			}
 
-			response[ errorSourceSlug ] = await ErrorSourceModel.save( errorSource );
+			response[ errorSourceSlug ] = await ErrorSourceModel.createIfNotExists( errorSource );
 
 		}
 
