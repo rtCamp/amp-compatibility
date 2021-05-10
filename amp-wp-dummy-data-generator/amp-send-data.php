@@ -752,16 +752,12 @@ class AMP_Prepare_Data {
 			$query      .= ' AND post_title IN ( ' . $placeholder . ' ) ';
 			$query_data  = $this->urls;
 
-		} else {
-
-			$query     .= ' LIMIT %d, %d';
-			$query_data = [ 0, 100 ];
-
 		}
 
 		// This query needs to be uncached and it is prepared, yet there's false positive in PHPCS because of using variable instead of string in prepare.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
-		$amp_error_posts  = $wpdb->get_results( $wpdb->prepare( $query, $query_data ) );
+		$prepared_query   = $wpdb->prepare( $query, $query_data );
+		$amp_error_posts  = $wpdb->get_results( $prepared_query );
 		$amp_invalid_urls = [];
 
 		/**
