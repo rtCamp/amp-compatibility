@@ -4,7 +4,6 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 /** @typedef {import('@adonisjs/Session')} Session */
-const Database = use( 'Database' );
 
 const SiteRequestModel = use( 'App/Models/SiteRequest' );
 const ExtensionModel = use( 'App/Models/Extension' );
@@ -36,7 +35,7 @@ class ReportUuidController {
 			paged: 1,
 			perPage: 50,
 			selectFields: [
-				'site_request_uuid',
+				'uuid',
 				'site_url',
 				'status',
 				'created_at',
