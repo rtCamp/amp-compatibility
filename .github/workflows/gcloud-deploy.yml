@@ -58,7 +58,7 @@ jobs:
         SLACK_CHANNEL: bots-amp-comp-db
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_TITLE: "App Engine Instance"
-        SLACK_MESSAGE: "Deployed to https://rich-torus-221321.ue.r.appspot.com/ :rocket:\n\n*Message*\n${{ github.event.head_commit.message }}"
+        SLACK_MESSAGE: "Deployed to https://insights.amp-wp.org/ :rocket:\n\n*Message*\n${{ github.event.head_commit.message }}"
 
     - name: Remove older versions of App Engine
       run: |
