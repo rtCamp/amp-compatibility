@@ -55,7 +55,7 @@ class ReportSiteController {
 		const urlTableArgs = await reportUuidController.prepareValidateURLArgs( preparedValidateUrls );
 
 		let infoBoxList = this._getInfoboxList( siteInfo );
-		infoBoxList.requestInfo.items.URL_Counts = _.size( preparedValidateUrls.length ) || 0;
+		infoBoxList.requestInfo.items.URL_Counts = _.size( preparedValidateUrls ) || 0;
 
 		return view.render( 'dashboard/reports/site/show', {
 			infoBoxList,
@@ -80,7 +80,7 @@ class ReportSiteController {
 					//status: siteInfo.status,
 					URL_Counts: 0,
 					// errorCount: 0,
-					last_updated: siteInfo.updated_at.value,
+					last_updated: siteInfo.updated_at,
 				},
 				valueCallback: ( key, value ) => {
 					switch ( key ) {
@@ -157,9 +157,11 @@ class ReportSiteController {
 							value = ( value || parseInt( value ) ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
 							break;
 						case 'AMP_supported_post_types':
+						case 'AMP_supported_templates':
 
 							if ( _.isString( value ) && -1 !== value.indexOf( ',' ) ) {
-								value = value.replace( '[', '' ).replace( ']', '' ).replace( /'/g, '' );
+								const regex = /","|\["|"\]/gm;
+								value = value.replace( regex, ',' );
 								value = value.split( ',' );
 
 							} else {

@@ -1,27 +1,31 @@
-@import "~bootstrap/scss/bootstrap";
+//@import "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap";
+
+$primary: #3f51b5 !default;
+$secondary: #1976d2 !default;
+$success: #198754 !default;
+//$info: #1976d2 !default;
+$warning: #ffc107 !default;
+$danger: #dc3545 !default;
+
+@import '~mdb-ui-kit/src/scss/mdb.free';
+//@import '~mdb-ui-kit/css/mdb.min.css';
+
 
 body {
 	font-size: .875rem;
 }
 
-.feather {
-	width: 16px;
-	height: 16px;
-	vertical-align: text-bottom;
+.list-group-item {
+	color: $gray-800;
 }
 
 /*
  * Sidebar
  */
-
 .sidebar {
 	position: fixed;
 	top: 0;
-	/* rtl:raw:
-	right: 0;
-	*/
 	bottom: 0;
-	/* rtl:remove */
 	left: 0;
 	z-index: 100; /* Behind the navbar */
 	padding: 48px 0 0; /* Height of navbar */
@@ -43,8 +47,12 @@ body {
 	overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
+.nav-tabs .nav-link {
+	border-color: $gray-100;
+}
+
 .sidebar .nav-link {
-	font-weight: 500;
+	font-weight: 400;
 	color: #333;
 }
 
@@ -54,7 +62,7 @@ body {
 }
 
 .sidebar .nav-link.active {
-	color: #007bff;
+	color: var(--mdb-primary);
 }
 
 .sidebar .nav-link:hover .feather,
@@ -134,20 +142,21 @@ body {
 }
 
 abbr {
-	border-bottom: 1px dotted #343a40;
+	border-bottom: 1px dotted $primary;
 	cursor: pointer;
 }
 
 .table {
 
 	td,
-	&.table-sm td {
+	&.table-sm td,
+	&.table-sm th {
 		padding-right: 0.5rem;
 		padding-left: 0.5rem;
 	}
 
 	.url {
-		width: 30%;
+		width: 25%;
 	}
 
 	.node_attributes {
@@ -163,7 +172,7 @@ abbr {
 		text-align: right;
 	}
 
-	.active_installs{
+	.active_installs {
 		width: 105px;
 	}
 
@@ -179,11 +188,29 @@ abbr {
 		padding: 5px 15px;
 		background-color: transparent;
 		font-weight: bold;
+		box-shadow: none !important;
+		width: auto;
 
 		&::after {
-			margin: 0;
+			margin: auto;
 		}
 	}
+}
+
+.plugin-version,
+.theme-version {
+	width: 130px;
+	text-align: left;
+
+	&:after {
+		position: absolute;
+		top: 50%;
+		right: 1.375rem;
+	}
+}
+
+.btn-remove-plugin {
+	padding: .5rem 1rem;
 }
 
 #extension-table {
@@ -192,20 +219,15 @@ abbr {
 	}
 }
 
-.accordion-body {
-	border-color: #343a40;
-	border-left: 3px solid;
-	border-bottom: 3px solid;
+.accordion-collapse > .accordion-body {
+	border-color: $primary;
+	border-left: 3px solid $primary;
+	border-bottom: 3px solid $primary;
 	border-radius: 0 0 0 3px;
 	margin-bottom: 15px;
 
-	&.validated-url {
-		border-color: #007bff;
-
-	}
-
 	&.error-data {
-		border-color: #ffc107;
+		border-color: $warning;
 	}
 
 }
@@ -216,7 +238,7 @@ abbr {
 }
 
 .btn-xs {
-	font-size: 12px;
+	font-size: 10px;
 	padding: 3px 7px;
 }
 

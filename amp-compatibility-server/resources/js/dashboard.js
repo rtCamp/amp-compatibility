@@ -2,9 +2,10 @@
 'use strict';
 
 import $ from 'jquery';
+import * as mdb from 'mdb-ui-kit';
+import bootstrap from 'bootstrap';
 
 window.$ = window.jQuery = $;
-import bootstrap from 'bootstrap';
 
 window.addEventListener( 'DOMContentLoaded', function () {
 	const dashboard = {
