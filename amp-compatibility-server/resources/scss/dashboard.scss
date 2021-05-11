@@ -5,6 +5,10 @@ body {
 	font-size: .875rem;
 }
 
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+	font-weight: 400;
+}
+
 .btn-success,
 .text-success {
 	color: #198754 !important;
@@ -63,7 +67,6 @@ body {
 	overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
-.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6,
 .sidebar .nav-link {
 	font-weight: 400;
 	color: #333;
