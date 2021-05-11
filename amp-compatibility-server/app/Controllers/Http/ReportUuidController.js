@@ -142,7 +142,7 @@ class ReportUuidController {
 					site_URL: siteRequest.site_url,
 					status: siteRequest.status,
 					URL_Counts: _.size( requestData.urls ) || 0,
-					request_Date: siteRequest.created_at.value,
+					request_Date: siteRequest.created_at,
 				},
 				valueCallback: ( key, value ) => {
 					switch ( key ) {
@@ -153,7 +153,7 @@ class ReportUuidController {
 							value = `<a href="/admin/report/site/${ value }" target="_blank" title="${ value }">${ value }</a>`;
 							break;
 						case 'request_Date':
-							value = `<time datetime="${ value.replace( 'T', ' ' ) }">${ value.replace( 'T', ' ' ) }</time>`;
+							value = `<time datetime="${ value}">${ value }</time>`;
 							break;
 					}
 					return value;
@@ -219,6 +219,7 @@ class ReportUuidController {
 							value = parseInt( value ) ? `<span class="text-success">Yes</span>` : `<span class="text-danger">No</span>`;
 							break;
 						case 'AMP_supported_post_types':
+						case 'AMP_supported_templates':
 
 							const postTypes = value.map( ( postType ) => {
 								return `<li class="list-group-item p-0 border-0 bg-transparent">${ postType }</li>`;
