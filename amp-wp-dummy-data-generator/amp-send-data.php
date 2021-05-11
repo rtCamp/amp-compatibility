@@ -109,13 +109,13 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 	$data            = $amp_data_object->get_data();
 
 	$data = wp_parse_args( $data, [
-		'site_url'                   => [],
-		'site_info'                  => [],
-		'plugins'                    => [],
-		'themes'                     => [],
-		'errors'                     => [],
-		'error_sources'              => [],
-		'urls'                       => [],
+		'site_url'      => [],
+		'site_info'     => [],
+		'plugins'       => [],
+		'themes'        => [],
+		'errors'        => [],
+		'error_sources' => [],
+		'urls'          => [],
 	] );
 
 	/**
@@ -382,7 +382,7 @@ class AMP_Prepare_Data {
 
 		$site_info = [
 			'site_url'                    => static::get_home_url(),
-			'site_title'                  => get_bloginfo( 'site_title' ),
+			'site_title'                  => get_bloginfo( 'name' ),
 			'php_version'                 => phpversion(),
 			'mysql_version'               => $wpdb->get_var( 'SELECT VERSION();' ), // phpcs:ignore
 			'wp_version'                  => get_bloginfo( 'version' ),

@@ -103,6 +103,7 @@ function process_site() {
 
 	wp config set "WP_HOME" "http://$site_domain" --add=true --type=constant
 	wp config set "WP_SITEURL" "http://$site_domain" --add=true --type=constant
+	wp option update blogname "$site_domain"
 
 	wp plugin install --activate amp
 	wp plugin activate amp-wp-dummy-data-generator
