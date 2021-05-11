@@ -109,21 +109,21 @@ function process_site() {
 
 	cd_plugins
 
-	cs_plugins=("${plugins//,/ }")
+	cs_plugins=(${plugins//,/ })
 	for plugin_slug in "${cs_plugins[@]}"; do
 
-		data=("${plugin_slug//:/ }")
+		data=(${plugin_slug//:/ })
 		version=${data[1]}
 		[[ -n "${version}" ]] && version_string="--version=${version}" || version_string=""
 
-		wp plugin install "${data[0]}" --activate "$version_string"
+		wp plugin install "${data[0]}" --activate $version_string
 	done
 
 	theme_slug=${theme:-"treville"}
-	data=("${theme_slug//:/ }")
+	data=(${theme_slug//:/ })
 	version=${data[1]}
 	[[ -n "${version}" ]] && version_string="--version=${version}" || version_string=""
-	wp theme install "${data[0]}" --activate "$version_string"
+	wp theme install "${data[0]}" --activate $version_string
 
 	wp configure-amp-site
 
