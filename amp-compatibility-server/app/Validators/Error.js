@@ -70,6 +70,9 @@ class Error extends Base {
 			node_attributes: 'to_json',
 			attributes: 'to_json',
 			element_attributes: 'to_json',
+			mandatory_oneof_attrs: 'to_json',
+			mandatory_anyof_attrs: 'to_json',
+			duplicate_oneof_attrs: 'to_json',
 			url: 'to_url',
 		};
 	}
