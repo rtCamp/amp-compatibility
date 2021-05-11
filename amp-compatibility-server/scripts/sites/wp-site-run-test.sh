@@ -129,6 +129,9 @@ function process_site() {
 
 	cd_plugins
 	bash amp-wp-dummy-data-generator/start.sh --exclude-default
+
+	wp cache flush
+	wp rewrite flush
 }
 
 function process_amp() {
