@@ -211,6 +211,22 @@ abbr {
 	}
 }
 
+.plugin-version,
+.theme-version {
+	width: 130px;
+	text-align: left;
+
+	&:after {
+		position: absolute;
+		top: 50%;
+		right: 1.375rem;
+	}
+}
+
+.btn-remove-plugin {
+	padding: .5rem 1rem;
+}
+
 #extension-table {
 	.name {
 		max-width: 400px;
