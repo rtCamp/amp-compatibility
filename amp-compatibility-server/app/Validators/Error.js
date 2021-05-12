@@ -67,6 +67,7 @@ class Error extends Base {
 	static get sanitizationRules() {
 		return {
 			error_slug: 'slug',
+			spec_names: 'to_json',
 			node_attributes: 'to_json',
 			attributes: 'to_json',
 			element_attributes: 'to_json',

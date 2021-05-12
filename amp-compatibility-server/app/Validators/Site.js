@@ -17,7 +17,7 @@ class Site extends Base {
 			php_version: 'string|required',
 			mysql_version: 'string',
 			wp_version: 'string|required',
-			wp_language: 'string|required',
+			wp_language: 'string',
 			wp_https_status: 'boolean|required',
 			wp_multisite: 'string|in:subdomain,subdir,single|required',
 			wp_active_theme: 'string|required',
