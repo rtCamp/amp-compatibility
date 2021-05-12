@@ -73,7 +73,61 @@ class ExtensionController {
 			queryStrings: request.get(),
 		};
 
-		return view.render( 'dashboard/extension', data );
+		return view.render( 'dashboard/extensions/list', data );
+	}
+
+	async show( { request, params } ) {
+
+	}
+
+	async update( { request } ) {
+		const postData = request.post();
+		let response = {
+			status: 'fail',
+		};
+
+		const rules = {
+			extensionSlug: 'required|string',
+			status: 'required|string',
+		};
+
+		const messages = {
+			'extensionSlug.required': 'Please provide extension version slug.',
+			'status.required': 'Please provide partnership status.',
+		};
+
+		const validation = await validateAll( postData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+		const item = {
+			extension_slug: postData.extensionSlug,
+			is_partner: ( 'true' === postData.status.toLowerCase() ),
+		};
+
+		try {
+			const result = await ExtensionModel.save( item );
+
+			if ( result ) {
+				response = {
+					status: 'ok',
+				};
+			}
+
+		} catch ( exception ) {
+
+			console.log( exception );
+			response = {
+				status: 'ok',
+				data: exception,
+			};
+		}
+
+		return response;
 	}
 
 	/**
@@ -341,56 +395,6 @@ class ExtensionController {
 		};
 
 		return extensionVersionsTableArgs;
-	}
-
-	async update( { request } ) {
-		const postData = request.post();
-		let response = {
-			status: 'fail',
-		};
-
-		const rules = {
-			extensionSlug: 'required|string',
-			status: 'required|string',
-		};
-
-		const messages = {
-			'extensionSlug.required': 'Please provide extension version slug.',
-			'status.required': 'Please provide partnership status.',
-		};
-
-		const validation = await validateAll( postData, rules, messages );
-
-		if ( validation.fails() ) {
-			return {
-				status: 'fail',
-				data: validation.messages(),
-			};
-		}
-		const item = {
-			extension_slug: postData.extensionSlug,
-			is_partner: ( 'true' === postData.status.toLowerCase() ),
-		};
-
-		try {
-			const result = await ExtensionModel.save( item );
-
-			if ( result ) {
-				response = {
-					status: 'ok',
-				};
-			}
-
-		} catch ( exception ) {
-
-			console.log( exception );
-			response = {
-				status: 'ok',
-				data: exception,
-			};
-		}
-
-		return response;
 	}
 
 	/**
