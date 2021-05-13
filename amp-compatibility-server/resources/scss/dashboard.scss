@@ -6,7 +6,6 @@ $warning: #ffc107 !default;
 $danger: #dc3545 !default;
 
 @import '~mdb-ui-kit/src/scss/mdb.free';
-//@import '~mdb-ui-kit/css/mdb.min.css';
 
 body {
 	font-size: .875rem;
@@ -241,4 +240,19 @@ abbr {
 
 .hiddenRow {
 	padding: 0 !important;
+}
+
+#notification-container {
+	position: fixed;
+	right: 20px;
+	top: 60px;
+	z-index: 1030;
+	background: transparent;
+
+	.toast-close {
+		background: inherit;
+		border: inherit;
+		color: inherit;
+		text-align: inherit;
+	}
 }

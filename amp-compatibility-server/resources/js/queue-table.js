@@ -1,3 +1,5 @@
+import { showNotification } from './utils';
+
 window.addEventListener( 'DOMContentLoaded', function () {
 	const queueTables = {
 
@@ -35,23 +37,12 @@ window.addEventListener( 'DOMContentLoaded', function () {
 				jobID: jobID,
 			}, ( data ) => {
 
-				const messageContainer = document.getElementById( 'messageContainer' );
-				const messageElement = document.createElement( 'p' );
-				messageElement.innerText = data.message;
-
 				if ( 'ok' === data.status ) {
-					messageElement.classList.add( 'text-success' );
-					jQuery(`[data-jobid="${jobID}"]`).remove();
+					showNotification( data.message );
 				} else {
-					messageElement.classList.add( 'text-danger' );
+					showNotification( data.message, 'danger' );
 					this.disabled = false;
 				}
-
-				messageContainer.append( messageElement );
-
-				setTimeout( () => {
-					messageContainer.removeChild( messageElement );
-				}, 10000 );
 
 			} );
 
