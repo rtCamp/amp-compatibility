@@ -124,7 +124,7 @@ class GlobalViewData {
 				title: 'Report Dashboard',
 				icon: '',
 				url: '/admin/report',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/report' ) ),
+				isActive: ( '/admin/report' === currentRequest ),
 			},
 			uuidReport: {
 				title: 'Report by UUID',
