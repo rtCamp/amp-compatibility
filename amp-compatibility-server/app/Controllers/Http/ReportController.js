@@ -36,11 +36,13 @@ class ReportController {
 				ampModes: {
 					id: 'amp-modes',
 					title: 'AMP Modes',
+					chartType: 'doughnut',
 					data: ampModeCounts,
 				},
 				ampVersions: {
 					id: 'amp-version',
 					title: 'AMP Version',
+					chartType: 'doughnut',
 					data: ampVersionCounts,
 				},
 			},
@@ -48,21 +50,25 @@ class ReportController {
 				extensionVerification: {
 					id: 'extension-verification-status',
 					title: 'Extension Verification Status',
+					chartType: 'doughnut',
 					data: extensionVerificationCounts,
 				},
 				errorCountGroup: {
 					id: 'error-count-group',
 					title: 'Error Count Group',
+					chartType: 'doughnut',
 					data: extensionErrorCounts,
 				},
 				pluginGroup: {
 					id: 'active-install-group-plugins',
 					title: 'Active Install Group (Plugins)',
+					chartType: 'doughnut',
 					data: pluginGroupCounts,
 				},
 				themeGroup: {
 					id: 'active-install-group-themes',
 					title: 'Active Install Group (Themes)',
+					chartType: 'doughnut',
 					data: themeGroupCounts,
 				},
 			},

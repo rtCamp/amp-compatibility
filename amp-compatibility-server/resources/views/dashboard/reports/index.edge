@@ -12,7 +12,7 @@
 					<li class="list-group-item bg-light" aria-current="true"><h6 class="mb-0">{{setting.title}}</h6>
 					</li>
 					<li class="list-group-item d-flex">
-						<canvas id="{{setting.id}}" data-chart="true" data-chart-type="doughnut"
+						<canvas id="{{setting.id}}" data-chart="true" data-chart-type="{{setting.chartType}}"
 								data-chart-title="{{setting.title}}"
 								data-chart-data="{{toJSON(setting.data)}}"></canvas>
 					</li>
@@ -31,7 +31,7 @@
 					<li class="list-group-item bg-light" aria-current="true"><h6 class="mb-0">{{setting.title}}</h6>
 					</li>
 					<li class="list-group-item d-flex">
-						<canvas id="{{setting.id}}" data-chart="true" data-chart-type="doughnut"
+						<canvas id="{{setting.id}}" data-chart="true" data-chart-type="{{setting.chartType}}"
 								data-chart-title="{{setting.title}}"
 								data-chart-data="{{toJSON(setting.data)}}"></canvas>
 					</li>
