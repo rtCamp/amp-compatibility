@@ -36,7 +36,7 @@ class ExtensionController {
 	async index( { request, response, view, params } ) {
 		params = _.defaults( params, {
 			paged: 1,
-			perPage: 50,
+			perPage: 20,
 			s: request.input( 's' ) || '',
 			searchFields: [
 				'name',
