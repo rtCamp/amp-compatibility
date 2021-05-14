@@ -8,8 +8,11 @@ const Database = use( 'Database' );
 
 const ExtensionModel = use( 'App/Models/Extension' );
 const ErrorSourceModel = use( 'App/Models/ErrorSource' );
+const ErrorModel = use( 'App/Models/Error' );
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 const UrlErrorRelationshipModel = use( 'App/Models/UrlErrorRelationship' );
+
+const ReportUuidController = use( 'App/Controllers/Http/ReportUuidController' );
 
 const View = use( 'View' );
 const Templates = use( 'App/Controllers/Templates' );
@@ -73,7 +76,142 @@ class ExtensionController {
 			queryStrings: request.get(),
 		};
 
-		return view.render( 'dashboard/extension', data );
+		return view.render( 'dashboard/extensions/list', data );
+	}
+
+	async show( { request, params, view } ) {
+
+		const { extension_slug: extensionSlug } = params;
+
+		if ( ! extensionSlug ) {
+			return view.render( 'dashboard/extensions/not-found' );
+		}
+
+		/**
+		 * 1. Get extension and it's version details.
+		 */
+		const queryParams = {
+			whereClause: {
+				extension_slug: extensionSlug,
+			},
+		};
+
+		const reportUuidController = new ReportUuidController();
+		const errorDetails = {};
+		const { extensions, extensionVersions } = await this.getExtensionData( queryParams );
+		const extension = extensions[ 0 ];
+
+		if ( ! extension ) {
+			return view.render( 'dashboard/extensions/not-found' );
+		}
+
+		/**
+		 * 2. Get errors, error sources and it's mapping for each extension versions.
+		 */
+		for ( const index in extensionVersions ) {
+			const extensionVersionSlug = extensionVersions[ index ].extension_version_slug;
+			errorDetails[ extensionVersionSlug ] = await this._getErrorAndErrorSourceInfoByExtensionVersion( extensionVersionSlug );
+		}
+
+		/**
+		 * 3. Prepare table args for extension version table.
+		 */
+		let tableArgs = this._prepareExtensionVersionTableArgs( {
+			slug: {
+				slug: extension.slug,
+			},
+			type: extension.type,
+		}, extensionVersions );
+
+		tableArgs = _.defaults( tableArgs, {
+			collapsible: {
+				accordionClass: 'extension-versions',
+				bodyCallback: ( value ) => {
+
+					const extensionVersionSlug = value.verification_status.extensionVersionSlug;
+					const errorDetail = errorDetails[ extensionVersionSlug ];
+					value.errors = errorDetail.errors;
+
+					const tableArgs = reportUuidController._prepareErrorTableArgs( value, errorDetail.allErrors, errorDetail.allErrorSources );
+
+					return Templates.renderComponent( 'table', tableArgs );
+				},
+			},
+		} );
+
+		/**
+		 * 4. View Data.
+		 */
+		const viewData = {
+			infoBoxList: {
+				extensionInfo: {
+					title: 'Extension Info',
+					items: {
+						name: extension.name,
+						slug: ( extension.wporg ) ? `<a href="https://wordpress.org/plugins/${ extension.slug }" target="_blank" title="${ extension.slug }">${ extension.slug }</a>` : extension.slug,
+						wporg: `<span class="text-info">${ !! extension.wporg ? 'Yes' : 'No' }</span>`,
+						latest_version: extension.latest_version,
+						active_installs: humanFormat( extension.active_installs ),
+						last_updated: extension.last_updated,
+						verification_status: extension.verification_status,
+						is_partner: `<span class="text-info">${ !! extension.is_partner ? 'Yes' : 'No' }</span>`,
+					},
+				},
+			},
+			tableArgs: tableArgs,
+		};
+
+		return view.render( 'dashboard/extensions/show', viewData );
+	}
+
+	async update( { request } ) {
+		const postData = request.post();
+		let response = {
+			status: 'fail',
+		};
+
+		const rules = {
+			extensionSlug: 'required|string',
+			status: 'required|string',
+		};
+
+		const messages = {
+			'extensionSlug.required': 'Please provide extension version slug.',
+			'status.required': 'Please provide partnership status.',
+		};
+
+		const validation = await validateAll( postData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+		const item = {
+			extension_slug: postData.extensionSlug,
+			is_partner: ( 'true' === postData.status.toLowerCase() ),
+		};
+
+		try {
+			const result = await ExtensionModel.save( item );
+
+			if ( result ) {
+				response = {
+					status: 'ok',
+				};
+			}
+
+		} catch ( exception ) {
+
+			console.log( exception );
+			response = {
+				status: 'ok',
+				data: exception,
+			};
+		}
+
+		return response;
 	}
 
 	/**
@@ -165,6 +303,99 @@ class ExtensionController {
 	}
 
 	/**
+	 * To get error and error source information from extension version.
+	 *
+	 * @private
+	 *
+	 * @param {String} extensionVersionSlug Extension version slug.
+	 *
+	 * @return {Promise<{allErrors: {}, errors: {}, allErrorSources}>}
+	 */
+	async _getErrorAndErrorSourceInfoByExtensionVersion( extensionVersionSlug ) {
+
+		let allErrorData = {};
+		let allErrorSlugs = [];
+		let errorSourceRelationships = {};
+
+		/**
+		 * 1. Get all error source information by extension version.
+		 */
+		const { data: allErrorSourceData } = await ErrorSourceModel.getResult( {
+			whereClause: {
+				extension_version_slug: extensionVersionSlug,
+			},
+		} );
+
+		/**
+		 * 2. From error source information. get all URL error relationships.
+		 */
+		let errorSourceSlugChunks = _.pluck( allErrorSourceData, 'error_source_slug' );
+		errorSourceSlugChunks = _.chunk( errorSourceSlugChunks, 200 );
+
+		for ( const index in errorSourceSlugChunks ) {
+			const errorSourceSlugChunk = errorSourceSlugChunks[ index ];
+
+			let { data: errorSourceRelationship } = await UrlErrorRelationshipModel.getResult( {
+				selectFields: [
+					'error_slug',
+					'error_source_slug',
+				],
+				whereClause: {
+					error_source_slug: errorSourceSlugChunk,
+				},
+			} );
+
+			let errorsSlugs = _.pluck( errorSourceRelationship, 'error_slug' );
+			allErrorSlugs = [ ...allErrorSlugs, ...errorsSlugs ];
+
+			errorSourceRelationships = _.defaults( errorSourceRelationship, errorSourceRelationships );
+		}
+
+		allErrorSlugs = _.uniq( allErrorSlugs );
+		const errorSlugChunks = _.chunk( allErrorSlugs, 200 );
+
+		for ( const index in errorSlugChunks ) {
+			const errorSlugChunk = errorSlugChunks[ index ];
+
+			const { data: errorData } = await ErrorModel.getResult( {
+				whereClause: {
+					error_slug: errorSlugChunk,
+				},
+			} );
+
+			allErrorData = _.defaults( errorData, allErrorData );
+		}
+
+		/**
+		 * 3. Map error and error source relations.
+		 */
+		const errors = {};
+		for ( const index in errorSourceRelationships ) {
+			const errorSourceRelationship = errorSourceRelationships[ index ];
+			const errorSlug = errorSourceRelationship.error_slug;
+			const errorSourceSlug = errorSourceRelationship.error_source_slug;
+
+			if ( ! errors[ errorSlug ] ) {
+				errors[ errorSlug ] = {
+					error_slug: errorSlug,
+					sources: [],
+				};
+			}
+
+			if ( ! errors[ errorSlug ].sources.includes( errorSourceSlug ) ) {
+				errors[ errorSlug ].sources.push( errorSourceSlug );
+			}
+
+		}
+
+		return {
+			errors: errors,
+			allErrors: allErrorData,
+			allErrorSources: allErrorSourceData,
+		};
+	}
+
+	/**
 	 * Prepare table args for extension table.
 	 *
 	 * @private
@@ -182,7 +413,10 @@ class ExtensionController {
 			const item = extensions[ index ];
 
 			preparedItems.push( {
-				name: item.name,
+				name: {
+					name: item.name,
+					extension_slug: item.extension_slug,
+				},
 				slug: {
 					slug: item.slug,
 					is_wporg: item.wporg,
@@ -216,6 +450,9 @@ class ExtensionController {
 			valueCallback: ( key, value ) => {
 
 				switch ( key ) {
+					case 'name':
+						value = `<a href="/admin/extension/${ value.extension_slug }">${ value.name }</a>`;
+						break;
 					case 'slug':
 						if ( value.is_wporg ) {
 							value = `<a href="https://wordpress.org/plugins/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
@@ -279,6 +516,7 @@ class ExtensionController {
 			if ( extensionSlug === item.extension_slug ) {
 				preparedItems.push( {
 					version: item.version,
+					has_synthetic_data: item.has_synthetic_data || false,
 					error_count: item.error_count,
 					verification_status: {
 						status: item.verification_status || 'unknown',
@@ -302,6 +540,13 @@ class ExtensionController {
 
 				switch ( key ) {
 
+					case 'has_synthetic_data':
+						if ( value ) {
+							value = `<span class="text-success">Yes</span>`;
+						} else {
+							value = `<span class="text-danger">No</span>`;
+						}
+						break;
 					case 'error_count':
 						value = `<div class="text-center">${ value ? value : '-' }</div>`;
 						break;
@@ -341,56 +586,6 @@ class ExtensionController {
 		};
 
 		return extensionVersionsTableArgs;
-	}
-
-	async update( { request } ) {
-		const postData = request.post();
-		let response = {
-			status: 'fail',
-		};
-
-		const rules = {
-			extensionSlug: 'required|string',
-			status: 'required|string',
-		};
-
-		const messages = {
-			'extensionSlug.required': 'Please provide extension version slug.',
-			'status.required': 'Please provide partnership status.',
-		};
-
-		const validation = await validateAll( postData, rules, messages );
-
-		if ( validation.fails() ) {
-			return {
-				status: 'fail',
-				data: validation.messages(),
-			};
-		}
-		const item = {
-			extension_slug: postData.extensionSlug,
-			is_partner: ( 'true' === postData.status.toLowerCase() ),
-		};
-
-		try {
-			const result = await ExtensionModel.save( item );
-
-			if ( result ) {
-				response = {
-					status: 'ok',
-				};
-			}
-
-		} catch ( exception ) {
-
-			console.log( exception );
-			response = {
-				status: 'ok',
-				data: exception,
-			};
-		}
-
-		return response;
 	}
 
 	/**

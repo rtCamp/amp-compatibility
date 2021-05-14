@@ -1,0 +1,26 @@
+@layout( 'dashboard/base' )
+
+@section('page')
+	<div class="mb-4">
+		<div class="row">
+			@each( setting in infoBoxList )
+			<div class="col-md-6 mt-4">
+				{{{ renderComponent( 'infobox', setting ) }}}
+			</div>
+			@endeach
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<h4>Extension Version</h4>
+				<hr/>
+				{{{ renderTable(tableArgs) }}}
+			</div>
+		</div>
+
+	</div>
+@endsection
+
+@section('script')
+	{{ script('js/extension') }}
+@endsection

@@ -5,6 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Dashboard</title>
 
+	{{-- Chart JS --}}
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"></script>
+
 	{{ style('css/dashboard') }}
 </head>
 <body>
@@ -62,6 +65,7 @@
 					@!section('header_line')
 				</div>
 			</div>
+			<div id="notification-container"></div>
 			<div class="container-fluid">
 				@!section('page')
 			</div>

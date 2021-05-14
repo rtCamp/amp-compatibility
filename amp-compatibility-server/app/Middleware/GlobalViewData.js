@@ -118,7 +118,13 @@ class GlobalViewData {
 				title: 'Extensions',
 				icon: '',
 				url: '/admin/extensions',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/extensions' ) ),
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/extension' ) ),
+			},
+			reportDashboard: {
+				title: 'Report Dashboard',
+				icon: '',
+				url: '/admin/report',
+				isActive: ( '/admin/report' === currentRequest ),
 			},
 			uuidReport: {
 				title: 'Report by UUID',

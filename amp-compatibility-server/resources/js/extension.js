@@ -1,3 +1,5 @@
+import { showNotification } from './utils';
+
 window.addEventListener( 'DOMContentLoaded', function () {
 	const extension = {
 
@@ -56,24 +58,14 @@ window.addEventListener( 'DOMContentLoaded', function () {
 				verificationStatus: status,
 			}, ( data ) => {
 
-				const messageContainer = document.getElementById( 'messageContainer' );
-				const messageElement = document.createElement( 'p' );
-
 				if ( 'ok' === data.status ) {
-					messageElement.classList.add( 'text-success' );
-					messageElement.innerText = `Extension "${ extensionDetail.name } - ${ extensionDetail.version }" successfully marked as "${ statusLabel[ status ] }"`;
+
+					showNotification( `Extension "${ extensionDetail.name } - ${ extensionDetail.version }" successfully marked as "${ statusLabel[ status ] }"` );
 				} else {
-					messageElement.classList.add( 'text-danger' );
-					messageElement.innerText = `Failed to mark "${ extensionDetail.name } - ${ extensionDetail.version }" as "${ statusLabel[ status ] }"`;
+					showNotification( `Failed to mark "${ extensionDetail.name } - ${ extensionDetail.version }" as "${ statusLabel[ status ] }"`, 'danger' );
 				}
 
 				this.disabled = false;
-
-				messageContainer.append( messageElement );
-
-				setTimeout( () => {
-					messageContainer.removeChild( messageElement );
-				}, 10000 );
 			} );
 
 		},
@@ -103,24 +95,20 @@ window.addEventListener( 'DOMContentLoaded', function () {
 				status: status,
 			}, ( data ) => {
 
-				const messageContainer = document.getElementById( 'messageContainer' );
-				const messageElement = document.createElement( 'p' );
-
 				if ( 'ok' === data.status ) {
-					messageElement.classList.add( 'text-success' );
-					messageElement.innerText = `Extension "${ extensionDetail.name }" successfully marked as "${ status ? 'Partner extension' : 'Not a partner extension' }"`;
+					showNotification(
+						`Extension "${ extensionDetail.name }" successfully marked as "${ status ? 'Partner extension' : 'Not a partner extension' }"`
+					);
+
 				} else {
-					messageElement.classList.add( 'text-danger' );
-					messageElement.innerText = `Failed to mark "${ extensionDetail.name }" as "${ status ? 'Partner extension' : 'Not a partner extension' }"`;
+					showNotification(
+						`Failed to mark "${ extensionDetail.name }" as "${ status ? 'Partner extension' : 'Not a partner extension' }"`,
+						'danger'
+					);
 				}
 
 				this.disabled = false;
 
-				messageContainer.append( messageElement );
-
-				setTimeout( () => {
-					messageContainer.removeChild( messageElement );
-				}, 10000 );
 			} );
 
 		},

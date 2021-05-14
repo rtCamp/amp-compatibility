@@ -1,15 +1,11 @@
-//@import "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap";
-
 $primary: #3f51b5 !default;
 $secondary: #1976d2 !default;
 $success: #198754 !default;
-//$info: #1976d2 !default;
+//$info: #0dcaf0 !default;
 $warning: #ffc107 !default;
 $danger: #dc3545 !default;
 
 @import '~mdb-ui-kit/src/scss/mdb.free';
-//@import '~mdb-ui-kit/css/mdb.min.css';
-
 
 body {
 	font-size: .875rem;
@@ -244,4 +240,19 @@ abbr {
 
 .hiddenRow {
 	padding: 0 !important;
+}
+
+#notification-container {
+	position: fixed;
+	right: 20px;
+	top: 60px;
+	z-index: 1030;
+	background: transparent;
+
+	.toast-close {
+		background: inherit;
+		border: inherit;
+		color: inherit;
+		text-align: inherit;
+	}
 }
