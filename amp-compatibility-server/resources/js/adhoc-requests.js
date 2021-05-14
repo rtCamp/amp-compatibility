@@ -5,71 +5,17 @@ window.addEventListener( 'DOMContentLoaded', function ( event ) {
 
 		init: function () {
 
-			/* makes drop down function */
-			$( document ).on( 'click', '.dropdown-item', function () {
+			this.preparePluginRow();
+			this.prepareThemeRow();
 
-				/* updates the hidden value of verions */
-				$( this ).parents( '.dropdown' ).find( '.hiddenThemeVersion' ).val( $( this ).text() );
-				$( this ).parents( '.dropdown' ).find( '.hiddenPluginVersion' ).val( $( this ).text() );
-
-				/* updates drop down button value */
-				$( this ).parents( '.dropdown' ).find( 'button' ).text( $( this ).text() );
-			} );
-
-			this.pluginsData = [];
-			this.themeData = [];
-
-			/* fetch data for plugins autocomplete */
-			$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-				for ( const index in data ) {
-					this.pluginsData.push( data[ index ].slug );
-				}
-
-				this.preparePluginRow();
-			} );
-
-			/* fetch data for themes autocomplete */
-			$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-				for ( const index in data ) {
-					this.themeData.push( data[ index ].slug );
-				}
-
-				this.themeAutocomplete();
-			} );
-
-			/* add new plugin button */
+			/**
+			 * Events.
+			 */
+			$( '[name="amp_source"]' ).on( 'change', this.onAMPSourceChange );
+			$( document ).on( 'click', '.dropdown-item', this.onDropdownItemClick );
 			$( '#addNewPlugin' ).on( 'click', () => {
-
-				/* duplicate plugin removal */
-				this.removeDuplicatePlugins();
-
-				this.pluginRowCounter++;
-
-				let clonedItem = $( '#pluginClone' ).clone();
-
-				clonedItem.removeAttr( 'id' );
-				clonedItem.removeClass( 'd-none' );
-
-				$( '#plugin-name', clonedItem ).attr( 'name', `plugins[${ this.pluginRowCounter }][name]` ).removeAttr( 'id' );
-				$( '#plugin-version', clonedItem ).attr( 'name', `plugins[${ this.pluginRowCounter }][version]` ).removeAttr( 'id' );
-
-				$( '#plugin-list' ).append( clonedItem );
-				this.preparePluginRow();
+				this.onAddNewPluginClick();
 			} );
-
-			this.bindEvents();
-
-		},
-
-		/**
-		 * To bind all the events.
-		 *
-		 * @return void
-		 */
-		bindEvents: function () {
-
-			jQuery( '[name="amp_source"]' ).on( 'change', this.onAMPSourceChange );
 
 		},
 
@@ -90,7 +36,47 @@ window.addEventListener( 'DOMContentLoaded', function ( event ) {
 
 		},
 
-		/* duplicate plugin removal code */
+		/**
+		 * Callback function of version dropdown item click event.
+		 *
+		 * @return void
+		 */
+		onDropdownItemClick: function () {
+
+			const version = $( this ).data( 'value' );
+
+			$( this ).parents( '.dropdown' ).find( '.hiddenThemeVersion' ).val( version );
+			$( this ).parents( '.dropdown' ).find( '.hiddenPluginVersion' ).val( version );
+			$( this ).parents( '.dropdown' ).find( 'button' ).text( $( this ).text() );
+		},
+
+		/**
+		 * callback function of add new plugin button click event.
+		 *
+		 * @return void
+		 */
+		onAddNewPluginClick: function () {
+			this.pluginRowCounter++;
+
+			this.removeDuplicatePlugins();
+
+			let clonedItem = $( '#pluginClone' ).clone();
+
+			clonedItem.removeAttr( 'id' );
+			clonedItem.removeClass( 'd-none' );
+
+			$( '#plugin-name', clonedItem ).attr( 'name', `plugins[${ this.pluginRowCounter }][name]` ).removeAttr( 'id' );
+			$( '#plugin-version', clonedItem ).attr( 'name', `plugins[${ this.pluginRowCounter }][version]` ).removeAttr( 'id' );
+
+			$( '#plugin-list' ).append( clonedItem );
+			this.preparePluginRow();
+		},
+
+		/**
+		 * Remove duplicate plugins.
+		 *
+		 * @return void
+		 */
 		removeDuplicatePlugins: function () {
 			let nodesList = {};
 			$( '.plugin-autocomplete' ).each( function () {
@@ -101,81 +87,97 @@ window.addEventListener( 'DOMContentLoaded', function ( event ) {
 			} );
 		},
 
-		/* fetch plugin name and add remove button */
+		/**
+		 * Prepare plugins row.
+		 *
+		 * @return void
+		 */
 		preparePluginRow: function () {
-			let pluginSrc = this.pluginsData;
-			jQuery( '.plugin-autocomplete' ).autocomplete( {
+			$( '.plugin-autocomplete' ).autocomplete( {
 				minLength: 3,
-				source: function ( request, response ) {
-					let results = $.ui.autocomplete.filter( pluginSrc, request.term );
-					response( results.slice( 0, 10 ) );
+				source: ( request, response ) => {
+					const searchTerm = request.term;
+
+					$.getJSON( `/admin/extensions/search/?type=plugin&s=${ searchTerm }`, ( httpResponse ) => {
+
+						if ( 'ok' === httpResponse.status ) {
+							const extensionSlugs = [];
+							for ( const index in httpResponse.data ) {
+								extensionSlugs.push( {
+									value: httpResponse.data[ index ].slug,
+									label: httpResponse.data[ index ].name,
+									versions: httpResponse.data[ index ].versions,
+								} );
+							}
+							response( extensionSlugs );
+						}
+					} );
+				},
+				select: ( event, ui ) => {
+					const versions = ui.item.versions || [];
+					const dropDownElement = $( event.target ).siblings().find( '.plugin-dropdown' );
+
+					$( dropDownElement ).html( '' );
+					$( dropDownElement ).append( `<li><a class="dropdown-item" data-value="" href="#">Latest Version</a></li>` );
+
+					versions.map( ( data ) => {
+						$( dropDownElement ).append( `<li><a class="dropdown-item" data-value="${ data }" href="#">${ data }</a></li>` );
+					} );
+
 				},
 			} );
 
-			jQuery( '.btn-remove-plugin' ).on( 'click', function () {
+			$( '.btn-remove-plugin' ).on( 'click', function () {
 				let removeButtons = $( '#plugin-list' ).find( '.btn-remove-plugin' ).length;
 				( removeButtons > 2 ) ? $( this ).parent( '.plugin-item' ).remove() : null;
 			} );
 
 		},
 
-		/* fetch theme names */
-		themeAutocomplete: function () {
-			let themeSrc = this.themeData;
-			jQuery( '.theme-autocomplete' ).autocomplete( {
+		/**
+		 * To Prepare theme row.
+		 *
+		 * @return void
+		 */
+		prepareThemeRow: function () {
+
+			$( '.theme-autocomplete' ).autocomplete( {
 				minLength: 3,
-				source: function ( request, response ) {
-					let results = $.ui.autocomplete.filter( themeSrc, request.term );
-					response( results.slice( 0, 20 ) );
+				source: ( request, response ) => {
+					const searchTerm = request.term;
+
+					$.getJSON( `/admin/extensions/search/?type=theme&s=${ searchTerm }`, ( httpResponse ) => {
+
+						if ( 'ok' === httpResponse.status ) {
+							const extensionSlugs = [];
+							for ( const index in httpResponse.data ) {
+								extensionSlugs.push( {
+									value: httpResponse.data[ index ].slug,
+									label: httpResponse.data[ index ].name,
+									versions: httpResponse.data[ index ].versions,
+								} );
+							}
+							response( extensionSlugs );
+						}
+					} );
+				},
+				select: ( event, ui ) => {
+					const versions = ui.item.versions || [];
+					const dropDownElement = $( event.target ).siblings().find( '.theme-dropdown' );
+
+					$( dropDownElement ).html( '' );
+					$( dropDownElement ).append( `<li><a class="dropdown-item" data-value="" href="#">Latest Version</a></li>` );
+
+					versions.map( ( data ) => {
+						$( dropDownElement ).append( `<li><a class="dropdown-item" data-value="${ data }" href="#">${ data }</a></li>` );
+					} );
+
 				},
 			} );
 		},
 
-		/* fetch theme versions */
-		fetchThemeVersions: function () {
-			$( '.theme-autocomplete' ).on( 'focusout', function () {
-
-				/* update the drop down with new versions */
-				$.getJSON( "/data/wporg_mapping/themes.json", [], ( data, status, xhr ) => {
-					$( this ).siblings().find( '.theme-dropdown' ).html( "" );
-					for ( const index in data ) {
-						const parent = $( this ).val();
-						if ( "" !== parent && data[ index ].name === parent ) {
-							data[ index ].versions.map( ( data, index ) => {
-								$( this ).siblings().find( '.theme-dropdown' )
-										 .append( '<li><a class="dropdown-item" href="#">' + data + '</a></li>' );
-							} );
-						}
-					}
-				} );
-			} );
-		},
-
-		/* fetch plugin versions */
-		fetchPluginVersions: function () {
-			$( document ).on( 'focusout', '.plugin-autocomplete', function () {
-
-				/* update the drop down with new versions */
-				$.getJSON( "/data/wporg_mapping/plugins.json", [], ( data, status, xhr ) => {
-
-					/* duplicate plugin removal */
-					addAdhocSyntheticData.removeDuplicatePlugins();
-
-					$( this ).siblings().find( '.plugin-dropdown' ).html( "" );
-					for ( const index in data ) {
-						const parent = $( this ).val();
-						if ( "" !== parent && data[ index ].name === parent ) {
-							data[ index ].versions.map( ( data, index ) => {
-								$( this ).siblings().find( '.plugin-dropdown' )
-										 .append( '<li><a class="dropdown-item" href="#">' + data + '</a></li>' );
-							} );
-						}
-					}
-				} );
-			} );
-		},
 	};
+
 	addAdhocSyntheticData.init();
-	addAdhocSyntheticData.fetchThemeVersions();
-	addAdhocSyntheticData.fetchPluginVersions();
+
 } );

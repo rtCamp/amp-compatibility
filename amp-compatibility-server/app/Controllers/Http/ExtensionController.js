@@ -19,6 +19,7 @@ const Templates = use( 'App/Controllers/Templates' );
 const _ = require( 'underscore' );
 const humanFormat = require( 'human-format' );
 const { validateAll } = use( 'Validator' );
+const compareVersions = require( 'compare-versions' );
 
 class ExtensionController {
 
@@ -215,6 +216,70 @@ class ExtensionController {
 	}
 
 	/**
+	 * Api endpoint to search extension.
+	 *
+	 * @param {object} ctx
+	 * @param {Request} request ctx.request
+	 *
+	 * @return {Promise<{data, status: string}>}
+	 */
+	async search( { request } ) {
+
+		const getParams = request.get();
+		const queryParams = {
+			selectFields: [
+				'name',
+				'slug',
+				'extension_slug',
+				'type',
+			],
+			perPage: 10,
+			s: getParams.s || '',
+			searchFields: [
+				'name',
+				'slug',
+				'extension_slug',
+			],
+			orderby: {
+				active_installs: 'DESC',
+				slug: 'ASC',
+			},
+		};
+
+		if ( getParams.type ) {
+			queryParams.whereClause = {
+				type: getParams.type,
+			};
+		}
+
+		const { data: extensions } = await ExtensionModel.getResult( queryParams );
+		const { data: extensionVersions } = await ExtensionVersionModel.getResult( {
+			selectFields: [
+				'extension_slug',
+				'version',
+			],
+			whereClause: {
+				extension_slug: _.keys( extensions ),
+			},
+		} );
+
+		for ( const index in extensionVersions ) {
+
+			const extensionSlug = extensionVersions[ index ].extension_slug;
+
+			extensions[ extensionSlug ].versions = extensions[ extensionSlug ].versions || [];
+			extensions[ extensionSlug ].versions.push( extensionVersions[ index ].version );
+			extensions[ extensionSlug ].versions = extensions[ extensionSlug ].versions.sort( compareVersions ).reverse();
+		}
+
+		return {
+			status: 'ok',
+			data: extensions,
+		};
+
+	}
+
+	/**
 	 * To query and get result of extension and extension version.
 	 *
 	 * @param {Object} params
@@ -240,8 +305,8 @@ class ExtensionController {
 
 		queryObject.select = `SELECT extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, count( DISTINCT url_error_relationships.error_slug ) AS errorCount, extension_versions.verification_status`;
 		queryObject.from += `\n INNER JOIN ${ extensionVersionTable } AS extension_versions ON extensions.extension_slug = extension_versions.extension_slug AND extensions.latest_version = extension_versions.version ` +
-							`\n LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
-							`\n LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `;
+		                    `\n LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
+		                    `\n LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `;
 		queryObject.groupby = `GROUP BY extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, extension_versions.verification_status`;
 
 		if ( hasError ) {
@@ -281,9 +346,9 @@ class ExtensionController {
 			queryObject = {
 				select: 'SELECT extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.verified_by',
 				from: `FROM ${ extensionVersionTable } AS extension_versions ` +
-					  `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
-					  `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
-					  `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
+				      `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
+				      `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
+				      `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
 				where: `WHERE extensions.extension_slug IN ( ${ extensionSlugs.join( ', ' ) } )`,
 				groupby: 'GROUP BY extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.verification_status, extension_versions.verified_by',
 				orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',

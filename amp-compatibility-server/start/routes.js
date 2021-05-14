@@ -56,6 +56,7 @@ Route.group( () => {
 	 * Extensions
 	 */
 	Route.get( '/extensions/', 'ExtensionController.index' );
+	Route.get( '/extensions/search', 'ExtensionController.search' );
 	Route.get( '/extension/:extension_slug', 'ExtensionController.show' );
 	Route.get( '/extensions/page/:paged', 'ExtensionController.index' );
 	Route.post( '/extensions/', 'ExtensionController.update' );

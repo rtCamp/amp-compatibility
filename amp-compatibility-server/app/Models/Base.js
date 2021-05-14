@@ -289,7 +289,7 @@ class Base extends Model {
 		if ( params.s && ! _.isEmpty( params.searchFields ) && _.isArray( params.searchFields ) ) {
 
 			for ( const index in params.searchFields ) {
-				query.orWhere( params.searchFields[ index ], 'LIKE', `%${ params.s }%` );
+				query.andWhere( params.searchFields[ index ], 'LIKE', `%${ params.s }%` );
 			}
 		}
 
