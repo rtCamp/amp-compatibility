@@ -29,7 +29,7 @@ class ReportController {
 		const extensionVerificationCounts = await Database.from( ExtensionVersionsModel.table ).select( 'verification_status AS label' ).count( '* AS value' ).groupBy( 'verification_status' );
 		const pluginGroupCounts = await this._getExtensionCountByActiveInstalls( 'plugin' );
 		const themeGroupCounts = await this._getExtensionCountByActiveInstalls( 'theme' );
-		const extensionErrorCounts = await this._getExtensionErrorCountGroup( 'theme' );
+		// const extensionErrorCounts = await this._getExtensionErrorCountGroup();
 
 		const viewData = {
 			ampChartInfoBoxes: {
@@ -53,12 +53,12 @@ class ReportController {
 					chartType: 'doughnut',
 					data: extensionVerificationCounts,
 				},
-				errorCountGroup: {
-					id: 'error-count-group',
-					title: 'Error Count Group',
-					chartType: 'doughnut',
-					data: extensionErrorCounts,
-				},
+				// errorCountGroup: {
+				// 	id: 'error-count-group',
+				// 	title: 'Error Count Group',
+				// 	chartType: 'doughnut',
+				// 	data: extensionErrorCounts,
+				// },
 				pluginGroup: {
 					id: 'active-install-group-plugins',
 					title: 'Active Install Group (Plugins)',
