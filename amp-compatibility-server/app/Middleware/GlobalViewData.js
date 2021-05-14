@@ -118,7 +118,7 @@ class GlobalViewData {
 				title: 'Extensions',
 				icon: '',
 				url: '/admin/extensions',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/extensions' ) ),
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/extension' ) ),
 			},
 			reportDashboard: {
 				title: 'Report Dashboard',
