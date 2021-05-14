@@ -274,7 +274,7 @@ class ExtensionController {
 		let extensionVersions = [];
 		let extensionSlugs = _.pluck( extensions, 'extension_slug' );
 
-		if ( ! _.isEmpty( extensionSlugs ) ) {
+		if ( false && ! _.isEmpty( extensionSlugs ) ) {
 
 			extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
 
