@@ -76,6 +76,7 @@ const commands = [
 	'App/Commands/SyntheticDataStart',
 	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionVersionVerify',
+	'App/Commands/UpdateComputeFieldsExtensionVersion',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };
