@@ -259,14 +259,6 @@ node ace user:create --email=username@example.com --username=username --password
 | --password | Password for the user.      |
 
 
-### 7. To update extensions, and it's version mapping json file. 
-
-**Example**
-
-```bash
-node ace extension:mapping:update
-```
-
 [AdonisJS]: https://adonisjs.com/
 [WordPress.org]: https://wordpress.org/
 [BigQuery DML reference]: https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language#limitations

@@ -20,7 +20,7 @@ CRONS=(
   "* */2 * * * cd $CD_PATH && node ace update_compute_fields:extension_version > logs/cron/update_compute_fields_extension_version.log 2>&1"
 	# Run every day at 12AM
 	"0 0 * * * cd $CD_PATH && bash scripts/sites/base-site.sh"
-	"0 0 * * * cd $CD_PATH && node ace wporg:scraper --browse=updated > logs/cron/scrapper.log 2>&1 && node ace extension:mapping:update"
+	"0 0 * * * cd $CD_PATH && node ace wporg:scraper --browse=updated > logs/cron/scrapper.log 2>&1"
 	# Run at 4AM every Saturday
 	"0 4 * * 6 cd $CD_PATH && node ace synthetic-data:start --plugin-active-install=10000 --theme-active-install=1000 --number-of-instance=9 --concurrency=25 > logs/cron/synthetic-data-cron.log 2>&1"
 )
