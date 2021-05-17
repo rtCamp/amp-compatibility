@@ -5,6 +5,7 @@ const { Command } = require( '@adonisjs/ace' );
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 const Logger = use( 'Logger' );
+const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
 
 class UpdateComputeFieldsExtensionVersion extends Command {
@@ -39,7 +40,7 @@ class UpdateComputeFieldsExtensionVersion extends Command {
 		let totalPage = 1;
 		const params = {
 			paged: 1,
-			perPage: 20,
+			perPage: 200,
 		};
 
 		do {
@@ -68,6 +69,8 @@ class UpdateComputeFieldsExtensionVersion extends Command {
 			}
 
 			params.paged = params.paged + 1;
+
+			await Utility.sleep( 2 );
 
 		} while ( params.paged <= totalPage );
 
