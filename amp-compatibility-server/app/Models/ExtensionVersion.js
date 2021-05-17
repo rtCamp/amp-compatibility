@@ -144,6 +144,24 @@ class ExtensionVersion extends Base {
 
 		return preparedItems;
 	}
+
+	/**
+	 * To update error count for current record.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async updateErrorCount() {
+
+		const query = `SELECT count( DISTINCT error_slug ) as error_count \n` +
+		              `FROM url_error_relationships LEFT JOIN error_sources ON url_error_relationships.error_source_slug = error_sources.error_source_slug \n` +
+		              `WHERE error_sources.extension_version_slug = '${ this.extension_version_slug }';`;
+
+		const [ result ] = await Database.raw( query );
+
+		this.error_count = result[ 0 ].error_count || 0;
+
+		return ( await this.save() );
+	}
 }
 
 module.exports = ExtensionVersion;

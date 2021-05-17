@@ -248,19 +248,22 @@ class Base extends Model {
 	 *
 	 * @return {{select: string, limit: string, orderby: string, from: string, where: string, groupby: string}}
 	 */
-	static async _prepareQuery( args ) {
+	static async _prepareQuery( args, query = null ) {
 
 		const params = _.defaults( args, {
 			selectFields: [],
 			paged: 1,
 			perPage: 1000,
 			whereClause: {},
+			whereNot: {},
 			orderby: {},
 			s: '',
 			searchFields: [],
 		} );
 
-		let query = Database.from( this.table );
+		if ( ! query ) {
+			query = Database.from( this.table );
+		}
 
 		if ( ! _.isEmpty( params.selectFields ) && _.isArray( params.selectFields ) ) {
 
@@ -270,15 +273,34 @@ class Base extends Model {
 			query = query.select( selectFields );
 		}
 
+		/**
+		 * Where Clause.
+		 */
 		if ( ! _.isEmpty( params.whereClause ) && _.isObject( params.whereClause ) ) {
 
 			for ( const field in params.whereClause ) {
 				const value = params.whereClause[ field ];
 
 				if ( _.isArray( value ) ) {
-					query = query.where( field, 'IN', value );
+					query = query.whereIn( field, value );
 				} else {
 					query = query.where( field, value );
+				}
+			}
+		}
+
+		/**
+		 * Where Not Clause.
+		 */
+		if ( ! _.isEmpty( params.whereNot ) && _.isObject( params.whereNot ) ) {
+
+			for ( const field in params.whereNot ) {
+				const value = params.whereNot[ field ];
+
+				if ( _.isArray( value ) ) {
+					query = query.whereNotIn( field, value );
+				} else {
+					query = query.whereNot( field, value );
 				}
 			}
 		}
@@ -287,12 +309,18 @@ class Base extends Model {
 		 * Add clause for search.
 		 */
 		if ( params.s && ! _.isEmpty( params.searchFields ) && _.isArray( params.searchFields ) ) {
+			const searchObject = [];
 
-			for ( const index in params.searchFields ) {
-				query.andWhere( params.searchFields[ index ], 'LIKE', `%${ params.s }%` );
+			for ( let index in params.searchFields ) {
+				searchObject.push( `${ params.searchFields[ index ] } LIKE '%${ params.s }%'` );
 			}
+
+			query.whereRaw( `( ${ searchObject.join( ' OR ' ) } )` );
 		}
 
+		/**
+		 * Order by clauses.
+		 */
 		if ( ! _.isEmpty( params.orderby ) && _.isObject( params.orderby ) ) {
 
 			for ( let field in params.orderby ) {
@@ -300,6 +328,9 @@ class Base extends Model {
 			}
 		}
 
+		/**
+		 * Pagination.
+		 */
 		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
 			query = query.paginate( params.paged, params.perPage );
 		}

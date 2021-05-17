@@ -37,16 +37,16 @@ class ExtensionController {
 	async index( { request, response, view, params } ) {
 		params = _.defaults( params, {
 			paged: 1,
-			perPage: 10,
+			perPage: 20,
 			s: request.input( 's' ) || '',
 			searchFields: [
-				'name',
-				'slug',
-				'extension_slug',
+				'extensions.name',
+				'extensions.slug',
+				'extensions.extension_slug',
 			],
 			orderby: {
-				active_installs: 'DESC',
-				slug: 'ASC',
+				'extensions.active_installs': 'DESC',
+				'extensions.slug': 'ASC',
 			},
 		} );
 
@@ -59,8 +59,8 @@ class ExtensionController {
 		}
 
 		if ( hasError ) {
-			params.whereClause = params.whereClause || {};
-			params.whereClause.has_error = true;
+			params.whereNot = params.whereClause || {};
+			params.whereNot.error_count = 0;
 		}
 
 		const { extensionCount, extensions, extensionVersions } = await this.getExtensionData( params );
@@ -93,7 +93,7 @@ class ExtensionController {
 		 */
 		const queryParams = {
 			whereClause: {
-				extension_slug: extensionSlug,
+				'extensions.extension_slug': extensionSlug,
 			},
 		};
 
@@ -288,50 +288,27 @@ class ExtensionController {
 	 */
 	async getExtensionData( params ) {
 
-		const extensionArgs = _.clone( params );
-		let hasError = false;
+		const selectFields = [
+			'extensions.extension_slug',
+			'extensions.name',
+			'extensions.slug',
+			'extensions.wporg',
+			'extensions.type',
+			'extensions.latest_version',
+			'extensions.active_installs',
+			'extensions.is_partner',
+			'extensions.last_updated',
+			'extension_versions.error_count',
+			'extension_versions.verification_status',
+		];
 
-		const extensionTable = '`' + `${ ExtensionModel.table }` + '`';
-		const errorSourceTable = '`' + `${ ErrorSourceModel.table }` + '`';
-		const extensionVersionTable = '`' + `${ ExtensionVersionModel.table }` + '`';
-		const urlErrorRelationshipTable = '`' + `${ UrlErrorRelationshipModel.table }` + '`';
+		let query = Database.table( ExtensionModel.table ).select( selectFields )
+				.innerJoin( ExtensionVersionModel.table, function () {
+					this.on( 'extensions.extension_slug', 'extension_versions.extension_slug' )
+						.andOn( 'extensions.latest_version', 'extension_versions.version' );
+				} );
 
-		if ( extensionArgs.whereClause && extensionArgs.whereClause.has_error ) {
-			hasError = !! extensionArgs.whereClause.has_error;
-			delete extensionArgs.whereClause.has_error;
-		}
-
-		let queryObject = ExtensionModel.parseQueryArgs( extensionArgs );
-
-		queryObject.select = `SELECT extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, count( DISTINCT url_error_relationships.error_slug ) AS errorCount, extension_versions.verification_status`;
-		queryObject.from += `\n INNER JOIN ${ extensionVersionTable } AS extension_versions ON extensions.extension_slug = extension_versions.extension_slug AND extensions.latest_version = extension_versions.version ` +
-		                    `\n LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
-		                    `\n LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `;
-		queryObject.groupby = `GROUP BY extensions.extension_slug, extensions.name, extensions.slug, extensions.wporg, extensions.type, extensions.latest_version, extensions.active_installs, extensions.is_partner, extensions.last_updated, extension_versions.verification_status`;
-
-		if ( hasError ) {
-			queryObject.orderby = queryObject.orderby.replace( 'ORDER BY ', 'ORDER BY errorCount DESC, ' );
-		}
-
-		let query = `SELECT * FROM ( ${ _.toArray( queryObject ).join( "\n" ) } ) AS extension_detail`;
-
-		// Remove the limit before querying count query.
-		delete queryObject.limit;
-		let countQuery = `SELECT count(1) AS count FROM ( ${ _.toArray( queryObject ).join( "\n" ) } ) AS extension_detail`;
-
-		if ( hasError ) {
-			query += ` WHERE errorCount != 0;`;
-			countQuery += ` WHERE errorCount != 0;`;
-		}
-
-		const [ extensions ] = await Database.raw( query );
-		let [ extensionCount ] = await Database.raw( countQuery );
-
-		if ( ! _.isEmpty( extensionCount ) ) {
-			extensionCount = extensionCount[ 0 ].count ? extensionCount[ 0 ].count : 0;
-		} else {
-			extensionCount = 0;
-		}
+		const { data: extensions, total: extensionCount } = await ExtensionModel._prepareQuery( params, query );
 
 		/**
 		 * Extension version query.
@@ -339,25 +316,15 @@ class ExtensionController {
 		let extensionVersions = [];
 		let extensionSlugs = _.pluck( extensions, 'extension_slug' );
 
-		if ( false && ! _.isEmpty( extensionSlugs ) ) {
+		if ( ! _.isEmpty( extensionSlugs ) ) {
 
-			extensionSlugs = _.map( extensionSlugs, ExtensionModel._prepareValueForDB );
+			extensionVersions = await ExtensionVersionModel.getResult( {
+				whereClause: {
+					extension_slug: extensionSlugs,
+				},
+			} );
 
-			queryObject = {
-				select: 'SELECT extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extensions.name, extension_versions.slug, extension_versions.version, extension_versions.type, extensions.active_installs, count( DISTINCT url_error_relationships.error_slug ) AS error_count, extension_versions.verification_status, extension_versions.verified_by',
-				from: `FROM ${ extensionVersionTable } AS extension_versions ` +
-				      `LEFT JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug ` +
-				      `LEFT JOIN ${ errorSourceTable } AS error_sources ON extension_versions.extension_version_slug = error_sources.extension_version_slug ` +
-				      `LEFT JOIN ${ urlErrorRelationshipTable } AS url_error_relationships ON url_error_relationships.error_source_slug = error_sources.error_source_slug `,
-				where: `WHERE extensions.extension_slug IN ( ${ extensionSlugs.join( ', ' ) } )`,
-				groupby: 'GROUP BY extensions.extension_slug, extensions.name, extension_versions.extension_version_slug, extension_versions.slug, extensions.name, extension_versions.version, extension_versions.type, extensions.active_installs, extension_versions.verification_status, extension_versions.verified_by',
-				orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
-			};
-
-			query = _.toArray( queryObject ).join( "\n" );
-
-			[ extensionVersions ] = await Database.raw( query );
-
+			extensionVersions = extensionVersions.data || {};
 		}
 
 		return {
@@ -378,85 +345,116 @@ class ExtensionController {
 	 */
 	async _getErrorAndErrorSourceInfoByExtensionVersion( extensionVersionSlug ) {
 
-		let allErrorData = {};
-		let allErrorSlugs = [];
-		let errorSourceRelationships = {};
+		/**
+		 * 1. Get all URL Error Relationship data.
+		 */
+		let urlErrorRelationships = [];
+		let urlErrorRelationshipsIteration = [];
+		const perPage = 1000;
+		let currentPage = 0;
+
+		do {
+
+			currentPage = currentPage + 1;
+
+			urlErrorRelationshipsIteration = await Database.table( UrlErrorRelationshipModel.table )
+			                                               .select(
+				                                               [
+					                                               `${ UrlErrorRelationshipModel.table }.hash`,
+					                                               `${ UrlErrorRelationshipModel.table }.error_slug`,
+					                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
+				                                               ],
+			                                               )
+			                                               .innerJoin(
+				                                               ErrorSourceModel.table,
+				                                               `${ ErrorSourceModel.table }.error_source_slug`,
+				                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
+			                                               )
+			                                               .where( 'extension_version_slug', extensionVersionSlug )
+			                                               .paginate( currentPage, perPage );
+
+			urlErrorRelationshipsIteration = urlErrorRelationshipsIteration.data;
+
+			if ( _.isEmpty( urlErrorRelationshipsIteration ) ) {
+				break;
+			}
+
+			urlErrorRelationships = [ ...urlErrorRelationships, ...urlErrorRelationshipsIteration ];
+
+		} while ( ! _.isEmpty( urlErrorRelationshipsIteration ) );
+
+
+		let errorSlugs = _.pluck( urlErrorRelationships, 'error_slug' );
+		errorSlugs = _.uniq( errorSlugs );
+
+		let errorSourceSlugs = _.pluck( urlErrorRelationships, 'error_source_slug' );
+		errorSourceSlugs = _.uniq( errorSourceSlugs );
 
 		/**
-		 * 1. Get all error source information by extension version.
+		 * 2. Get error detail.
 		 */
-		const { data: allErrorSourceData } = await ErrorSourceModel.getResult( {
-			whereClause: {
-				extension_version_slug: extensionVersionSlug,
-			},
-		} );
-
-		/**
-		 * 2. From error source information. get all URL error relationships.
-		 */
-		let errorSourceSlugChunks = _.pluck( allErrorSourceData, 'error_source_slug' );
-		errorSourceSlugChunks = _.chunk( errorSourceSlugChunks, 200 );
-
-		for ( const index in errorSourceSlugChunks ) {
-			const errorSourceSlugChunk = errorSourceSlugChunks[ index ];
-
-			let { data: errorSourceRelationship } = await UrlErrorRelationshipModel.getResult( {
-				selectFields: [
-					'error_slug',
-					'error_source_slug',
-				],
-				whereClause: {
-					error_source_slug: errorSourceSlugChunk,
-				},
-			} );
-
-			let errorsSlugs = _.pluck( errorSourceRelationship, 'error_slug' );
-			allErrorSlugs = [ ...allErrorSlugs, ...errorsSlugs ];
-
-			errorSourceRelationships = _.defaults( errorSourceRelationship, errorSourceRelationships );
-		}
-
-		allErrorSlugs = _.uniq( allErrorSlugs );
-		const errorSlugChunks = _.chunk( allErrorSlugs, 200 );
+		let errors = {};
+		const errorSlugChunks = _.chunk( errorSlugs, 100 );
 
 		for ( const index in errorSlugChunks ) {
-			const errorSlugChunk = errorSlugChunks[ index ];
-
-			const { data: errorData } = await ErrorModel.getResult( {
-				whereClause: {
-					error_slug: errorSlugChunk,
+			let errorsIteration = await ErrorModel.getResult(
+				{
+					whereClause: {
+						error_slug: errorSlugChunks[ index ],
+					},
 				},
-			} );
+			);
 
-			allErrorData = _.defaults( errorData, allErrorData );
+			errors = { ...errors, ...errorsIteration.data };
 		}
 
 		/**
-		 * 3. Map error and error source relations.
+		 * 3. Get error source detail.
 		 */
-		const errors = {};
-		for ( const index in errorSourceRelationships ) {
-			const errorSourceRelationship = errorSourceRelationships[ index ];
-			const errorSlug = errorSourceRelationship.error_slug;
-			const errorSourceSlug = errorSourceRelationship.error_source_slug;
+		let errorSources = {};
+		const errorSourceSlugChunks = _.chunk( errorSourceSlugs, 100 );
 
-			if ( ! errors[ errorSlug ] ) {
-				errors[ errorSlug ] = {
+		for ( const index in errorSourceSlugChunks ) {
+			let errorSourcesIteration = await ErrorSourceModel.getResult(
+				{
+					whereClause: {
+						error_source_slug: errorSourceSlugChunks[ index ],
+					},
+				},
+			);
+
+			errorSources = { ...errorSources, ...errorSourcesIteration.data };
+
+		}
+
+		/**
+		 * 4. Generate the mapping of error and error source.
+		 */
+		const errorMapping = {};
+
+		for ( const index in urlErrorRelationships ) {
+
+			const relationship = urlErrorRelationships[ index ];
+			const errorSlug = relationship.error_slug;
+			const errorSourceSlug = relationship.error_source_slug;
+
+			if ( ! errorMapping[ errorSlug ] ) {
+				errorMapping[ errorSlug ] = {
 					error_slug: errorSlug,
 					sources: [],
 				};
 			}
 
-			if ( ! errors[ errorSlug ].sources.includes( errorSourceSlug ) ) {
-				errors[ errorSlug ].sources.push( errorSourceSlug );
+			if ( ! errorMapping[ errorSlug ].sources.includes( errorSourceSlug ) ) {
+				errorMapping[ errorSlug ].sources.push( errorSourceSlug );
 			}
 
 		}
 
 		return {
-			errors: errors,
-			allErrors: allErrorData,
-			allErrorSources: allErrorSourceData,
+			errors: errorMapping,
+			allErrors: errors,
+			allErrorSources: errorSources,
 		};
 	}
 
@@ -489,7 +487,7 @@ class ExtensionController {
 				type: item.type,
 				latest_version: item.latest_version,
 				active_installs: humanFormat( item.active_installs ),
-				error_count: item.errorCount,
+				error_count: item.error_count,
 				is_partner: {
 					extension_slug: item.extension_slug,
 					name: item.name,

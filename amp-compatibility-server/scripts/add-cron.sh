@@ -14,8 +14,10 @@ CRONTAB_CONFIG=(
 )
 
 CRONS=(
-	# Run every 2mins
+	# Run every 2 minutes.
 	"*/2 * * * * cd $CD_PATH && bash scripts/pull-cd.sh  > logs/cron/pull-cd.log 2>&1"
+	# Every 2 hours
+  "* */2 * * * cd $CD_PATH && node ace update_compute_fields:extension_version > logs/cron/update_compute_fields_extension_version.log 2>&1"
 	# Run every day at 12AM
 	"0 0 * * * cd $CD_PATH && bash scripts/sites/base-site.sh"
 	"0 0 * * * cd $CD_PATH && node ace wporg:scraper --browse=updated > logs/cron/scrapper.log 2>&1 && node ace extension:mapping:update"
