@@ -345,85 +345,116 @@ class ExtensionController {
 	 */
 	async _getErrorAndErrorSourceInfoByExtensionVersion( extensionVersionSlug ) {
 
-		let allErrorData = {};
-		let allErrorSlugs = [];
-		let errorSourceRelationships = {};
+		/**
+		 * 1. Get all URL Error Relationship data.
+		 */
+		let urlErrorRelationships = [];
+		let urlErrorRelationshipsIteration = [];
+		const perPage = 1000;
+		let currentPage = 0;
+
+		do {
+
+			currentPage = currentPage + 1;
+
+			urlErrorRelationshipsIteration = await Database.table( UrlErrorRelationshipModel.table )
+			                                               .select(
+				                                               [
+					                                               `${ UrlErrorRelationshipModel.table }.hash`,
+					                                               `${ UrlErrorRelationshipModel.table }.error_slug`,
+					                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
+				                                               ],
+			                                               )
+			                                               .innerJoin(
+				                                               ErrorSourceModel.table,
+				                                               `${ ErrorSourceModel.table }.error_source_slug`,
+				                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
+			                                               )
+			                                               .where( 'extension_version_slug', extensionVersionSlug )
+			                                               .paginate( currentPage, perPage );
+
+			urlErrorRelationshipsIteration = urlErrorRelationshipsIteration.data;
+
+			if ( _.isEmpty( urlErrorRelationshipsIteration ) ) {
+				break;
+			}
+
+			urlErrorRelationships = [ ...urlErrorRelationships, ...urlErrorRelationshipsIteration ];
+
+		} while ( ! _.isEmpty( urlErrorRelationshipsIteration ) );
+
+
+		let errorSlugs = _.pluck( urlErrorRelationships, 'error_slug' );
+		errorSlugs = _.uniq( errorSlugs );
+
+		let errorSourceSlugs = _.pluck( urlErrorRelationships, 'error_source_slug' );
+		errorSourceSlugs = _.uniq( errorSourceSlugs );
 
 		/**
-		 * 1. Get all error source information by extension version.
+		 * 2. Get error detail.
 		 */
-		const { data: allErrorSourceData } = await ErrorSourceModel.getResult( {
-			whereClause: {
-				extension_version_slug: extensionVersionSlug,
-			},
-		} );
-
-		/**
-		 * 2. From error source information. get all URL error relationships.
-		 */
-		let errorSourceSlugChunks = _.pluck( allErrorSourceData, 'error_source_slug' );
-		errorSourceSlugChunks = _.chunk( errorSourceSlugChunks, 200 );
-
-		for ( const index in errorSourceSlugChunks ) {
-			const errorSourceSlugChunk = errorSourceSlugChunks[ index ];
-
-			let { data: errorSourceRelationship } = await UrlErrorRelationshipModel.getResult( {
-				selectFields: [
-					'error_slug',
-					'error_source_slug',
-				],
-				whereClause: {
-					error_source_slug: errorSourceSlugChunk,
-				},
-			} );
-
-			let errorsSlugs = _.pluck( errorSourceRelationship, 'error_slug' );
-			allErrorSlugs = [ ...allErrorSlugs, ...errorsSlugs ];
-
-			errorSourceRelationships = _.defaults( errorSourceRelationship, errorSourceRelationships );
-		}
-
-		allErrorSlugs = _.uniq( allErrorSlugs );
-		const errorSlugChunks = _.chunk( allErrorSlugs, 200 );
+		let errors = {};
+		const errorSlugChunks = _.chunk( errorSlugs, 100 );
 
 		for ( const index in errorSlugChunks ) {
-			const errorSlugChunk = errorSlugChunks[ index ];
-
-			const { data: errorData } = await ErrorModel.getResult( {
-				whereClause: {
-					error_slug: errorSlugChunk,
+			let errorsIteration = await ErrorModel.getResult(
+				{
+					whereClause: {
+						error_slug: errorSlugChunks[ index ],
+					},
 				},
-			} );
+			);
 
-			allErrorData = _.defaults( errorData, allErrorData );
+			errors = { ...errors, ...errorsIteration.data };
 		}
 
 		/**
-		 * 3. Map error and error source relations.
+		 * 3. Get error source detail.
 		 */
-		const errors = {};
-		for ( const index in errorSourceRelationships ) {
-			const errorSourceRelationship = errorSourceRelationships[ index ];
-			const errorSlug = errorSourceRelationship.error_slug;
-			const errorSourceSlug = errorSourceRelationship.error_source_slug;
+		let errorSources = {};
+		const errorSourceSlugChunks = _.chunk( errorSourceSlugs, 100 );
 
-			if ( ! errors[ errorSlug ] ) {
-				errors[ errorSlug ] = {
+		for ( const index in errorSourceSlugChunks ) {
+			let errorSourcesIteration = await ErrorSourceModel.getResult(
+				{
+					whereClause: {
+						error_source_slug: errorSourceSlugChunks[ index ],
+					},
+				},
+			);
+
+			errorSources = { ...errorSources, ...errorSourcesIteration.data };
+
+		}
+
+		/**
+		 * 4. Generate the mapping of error and error source.
+		 */
+		const errorMapping = {};
+
+		for ( const index in urlErrorRelationships ) {
+
+			const relationship = urlErrorRelationships[ index ];
+			const errorSlug = relationship.error_slug;
+			const errorSourceSlug = relationship.error_source_slug;
+
+			if ( ! errorMapping[ errorSlug ] ) {
+				errorMapping[ errorSlug ] = {
 					error_slug: errorSlug,
 					sources: [],
 				};
 			}
 
-			if ( ! errors[ errorSlug ].sources.includes( errorSourceSlug ) ) {
-				errors[ errorSlug ].sources.push( errorSourceSlug );
+			if ( ! errorMapping[ errorSlug ].sources.includes( errorSourceSlug ) ) {
+				errorMapping[ errorSlug ].sources.push( errorSourceSlug );
 			}
 
 		}
 
 		return {
-			errors: errors,
-			allErrors: allErrorData,
-			allErrorSources: allErrorSourceData,
+			errors: errorMapping,
+			allErrors: errors,
+			allErrorSources: errorSources,
 		};
 	}
 
