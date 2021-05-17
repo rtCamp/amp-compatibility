@@ -29,7 +29,7 @@ class ReportController {
 		const extensionVerificationCounts = await Database.from( ExtensionVersionsModel.table ).select( 'verification_status AS label' ).count( '* AS value' ).groupBy( 'verification_status' );
 		const pluginGroupCounts = await this._getExtensionCountByActiveInstalls( 'plugin' );
 		const themeGroupCounts = await this._getExtensionCountByActiveInstalls( 'theme' );
-		// const extensionErrorCounts = await this._getExtensionErrorCountGroup();
+		const extensionErrorCounts = await this._getExtensionErrorCountGroup();
 
 		const viewData = {
 			ampChartInfoBoxes: {
@@ -53,12 +53,12 @@ class ReportController {
 					chartType: 'doughnut',
 					data: extensionVerificationCounts,
 				},
-				// errorCountGroup: {
-				// 	id: 'error-count-group',
-				// 	title: 'Error Count Group',
-				// 	chartType: 'doughnut',
-				// 	data: extensionErrorCounts,
-				// },
+				errorCountGroup: {
+					id: 'error-count-group',
+					title: 'Error Count Group',
+					chartType: 'doughnut',
+					data: extensionErrorCounts,
+				},
 				pluginGroup: {
 					id: 'active-install-group-plugins',
 					title: 'Active Install Group (Plugins)',
@@ -115,29 +115,6 @@ GROUP BY label;`;
 	 */
 	async _getExtensionErrorCountGroup() {
 
-		const errorCountByExtension = `
-            SELECT extensions.slug, count(DISTINCT errors.error_slug) AS error_count
-            FROM extensions AS extensions
-                     INNER JOIN extension_versions AS extension_versions
-                                ON extensions.extension_slug = extension_versions.extension_slug AND
-                                   extensions.latest_version = extension_versions.version
-                     INNER JOIN
-                 (
-                     SELECT error_sources.extension_version_slug, count(1) AS source_count
-                     FROM error_sources AS error_sources
-                     GROUP BY error_sources.extension_version_slug
-                 ) AS source_counts
-                 ON extension_versions.extension_version_slug = source_counts.extension_version_slug
-                     INNER JOIN error_sources AS error_sources
-                                ON extension_versions.extension_version_slug = error_sources.extension_version_slug
-                     INNER JOIN url_error_relationships AS url_error_relationships
-                                ON url_error_relationships.error_source_slug = error_sources.error_source_slug
-                     INNER JOIN errors AS errors
-                                ON errors.error_slug = url_error_relationships.error_slug
-            WHERE extensions.wporg = true
-            GROUP BY extensions.slug
-            ORDER BY error_count DESC`;
-
 		const query = `
 		SELECT CASE
 			WHEN error_count = 0 THEN "None"
@@ -149,7 +126,7 @@ GROUP BY label;`;
 			WHEN error_count BETWEEN 500 AND 1000 THEN "500 - 1000"
 			WHEN error_count > 1000 THEN "1000 - Above"
 		END AS label, count(1) AS value
-		FROM ( ${ errorCountByExtension } ) AS view_error_count_by_extension
+		FROM ${ ExtensionVersionsModel.table }
 		GROUP BY label;`;
 
 		const [ result ] = await Database.raw( query );
