@@ -55,6 +55,15 @@ class Extension extends Base {
 	}
 
 	/**
+	 * Lucid ORM Relations.
+	 *
+	 * @return {HasMany}
+	 */
+	extension_slug() {
+		return this.hasMany( 'App/Models/ExtensionVersion' );
+	}
+
+	/**
 	 * After record create event.
 	 *
 	 * @return {Promise<void>}
