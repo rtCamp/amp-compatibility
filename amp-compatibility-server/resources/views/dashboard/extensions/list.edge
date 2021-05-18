@@ -1,5 +1,39 @@
 @layout( 'dashboard/base' )
 
+@section('header_tools')
+<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
+	<div class="input-group">
+		<div class="input-group-text border-0"><span class="material-icons">search</span></div>
+		<input type="search" class="form-control" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
+		<div class="dropdown">
+		<a class="btn btn-outline-secondary dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false"></a>
+		<ul class="dropdown-menu collapse list-group list-group-horizontal-sm justify-content-end mt-0 mb-3 end-0">
+			<li class="dropdown-item border-0 pt-0 pb-0">
+				<a class="" href="/admin/extensions">All</a>
+			</li>
+			<li class="dropdown-item border-0 pt-0 pb-0">
+				<label for="is_partner">
+					<input id="is_partner" name="is_partner" type="checkbox"
+							value="1" {{queryStrings.is_partner ? 'checked' : ''}} >
+					Partner Only
+				</label>
+			</li>
+			<li class="dropdown-item border-0 pt-0 pb-0">
+				<label for="has_error">
+					<input id="has_error" name="has_error" type="checkbox" value="1" {{queryStrings.has_error ? 'checked' : ''}}>
+					Extensions with error<br />
+					<small>(Latest version)</small>
+				</label>
+			</li>
+			<li class="dropdown-item">
+				<button class="btn btn-outline-secondary" type="submit" id="searchButton">Search</button>
+			</li>
+		</ul>
+		</div>
+	</div>
+</div>
+@endsection
+
 @section('page')
 	<div>
 		<div>

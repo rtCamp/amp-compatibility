@@ -2,8 +2,7 @@
 'use strict';
 
 import $ from 'jquery';
-import * as mdb from 'mdb-ui-kit';
-import bootstrap from 'bootstrap';
+import 'bootstrap';
 
 window.$ = window.jQuery = $;
 

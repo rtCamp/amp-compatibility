@@ -50,6 +50,9 @@ class GlobalViewData {
 		View.global( 'snackCaseToString', ( string ) => {
 			return string.replace( /_+/g, ' ' );
 		} );
+		View.global( 'toHyphenated', ( string ) => {
+			return string.toLowerCase().replace( / +/g, '-' );
+		} );
 
 		/**
 		 * Templates.
@@ -99,20 +102,6 @@ class GlobalViewData {
 				icon: '',
 				url: '/admin/adhoc-synthetic-queue',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
-				childs: {
-					list: {
-						title: 'All Adhoc Requests',
-						icon: '',
-						url: '/admin/adhoc-synthetic-queue',
-						isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
-					},
-					add: {
-						title: 'Add Adhoc Requests',
-						icon: '',
-						url: '/admin/adhoc-synthetic-queue/add',
-						isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
-					},
-				},
 			},
 			extensions: {
 				title: 'Extensions',

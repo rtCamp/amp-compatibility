@@ -2,7 +2,7 @@
 
 @section('page')
 
-	<div class="row mb-4">
+	<div class="row mb-4 gy-2">
 		<div class="col-md-12">
 			<h5>Queue status</h5>
 			<hr/>
@@ -10,11 +10,11 @@
 
 		@each( queue in queues )
 
-		<div class="col-md-4">
+		<div class="col-md-6 col-lg-4">
 			<ul class="list-group">
 				<li class="list-group-item active" aria-current="true">{{ upperFirst( snackCaseToString( queue.name ) )}}</li>
 				@each( ( number, status ) in queue.health )
-				<li class="list-group-item">{{ upperFirst( snackCaseToString( status ) ) }} <span class="badge bg-primary float-end">{{number || 0}}</span>
+				<li class="list-group-item">{{ upperFirst( snackCaseToString( status ) ) }} <span class="badge status-{{status}} float-end">{{number || 0}}</span>
 				</li>
 				@endeach
 			</ul>

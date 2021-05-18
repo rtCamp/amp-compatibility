@@ -1,4 +1,4 @@
-import * as mdb from 'mdb-ui-kit';
+import { Toast } from 'mdb-ui-kit';
 
 export function showNotification( message, type = 'secondary' ) {
 
@@ -14,7 +14,7 @@ export function showNotification( message, type = 'secondary' ) {
 	toast.classList.add( 'toast', 'fade', 'text-white', 'mb-2', `bg-${ type }` );
 	notificationContainer.appendChild( toast );
 
-	const toastInstance = new mdb.Toast( toast, {
+	const toastInstance = new Toast( toast, {
 		stacking: true,
 		hidden: true,
 		width: '450px',

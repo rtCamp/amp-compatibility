@@ -1,258 +1,71 @@
 $primary: #3f51b5 !default;
-$secondary: #1976d2 !default;
-$success: #198754 !default;
-//$info: #0dcaf0 !default;
-$warning: #ffc107 !default;
-$danger: #dc3545 !default;
+$secondary: #4285F4 !default;
+$success: #0b8043 !default;
+$info: rgba(0,0,0,.54) !default;
+$warning: #f2a600 !default;
+$danger: #d50000 !default;
 
+// @import "~bootstrap/scss/bootstrap";
 @import '~mdb-ui-kit/src/scss/mdb.free';
 
-body {
-	font-size: .875rem;
-}
-
-.list-group-item {
-	color: $gray-800;
-}
-
-/*
- * Sidebar
- */
-.sidebar {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 100; /* Behind the navbar */
-	padding: 48px 0 0; /* Height of navbar */
-	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-}
-
-@media (max-width: 767.98px) {
+@include media-breakpoint-up(md) {
 	.sidebar {
-		top: 5rem;
+		height: calc( 100vh - 65px );
 	}
 }
 
-.sidebar-sticky {
-	position: relative;
-	top: 0;
-	height: calc(100vh - 48px);
-	padding-top: .5rem;
-	overflow-x: hidden;
-	overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+.status-waiting {
+	@extend .bg-info;
 }
 
-.nav-tabs .nav-link {
-	border-color: $gray-100;
+.status-active {
+	@extend .bg-primary;
 }
 
-.sidebar .nav-link {
-	font-weight: 400;
-	color: #333;
+.status-succeeded {
+	@extend .bg-success;
 }
 
-.sidebar .nav-link .feather {
-	margin-right: 4px;
-	color: #727272;
+.status-failed {
+	@extend .bg-danger;
 }
 
-.sidebar .nav-link.active {
-	color: var(--mdb-primary);
+.status-delayed {
+	@extend .bg-warning;
 }
 
-.sidebar .nav-link:hover .feather,
-.sidebar .nav-link.active .feather {
-	color: inherit;
+.status-newestJob {
+	@extend .bg-primary;
 }
 
-.sidebar-heading {
-	font-size: .75rem;
-	text-transform: uppercase;
+.header-tools {
+	min-width: 720px;
 }
 
-/*
- * Navbar
- */
+.search-toolbar .input-group {
+	background-color: rgba($color: #fff, $alpha: 0.1);
+	border-radius: 8px;
+	transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
 
-.navbar-brand {
-	padding-top: .75rem;
-	padding-bottom: .75rem;
-	font-size: 1rem;
-	background-color: rgba(0, 0, 0, .25);
-	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
-}
-
-.navbar .navbar-toggler {
-	top: .25rem;
-	right: 1rem;
-}
-
-.navbar .form-control {
-	padding: .75rem 1rem;
-	border-width: 0;
-	border-radius: 0;
-}
-
-.form-control-dark {
-	color: #fff;
-	background-color: rgba(255, 255, 255, .1);
-	border-color: rgba(255, 255, 255, .1);
-}
-
-.form-control-dark:focus {
-	border-color: transparent;
-	box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
-}
-
-.form-group {
-	margin-bottom: 1rem;
-}
-
-.col-actions {
-	min-width: 150px;
-}
-
-.info-box {
-	.item-key {
-		min-width: 210px;
+	.input-group-text {
+		color: #fff;
 	}
 
-}
-
-.json-data,
-.error-log {
-	border: 1px solid #dedede;
-	border-radius: 5px;
-	padding: 15px;
-	max-height: 510px;
-	overflow: scroll;
-	font-size: 12px;
-	line-height: 2;
-}
-
-.json-data {
-	line-height: 1.2;
-	padding: 5px;
-	font-size: 10px;
-}
-
-abbr {
-	border-bottom: 1px dotted $primary;
-	cursor: pointer;
-}
-
-.table {
-
-	td,
-	&.table-sm td,
-	&.table-sm th {
-		padding-right: 0.5rem;
-		padding-left: 0.5rem;
-	}
-
-	.url {
-		width: 25%;
-	}
-
-	.node_attributes {
-		width: 20%;
-	}
-
-	.raw_data {
-		width: 130px;
-	}
-
-	td.active_installs,
-	td.error_count {
-		text-align: right;
-	}
-
-	.active_installs {
-		width: 105px;
-	}
-
-	.error_count {
-		width: 90px;
-	}
-
-	.verification_status {
-		width: 160px;
-	}
-
-	.accordion-button {
-		padding: 5px 15px;
+	input[type="search"] {
 		background-color: transparent;
-		font-weight: bold;
-		box-shadow: none !important;
-		width: auto;
+		border: none;
+		outline: none;
+	}
 
-		&::after {
-			margin: auto;
+	&:focus-within {
+		background-color: white;
+
+		.input-group-text {
+			color: #000;
 		}
-	}
-}
 
-.plugin-version,
-.theme-version {
-	width: 170px;
-	text-align: left;
-
-	&:after {
-		position: absolute;
-		top: 50%;
-		right: 1.375rem;
-	}
-}
-
-.btn-remove-plugin {
-	padding: .5rem 1rem;
-}
-
-#extension-table {
-	.name {
-		max-width: 400px;
-	}
-}
-
-.accordion-collapse > .accordion-body {
-	border-color: $primary;
-	border-left: 3px solid $primary;
-	border-bottom: 3px solid $primary;
-	border-radius: 0 0 0 3px;
-	margin-bottom: 15px;
-
-	&.error-data {
-		border-color: $warning;
-	}
-
-}
-
-.form-select-xs {
-	padding: 0 3px;
-	font-size: 14px;
-}
-
-.btn-xs {
-	font-size: 10px;
-	padding: 3px 7px;
-}
-
-.hiddenRow {
-	padding: 0 !important;
-}
-
-#notification-container {
-	position: fixed;
-	right: 20px;
-	top: 60px;
-	z-index: 1030;
-	background: transparent;
-
-	.toast-close {
-		background: inherit;
-		border: inherit;
-		color: inherit;
-		text-align: inherit;
+		input[type="search"] {
+			background-color: white;
+		}
 	}
 }

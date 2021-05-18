@@ -8,57 +8,91 @@
 	{{-- Chart JS --}}
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"></script>
 
+	{{-- Material Icons Web Fonts --}}
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 	{{ style('css/dashboard') }}
 </head>
 <body>
-<header class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0 shadow">
-	<a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ route('DashboardController.index') }}">
-		AMP WP Compatibility Database
-	</a>
-	<button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse"
+<header>
+	<nav class="navbar navbar-expand-md navbar-dark sticky-top bg-primary shadow">
+		<div class="container-fluid">
+			<button
+			class="navbar-toggler collapsed"
+			type="button"
+			data-bs-toggle="collapse"
 			data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
 			aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon"></span>
-	</button>
+				<span class="material-icons align-middle navbar-brand me-0">menu</span>
+			</button>
+			<a class="navbar-brand fs-4" href="{{ route('DashboardController.index') }}">
+				AMP WP Compatibility
+			</a>
 
-	<ul class="navbar-nav px-3">
-		<li class="nav-item text-nowrap">
-			<a class="nav-link" href="{{ route('AuthController.logout') }}">Log out</a>
-		</li>
-	</ul>
+			<div class="col-6 header-tools">
+				@!section('header_tools')
+			</div>
+
+			<div class="d-flex align-items-center">
+				<ul class="navbar-nav">
+					<li class="nav-item text-nowrap">
+						<a class="nav-link" href="{{ route('AuthController.logout') }}"><span class="material-icons align-middle navbar-brand me-0">logout</span></a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 </header>
 
 <div class="container-fluid">
 	<div class="row">
-		<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-			<div class="position-sticky pt-3">
+		<nav id="sidebarMenu" class="bg-light border-end col-md-3 col-xl-2 collapse d-md-block py-md-2 sidebar">
+			<div class="position-sticky">
 				<ul class="nav flex-column">
 					@each(menuItem in dashboardMenuItems)
 
 					<li class="nav-item">
-						<a href="{{menuItem.url}}"
-						   class="nav-link {{ menuItem.isActive ? 'active':'' }}">
-							<span data-feather="{{menuItem.icon}}"></span>
-							{{menuItem.title}}
-						</a>
 						@if( menuItem.childs )
-							<ul class="flex-column">
+							<div class="d-flex">
+								<a
+									class="nav-link text-black {{ menuItem.isActive ? 'active':'' }}"
+									href="{{menuItem.url}}"
+								>
+									{{menuItem.title}}
+								</a>
+								<a
+									class="nav-link"
+									data-bs-toggle="collapse"
+									href="#sub-menu-{{toHyphenated(menuItem.title)}}"
+									role="button"
+									aria-expanded="false"
+									aria-controls="sub-menu-{{toHyphenated(menuItem.title)}}"
+								>
+									<span class="material-icons">expand_more</span>
+								</a>
+							</div>
+							<ul id="sub-menu-{{toHyphenated(menuItem.title)}}" class="flex-column collapse">
 								@each( item in menuItem.childs )
 								<li class="nav-item">
-									<a class="nav-link {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
+									<a class="nav-link text-black {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
 										<span data-feather="{{item.icon}}"></span>
 										{{item.title}}
 									</a>
 								</li>
 								@endeach
 							</ul>
+						@else
+							<a href="{{menuItem.url}}" class="nav-link text-black {{ menuItem.isActive ? 'active':'' }}">
+								<span data-feather="{{menuItem.icon}}"></span>
+								{{menuItem.title}}
+							</a>
 						@endif
 					</li>
 					@endeach
 				</ul>
 			</div>
 		</nav>
-		<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+		<main class="col-md-9 ms-sm-auto col-xl-10 px-md-4">
 			<div class="d-flex flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 				<h1 class="h2">{{dashboardActivePage.title}}</h1>
 				<div>
@@ -66,9 +100,7 @@
 				</div>
 			</div>
 			<div id="notification-container"></div>
-			<div class="container-fluid">
-				@!section('page')
-			</div>
+			@!section('page')
 		</main>
 	</div>
 </div>
