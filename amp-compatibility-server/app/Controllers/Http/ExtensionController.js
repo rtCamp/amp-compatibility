@@ -261,6 +261,9 @@ class ExtensionController {
 			whereClause: {
 				extension_slug: _.keys( extensions ),
 			},
+			orderby: {
+				version: 'DESC',
+			}
 		} );
 
 		for ( const index in extensionVersions ) {
@@ -269,7 +272,6 @@ class ExtensionController {
 
 			extensions[ extensionSlug ].versions = extensions[ extensionSlug ].versions || [];
 			extensions[ extensionSlug ].versions.push( extensionVersions[ index ].version );
-			extensions[ extensionSlug ].versions = extensions[ extensionSlug ].versions.sort( compareVersions ).reverse();
 		}
 
 		return {

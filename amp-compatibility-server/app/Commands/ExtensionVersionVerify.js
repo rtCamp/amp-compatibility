@@ -6,7 +6,7 @@ const ExtensionController = use( 'App/Controllers/Http/ExtensionController' );
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 const _ = require( 'underscore' );
-const compareVersions = require( 'compare-versions' );
+const Utility = use( 'App/Helpers/Utility' );
 
 class ExtensionVersionVerify extends Command {
 
@@ -38,7 +38,7 @@ class ExtensionVersionVerify extends Command {
 		let extensionVersions = [];
 
 		const params = {
-			perPage: 10000,
+			perPage: 200,
 			paged: 1,
 			orderby: {
 				active_installs: 'DESC',
@@ -78,14 +78,13 @@ class ExtensionVersionVerify extends Command {
 				}
 
 				let versions = _.keys( extensionVersionData );
-				const sortedVersions = versions.sort( compareVersions ).reverse();
 
-				for ( const index in sortedVersions ) {
+				for ( const index in versions ) {
 
 					const status = this.checkExtensionVersionCanBePassed( extensionVersionData, index );
 
 					if ( status ) {
-						const version = sortedVersions[ index ];
+						const version = versions[ index ];
 						const extensionVersion = extensionVersionData[ version ];
 
 						const item = {
@@ -113,6 +112,8 @@ class ExtensionVersionVerify extends Command {
 			}
 
 			params.paged++;
+
+			await Utility.sleep( 2 );
 		} while ( ! _.isEmpty( extensions ) );
 
 		process.exit( 1 );
@@ -123,7 +124,7 @@ class ExtensionVersionVerify extends Command {
 	 *
 	 * @note : Recursive function.
 	 *
-	 * @param {array} extensionVersionData List extension version data for one extension.
+	 * @param {array} extensionVersionData List extension version data for one extension. Note: Please pass versions in DESC order.
 	 * @param {int} currentIndex Current index. default "0"
 	 *
 	 * @return {boolean|*} True if index extension version can be mark as "Auto Pass".
@@ -136,7 +137,7 @@ class ExtensionVersionVerify extends Command {
 
 		currentIndex = parseInt( currentIndex );
 		let versions = _.keys( extensionVersionData );
-		const sortedVersions = versions.sort( compareVersions ).reverse();
+		const sortedVersions = versions;
 
 		const currentVersion = sortedVersions[ currentIndex ];
 		const currentVersionData = extensionVersionData[ currentVersion ];
