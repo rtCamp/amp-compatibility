@@ -319,12 +319,13 @@ class ExtensionController {
 		if ( ! _.isEmpty( extensionSlugs ) ) {
 
 			extensionVersions = await ExtensionVersionModel.getResult( {
+				perPage: -1,
 				whereClause: {
 					extension_slug: extensionSlugs,
 				},
 			} );
 
-			extensionVersions = extensionVersions.data || {};
+			extensionVersions = extensionVersions || {};
 		}
 
 		return {
