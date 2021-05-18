@@ -14,7 +14,7 @@ class SiteRequest extends Base {
 		return {
 			uuid: 'string|required',
 			site_url: 'string|url|required',
-			status: 'string|in:pending,success,fail',
+			status: 'string|in:waiting,pending,active,succeeded,failed',
 		};
 	}
 
