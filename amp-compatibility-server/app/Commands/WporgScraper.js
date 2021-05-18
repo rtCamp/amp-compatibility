@@ -351,7 +351,11 @@ class WporgScraper extends Command {
 		 */
 		const extension = await this.normalizePlugin( pluginData );
 
-		await ExtensionModel.save( extension );
+		const isSaved = await ExtensionModel.save( extension );
+
+		if ( ! isSaved ) {
+			return;
+		}
 
 		/**
 		 * Save extension versions.
@@ -496,7 +500,11 @@ class WporgScraper extends Command {
 		// Extension data.
 		const extension = await this.normalizeTheme( themeData );
 
-		await ExtensionModel.save( extension );
+		const isSaved = await ExtensionModel.save( extension );
+
+		if ( ! isSaved ) {
+			return;
+		}
 
 		/**
 		 * Save extension versions.
