@@ -126,7 +126,7 @@ class Base {
 			return;
 		}
 
-		await this.databaseModel.create( {
+		await this.databaseModel.save( {
 			uuid: jobID,
 			data: JSON.stringify( data ),
 		} );

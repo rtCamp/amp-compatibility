@@ -366,6 +366,10 @@ class SyntheticDataStart extends Command {
 
 				await SyntheticDataQueueController.createJob( job );
 				count++;
+
+				if ( 0 === ( count % 5000 ) ) {
+					await Utility.sleep( 2 );
+				}
 			}
 
 		}

@@ -68,7 +68,7 @@ class SyntheticDataController extends Base {
 
 		const domain = data.domain || '';
 
-		await this.databaseModel.create( {
+		await this.databaseModel.save( {
 			uuid: jobID,
 			domain: domain,
 			data: JSON.stringify( data ),
