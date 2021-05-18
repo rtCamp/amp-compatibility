@@ -318,14 +318,21 @@ class ExtensionController {
 
 		if ( ! _.isEmpty( extensionSlugs ) ) {
 
-			extensionVersions = await ExtensionVersionModel.getResult( {
-				perPage: -1,
-				whereClause: {
-					extension_slug: extensionSlugs,
-				},
-			} );
+			for( const index in extensionSlugs ) {
+				let extensionVersionsIteration = await ExtensionVersionModel.getResult( {
+					whereClause: {
+						extension_slug: extensionSlugs[index],
+					},
+					orderby: {
+						version: 'DESC',
+					},
+				} );
 
-			extensionVersions = extensionVersions || {};
+				extensionVersionsIteration = extensionVersionsIteration.data || {};
+
+				extensionVersions = { ...extensionVersions, ...extensionVersionsIteration };
+
+			}
 		}
 
 		return {
@@ -345,6 +352,14 @@ class ExtensionController {
 	 * @return {Promise<{allErrors: {}, errors: {}, allErrorSources}>}
 	 */
 	async _getErrorAndErrorSourceInfoByExtensionVersion( extensionVersionSlug ) {
+
+		if ( ! extensionVersionSlug ) {
+			return {
+				errors: {},
+				allErrors: {},
+				allErrorSources: {},
+			};
+		}
 
 		/**
 		 * 1. Get all URL Error Relationship data.
