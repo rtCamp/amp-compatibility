@@ -57,6 +57,7 @@ class ReportUuidController {
 				items: _.toArray( data ),
 				headings: {
 					uuid: 'UUID',
+					site_url: 'Site URL',
 				},
 				valueCallback: ( key, value ) => {
 
