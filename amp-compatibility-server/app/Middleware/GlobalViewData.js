@@ -89,7 +89,7 @@ class GlobalViewData {
 			requestQueue: {
 				title: 'Request Queue',
 				icon: '',
-				url: '/admin/request-queue/active',
+				url: '/admin/request-queue/succeeded',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/request-queue' ) ),
 				childs: this.getDashboardMenuChildren( currentRequest, {
 					title: 'Request Queue',
@@ -98,7 +98,7 @@ class GlobalViewData {
 			},
 			syntheticQueue: {
 				title: 'Synthetic Queue',
-				url: '/admin/synthetic-queue/active',
+				url: '/admin/synthetic-queue/succeeded',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/synthetic-queue' ) ),
 				childs: this.getDashboardMenuChildren( currentRequest, {
 					title: 'Synthetic Queue',
@@ -108,7 +108,7 @@ class GlobalViewData {
 			adhocSyntheticQueue: {
 				title: 'Adhoc Queue',
 				icon: '',
-				url: '/admin/adhoc-synthetic-queue/active',
+				url: '/admin/adhoc-synthetic-queue/succeeded',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
 				childs: this.getDashboardMenuChildren( currentRequest, {
 					title: 'Adhoc Queue',
@@ -131,7 +131,7 @@ class GlobalViewData {
 	}
 
 	getDashboardMenuChildren( currentRequest, parentMenu ) {
-		const childMenus = [ 'Active', 'Waiting', 'Succeeded', 'Failed', 'Delayed' ];
+		const childMenus = [ 'Succeeded', 'Active', 'Waiting', 'Failed', 'Delayed' ];
 
 		return childMenus.map( ( menuItem ) => {
 			const menuItemUrl = `${parentMenu.url}/${menuItem.toLowerCase()}`;

@@ -1,9 +1,15 @@
-@import "~bootstrap/dist/css/bootstrap.css";
-@import "https://fonts.googleapis.com/css?family=Poppins:400,500&display=swap";
+$font-size-base: 0.8125rem !default;
+$primary: #1a73e8 !default;
+$secondary: #4285F4 !default;
+$success: #0b8043 !default;
+$info: rgba(0, 0, 0, .54) !default;
+$warning: #f2a600 !default;
+$danger: #d50000 !default;
+
+@import '~mdb-ui-kit/src/scss/mdb.free';
 
 html, body {
 	background-color: #F7F8FA;
-	font-family: 'Poppins', sans-serif;
 	height: 100vh;
 	color: #46444c;
 	position: relative;
@@ -11,7 +17,7 @@ html, body {
 
 body:before {
 	content: '';
-	background: #5A45FF;
+	background: $primary;
 	top: 0;
 	left: 0;
 	right: 0;
@@ -25,7 +31,7 @@ body:before {
 }
 
 a {
-	color: #5A45FF;
+	color: $primary;
 	text-decoration: none;
 }
 
