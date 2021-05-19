@@ -1,0 +1,49 @@
+@layout( 'dashboard/base' )
+
+@section('header_line')
+	@if( 'adhoc-synthetic-queue' === queue )
+		<a href="/admin/adhoc-synthetic-queue/add" title="Add Adhoc Request" class="btn btn-primary btn-sm m-2">
+			Add new
+		</a>
+	@endif
+@endsection
+
+@section('page')
+
+	<div>
+
+		<div class="p-1">
+			<p>{{{pageDescription}}}</p>
+		</div>
+		<ul class="nav nav-tabs nav-fill mb-4" id="myTab" role="tablist">
+
+			@each( ( name, key ) in tabs )
+			<li class="nav-item" role="presentation">
+				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
+				   class="nav-link {{ (key === params.status) ? 'active' : '' }}"
+				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
+					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge bg-primary">{{queueHealth[key] || "0"}}</span>
+				</a>
+			</li>
+			@endeach
+
+		</ul>
+
+		@if( ! itemCount )
+			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
+				<p class="lead fw-normal">There isn't any job.</p>
+			</div>
+		@else
+			<div class="mt-4 mb-4">
+			{{{renderTable(tableArgs)}}}
+
+			{{{renderPagination(pagination)}}}
+			</div>
+
+		@endif
+	</div>
+@endsection
+
+@section('script')
+	{{ script('js/queue-table') }}
+@endsection
