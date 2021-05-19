@@ -183,6 +183,12 @@ abbr {
 	}
 }
 
+.theme-dropdown,
+.plugin-dropdown {
+	max-height: 190px;
+	overflow-y: scroll;
+}
+
 @include media-breakpoint-up(md) {
 	.sidebar {
 		height: calc(100% - 65px);
