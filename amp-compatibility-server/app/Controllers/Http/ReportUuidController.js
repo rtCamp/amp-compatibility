@@ -576,7 +576,7 @@ class ReportUuidController {
 						}
 						break;
 					case 'raw_data':
-						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
+						value = `<button class="btn btn-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
 						break;
 					case 'sources':
 						value = `<div class="text-center"><strong>${ _.size( value ) || 0 }</strong></div>`;
@@ -643,7 +643,7 @@ class ReportUuidController {
 						value = `<small>${ value }</small>`;
 						break;
 					case 'raw_data':
-						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
+						value = `<button class="btn btn-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
 						break;
 				}
 
