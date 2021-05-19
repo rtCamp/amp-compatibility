@@ -81,7 +81,7 @@ class ReportUuidController {
 				},
 			},
 			pagination: {
-				baseUrl: `/admin/report/uuid`,
+				baseUrl: `/admin/report`,
 				total: total,
 				perPage: params.perPage,
 				currentPage: params.paged,

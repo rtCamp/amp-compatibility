@@ -122,10 +122,10 @@ class GlobalViewData {
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/extension' ) ),
 			},
 			uuidReport: {
-				title: 'Report by UUID',
+				title: 'Report by UUID / Site',
 				icon: '',
-				url: '/admin/report/uuid',
-				isActive: ( -1 !== currentRequest.indexOf( '/admin/report/uuid' ) ),
+				url: '/admin/report',
+				isActive: ( -1 !== currentRequest.indexOf( '/admin/report' ) ),
 			},
 		};
 	}
