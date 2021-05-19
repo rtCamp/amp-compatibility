@@ -270,7 +270,8 @@ abbr {
 .search-toolbar {
 	border-radius: 8px;
 
-	&:focus-within {
+	&:focus-within,
+	&.has-value {
 		background-color: white;
 
 		.input-group-text {
