@@ -82,13 +82,13 @@ class DashboardController {
 				pluginGroup: {
 					id: 'active-install-group-plugins',
 					title: 'Active Install Group (Plugins)',
-					chartType: 'doughnut',
+					chartType: 'bar',
 					data: pluginGroupCounts,
 				},
 				themeGroup: {
 					id: 'active-install-group-themes',
 					title: 'Active Install Group (Themes)',
-					chartType: 'doughnut',
+					chartType: 'bar',
 					data: themeGroupCounts,
 				},
 			},
@@ -109,13 +109,13 @@ class DashboardController {
 	 */
 	async _getExtensionCountByActiveInstalls( type = 'plugin' ) {
 		const query = `SELECT CASE
-		WHEN active_installs BETWEEN 0 AND 100 THEN "0 - 100"
-		WHEN active_installs BETWEEN 101 AND 1000 THEN "101 - 1000"
-		WHEN active_installs BETWEEN 1001 AND 10000 THEN "1001 - 10000"
-		WHEN active_installs BETWEEN 10001 AND 100000 THEN "10,001 - 100,000"
-		WHEN active_installs BETWEEN 100001 AND 500000 THEN "100,001 - 500,000"
-		WHEN active_installs BETWEEN 500001 AND 1000000 THEN "500,001 - 1,000,000"
-		WHEN active_installs > 1000000 THEN "10,000,001 - Above"
+			WHEN active_installs BETWEEN 0 AND 100 THEN "Below 100"
+			WHEN active_installs BETWEEN 101 AND 1000 THEN "101 - 1K"
+			WHEN active_installs BETWEEN 1001 AND 10000 THEN "1K - 10K"
+			WHEN active_installs BETWEEN 10001 AND 100000 THEN "10K - 100K"
+			WHEN active_installs BETWEEN 100001 AND 500000 THEN "100K - 500K"
+			WHEN active_installs BETWEEN 500001 AND 1000000 THEN "500K - 1M"
+			WHEN active_installs > 1000000 THEN "Above 1M"
 		END  AS label,
 	count(1) AS value
 FROM extensions
