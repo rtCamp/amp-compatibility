@@ -511,6 +511,7 @@ class ExtensionController {
 					name: item.name,
 					is_partner: !! item.is_partner,
 				},
+				verification_status: item.verification_status || 'unknown',
 				last_updated: item.last_updated,
 			} );
 		}
@@ -562,6 +563,17 @@ class ExtensionController {
 
 						value = `<div class="text-center"><input type="checkbox" class="extension-partner-control" data-extension-slug="${ value.extension_slug }" data-name="${ value.name }" ${ checked ? 'checked' : '' } ></div>`;
 
+						break;
+					case 'verification_status':
+						const statusLabel = {
+							fail: 'Fail',
+							unknown: 'Unknown',
+							pass: 'Pass',
+							auto_pass: 'Pass (Auto)',
+						};
+
+						value = statusLabel[ value ] || 'Unverified';
+						value = `<abbr>${ value }</abbr>`;
 						break;
 				}
 
