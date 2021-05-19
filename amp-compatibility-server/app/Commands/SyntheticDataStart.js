@@ -148,7 +148,7 @@ class SyntheticDataStart extends Command {
 		this.info( `Number of compute instance  : ${ this.options.numberOfInstance }` );
 		this.info( `Concurancy on each instance : ${ this.options.concurrency }` );
 		this.info( '======================================================================' );
-exit(1);
+
 		let numberOfTerminatedInstance = 0;
 		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
 		let logDirPath = Utility.logPath() + `/secondary-server/${ date }`;

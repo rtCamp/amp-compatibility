@@ -61,9 +61,9 @@ window.addEventListener( 'DOMContentLoaded', function () {
 		 * @param {*} event
 		 */
 		handlePageClick: function( event ) {
-			const target = event.target.current;
+			const target = event.target;
 
-			if( !$( target ).parent('#search-filters').length ) {
+			if( !$( target ).parents('#search-filters').length ) {
 				this.collapsibleFilters.hide();
 			}
 		},
