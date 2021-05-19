@@ -65,7 +65,6 @@ Route.group( () => {
 	/**
 	 * Report.
 	 */
-	Route.get( '/report', 'ReportController.index' );
 	Route.get( '/report/uuid/', 'ReportUuidController.index' );
 	Route.get( '/report/uuid/page/:paged', 'ReportUuidController.index' );
 
