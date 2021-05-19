@@ -12,24 +12,13 @@
 
 	<div>
 
-		<div class="p-1">
-			<p>{{{pageDescription}}}</p>
-		</div>
+		@if( pageDescription )
+			<div class="p-1">
+				<p>{{{pageDescription}}}</p>
+			</div>
+		@endif
 
 		<div id="messageContainer"></div>
-		<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
-
-			@each( ( name, key ) in tabs )
-			<li class="nav-item" role="presentation">
-				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
-				   class="nav-link {{ (key === params.status) ? 'active' : '' }}"
-				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
-					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge bg-primary">{{queueHealth[key] || "0"}}</span>
-				</a>
-			</li>
-			@endeach
-
-		</ul>
 
 		@if( ! size( jobs ) )
 			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
@@ -37,7 +26,7 @@
 			</div>
 		@else
 
-			<table class="table table-hover mt-4 table-sm table-responsive">
+			<table class="table table-hover mt-4 table-sm table-responsive table-striped">
 				<thead>
 				<tr>
 					@each( ( value, key ) in jobs[0] )

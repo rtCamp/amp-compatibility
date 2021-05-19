@@ -1,92 +1,21 @@
-$primary: #3f51b5 !default;
-$secondary: #1976d2 !default;
-$success: #198754 !default;
-//$info: #0dcaf0 !default;
-$warning: #ffc107 !default;
-$danger: #dc3545 !default;
+$font-size-base: 0.75rem !default;
+$primary: #1a73e8 !default;
+$secondary: #4285F4 !default;
+$success: #0b8043 !default;
+$info: rgba(0,0,0,.54) !default;
+$warning: #f2a600 !default;
+$danger: #d50000 !default;
 
+// @import "~bootstrap/scss/bootstrap";
 @import '~mdb-ui-kit/src/scss/mdb.free';
-
-body {
-	font-size: .875rem;
-}
 
 .list-group-item {
 	color: $gray-800;
 }
 
 /*
- * Sidebar
- */
-.sidebar {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 100; /* Behind the navbar */
-	padding: 48px 0 0; /* Height of navbar */
-	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-}
-
-@media (max-width: 767.98px) {
-	.sidebar {
-		top: 5rem;
-	}
-}
-
-.sidebar-sticky {
-	position: relative;
-	top: 0;
-	height: calc(100vh - 48px);
-	padding-top: .5rem;
-	overflow-x: hidden;
-	overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-}
-
-.nav-tabs .nav-link {
-	border-color: $gray-100;
-}
-
-.sidebar .nav-link {
-	font-weight: 400;
-	color: #333;
-}
-
-.sidebar .nav-link .feather {
-	margin-right: 4px;
-	color: #727272;
-}
-
-.sidebar .nav-link.active {
-	color: var(--mdb-primary);
-}
-
-.sidebar .nav-link:hover .feather,
-.sidebar .nav-link.active .feather {
-	color: inherit;
-}
-
-.sidebar-heading {
-	font-size: .75rem;
-	text-transform: uppercase;
-}
-
-/*
  * Navbar
  */
-
-.navbar-brand {
-	padding-top: .75rem;
-	padding-bottom: .75rem;
-	font-size: 1rem;
-	background-color: rgba(0, 0, 0, .25);
-	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
-}
-
-.navbar .navbar-toggler {
-	top: .25rem;
-	right: 1rem;
-}
 
 .navbar .form-control {
 	padding: .75rem 1rem;
@@ -163,21 +92,12 @@ abbr {
 		width: 130px;
 	}
 
-	td.active_installs,
-	td.error_count {
-		text-align: right;
+	.name {
+		text-align: left;
 	}
 
-	.active_installs {
-		width: 105px;
-	}
-
-	.error_count {
-		width: 90px;
-	}
-
-	.verification_status {
-		width: 160px;
+	.extension-verify-status {
+		max-width: 160px;
 	}
 
 	.accordion-button {
@@ -211,7 +131,7 @@ abbr {
 
 #extension-table {
 	.name {
-		max-width: 400px;
+		max-width: 250px;
 	}
 }
 
@@ -238,10 +158,6 @@ abbr {
 	padding: 3px 7px;
 }
 
-.hiddenRow {
-	padding: 0 !important;
-}
-
 #notification-container {
 	position: fixed;
 	right: 20px;
@@ -255,4 +171,135 @@ abbr {
 		color: inherit;
 		text-align: inherit;
 	}
+}
+
+@include media-breakpoint-up(md) {
+	.sidebar {
+		height: calc( 100% - 65px );
+		position: fixed;
+	}
+}
+
+.status-waiting {
+
+	.badge {
+		@extend .bg-info;
+	}
+
+	&.nav-link.active {
+		color: $info;
+		border-color: $info;
+	}
+}
+
+.status-active {
+
+	.badge {
+		@extend .bg-primary;
+	}
+
+	&.nav-link.active {
+		color: $primary;
+		border-color: $primary;
+	}
+}
+
+.status-succeeded {
+
+	.badge {
+		@extend .bg-success;
+	}
+
+	&.nav-link.active {
+		color: $success;
+		border-color: $success;
+	}
+}
+
+.status-failed {
+
+	.badge {
+		@extend .bg-danger;
+	}
+
+	&.nav-link.active {
+		color: $danger;
+		border-color: $danger;
+	}
+}
+
+.status-delayed {
+
+	.badge {
+		@extend .bg-warning;
+	}
+
+	&.nav-link.active {
+		color: $warning;
+		border-color: $warning;
+	}
+}
+
+.status-newestjob {
+
+	.badge {
+		@extend .bg-primary;
+	}
+
+	&.nav-link.active {
+		color: $primary;
+		border-color: $primary;
+	}
+}
+
+.header-tools {
+	max-width: 720px;
+	position: relative;
+}
+
+.search-toolbar {
+	border-radius: 8px;
+
+	&:focus-within {
+		background-color: white;
+
+		.input-group-text {
+			color: #000;
+		}
+
+		.form-control {
+			background-color: white;
+		}
+	}
+
+	.input-group-text {
+		color: #fff;
+	}
+
+	.input-group {
+		border-radius: 8px;
+		background-color: rgba($color: #fff, $alpha: 0.1);
+		transition: all 0.2s linear;
+
+		.form-control {
+			background-color: transparent;
+			border: none;
+			outline: none;
+
+			&:focus {
+				outline: none;
+				box-shadow: none;
+			}
+		}
+	}
+
+	.collapse, .collapsing {
+		position: absolute;
+		width: 100%;
+	}
+}
+
+.sidebar .nav-link.active {
+	color: $primary !important;
+	background-color: rgba($color: $primary, $alpha: 0.1);
 }

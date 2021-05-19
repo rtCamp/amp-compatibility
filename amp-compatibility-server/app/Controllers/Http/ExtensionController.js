@@ -118,7 +118,7 @@ class ExtensionController {
 		 * 3. Prepare table args for extension version table.
 		 */
 		let tableArgs = this._prepareExtensionVersionTableArgs( {
-			slug: {
+			latest_version: {
 				slug: extension.slug,
 			},
 			type: extension.type,
@@ -498,12 +498,12 @@ class ExtensionController {
 					name: item.name,
 					extension_slug: item.extension_slug,
 				},
-				slug: {
+				latest_version: {
 					slug: item.slug,
+					version: item.latest_version,
 					is_wporg: item.wporg,
 				},
 				type: item.type,
-				latest_version: item.latest_version,
 				active_installs: humanFormat( item.active_installs ),
 				error_count: item.error_count,
 				is_partner: {
@@ -516,9 +516,13 @@ class ExtensionController {
 		}
 
 		const tableArgs = {
+			classes: 'text-center',
 			tableID: 'extension-table',
 			items: _.toArray( preparedItems ),
-			headings: {},
+			headings: {
+				type: 'Extension Type',
+				is_partner: 'Partner?'
+			},
 			collapsible: {
 				accordionClass: 'extension-versions',
 				bodyCallback: ( extension ) => {
@@ -534,11 +538,11 @@ class ExtensionController {
 					case 'name':
 						value = `<a href="/admin/extension/${ value.extension_slug }">${ value.name }</a>`;
 						break;
-					case 'slug':
+					case 'latest_version':
 						if ( value.is_wporg ) {
-							value = `<a href="https://wordpress.org/plugins/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
+							value = `<a href="https://wordpress.org/plugins/${ value.slug }" target="_blank" title="${ value.version }">${ value.version }</a>`;
 						} else {
-							value = value.slug;
+							value = value.latest_version;
 						}
 
 						break;
@@ -586,7 +590,7 @@ class ExtensionController {
 
 		const extensionSlug = ExtensionModel.getPrimaryValue( {
 			type: extension.type,
-			slug: extension.slug.slug,
+			slug: extension.latest_version.slug,
 		} );
 
 		const preparedItems = [];
@@ -615,6 +619,7 @@ class ExtensionController {
 		}
 
 		const extensionVersionsTableArgs = {
+			classes: 'text-start',
 			tableID: extensionSlug,
 			items: _.toArray( preparedItems ),
 			valueCallback: ( key, value ) => {
@@ -629,7 +634,7 @@ class ExtensionController {
 						}
 						break;
 					case 'error_count':
-						value = `<div class="text-center">${ value ? value : '-' }</div>`;
+						value = value ? value : '-';
 						break;
 					case 'verification_status':
 						const options = {
