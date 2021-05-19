@@ -15,31 +15,79 @@ $danger: #d50000 !default;
 }
 
 .status-waiting {
-	@extend .bg-info;
+
+	.badge {
+		@extend .bg-info;
+	}
+
+	&.nav-link.active {
+		color: $info;
+		border-color: $info;
+	}
 }
 
 .status-active {
-	@extend .bg-primary;
+
+	.badge {
+		@extend .bg-primary;
+	}
+
+	&.nav-link.active {
+		color: $primary;
+		border-color: $primary;
+	}
 }
 
 .status-succeeded {
-	@extend .bg-success;
+
+	.badge {
+		@extend .bg-success;
+	}
+
+	&.nav-link.active {
+		color: $success;
+		border-color: $success;
+	}
 }
 
 .status-failed {
-	@extend .bg-danger;
+
+	.badge {
+		@extend .bg-danger;
+	}
+
+	&.nav-link.active {
+		color: $danger;
+		border-color: $danger;
+	}
 }
 
 .status-delayed {
-	@extend .bg-warning;
+
+	.badge {
+		@extend .bg-warning;
+	}
+
+	&.nav-link.active {
+		color: $warning;
+		border-color: $warning;
+	}
 }
 
-.status-newestJob {
-	@extend .bg-primary;
+.status-newestjob {
+
+	.badge {
+		@extend .bg-primary;
+	}
+
+	&.nav-link.active {
+		color: $primary;
+		border-color: $primary;
+	}
 }
 
 .header-tools {
-	min-width: 720px;
+	max-width: 720px;
 }
 
 .search-toolbar .input-group {
@@ -68,4 +116,9 @@ $danger: #d50000 !default;
 			background-color: white;
 		}
 	}
+}
+
+.sidebar .nav-link.active {
+	color: $primary !important;
+	background-color: rgba($color: $primary, $alpha: 0.1);
 }

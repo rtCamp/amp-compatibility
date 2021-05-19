@@ -22,9 +22,9 @@
 			@each( ( name, key ) in tabs )
 			<li class="nav-item" role="presentation">
 				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
-				   class="nav-link {{ (key === params.status) ? 'active' : '' }}"
+				   class="nav-link status-{{toHyphenated(name)}} {{ (key === params.status) ? 'active' : '' }}"
 				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
-					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge bg-primary">{{queueHealth[key] || "0"}}</span>
+					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge">{{queueHealth[key] || "0"}}</span>
 				</a>
 			</li>
 			@endeach

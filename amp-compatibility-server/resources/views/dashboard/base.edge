@@ -51,11 +51,11 @@
 				<ul class="nav flex-column">
 					@each(menuItem in dashboardMenuItems)
 
-					<li class="nav-item">
+					<li class="nav-item py-md-1">
 						@if( menuItem.childs )
 							<div class="d-flex">
 								<a
-									class="nav-link text-black {{ menuItem.isActive ? 'active':'' }}"
+									class="nav-link text-black rounded-3 {{ menuItem.isActive ? 'active':'' }}"
 									href="{{menuItem.url}}"
 								>
 									{{menuItem.title}}
@@ -74,7 +74,7 @@
 							<ul id="sub-menu-{{toHyphenated(menuItem.title)}}" class="flex-column collapse">
 								@each( item in menuItem.childs )
 								<li class="nav-item">
-									<a class="nav-link text-black {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
+									<a class="nav-link text-black rounded-3 {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
 										<span data-feather="{{item.icon}}"></span>
 										{{item.title}}
 									</a>
@@ -82,7 +82,7 @@
 								@endeach
 							</ul>
 						@else
-							<a href="{{menuItem.url}}" class="nav-link text-black {{ menuItem.isActive ? 'active':'' }}">
+							<a href="{{menuItem.url}}" class="nav-link text-black rounded-3 {{ menuItem.isActive ? 'active':'' }}">
 								<span data-feather="{{menuItem.icon}}"></span>
 								{{menuItem.title}}
 							</a>

@@ -148,7 +148,7 @@ class SyntheticDataStart extends Command {
 		this.info( `Number of compute instance  : ${ this.options.numberOfInstance }` );
 		this.info( `Concurancy on each instance : ${ this.options.concurrency }` );
 		this.info( '======================================================================' );
-
+exit(1);
 		let numberOfTerminatedInstance = 0;
 		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
 		let logDirPath = Utility.logPath() + `/secondary-server/${ date }`;
@@ -296,7 +296,7 @@ class SyntheticDataStart extends Command {
 		let query = `SELECT extension_versions.extension_version_slug, extension_versions.type, extension_versions.slug, extension_versions.version
 			FROM ${ versionTable } AS extension_versions
 			INNER JOIN ${ extensionTable } AS extensions ON extension_versions.extension_slug = extensions.extension_slug
-			WHERE extensions.wporg = TRUE 
+			WHERE extensions.wporg = TRUE
 			`;
 
 		if ( ! this.options.force ) {
