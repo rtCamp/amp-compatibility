@@ -50,6 +50,16 @@ class DashboardController {
 		const themeGroupCounts = await this._getExtensionCountByActiveInstalls( 'theme' );
 		const extensionErrorCounts = await this._getExtensionErrorCountGroup();
 
+		for ( const index in extensionVerificationCounts ) {
+			const labels = {
+				fail: 'Fail',
+				unknown: 'Unknown',
+				pass: 'Pass',
+				auto_pass: 'Pass (Auto)',
+			};
+			extensionVerificationCounts[ index ].label = labels[ extensionVerificationCounts[ index ].label ];
+		}
+
 		const viewData = {
 			queues: queueData,
 			ampChartInfoBoxes: {
@@ -70,13 +80,13 @@ class DashboardController {
 				extensionVerification: {
 					id: 'extension-verification-status',
 					title: 'Extension Verification Status',
-					chartType: 'doughnut',
+					chartType: 'bar',
 					data: extensionVerificationCounts,
 				},
 				errorCountGroup: {
 					id: 'error-count-group',
 					title: 'Error Count Group',
-					chartType: 'doughnut',
+					chartType: 'bar',
 					data: extensionErrorCounts,
 				},
 				pluginGroup: {
