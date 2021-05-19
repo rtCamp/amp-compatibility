@@ -301,6 +301,9 @@ class ExtensionController {
 			'extensions.is_partner',
 			'extensions.last_updated',
 			'extension_versions.error_count',
+			'extensions.support_threads',
+			'extensions.support_threads_resolved',
+			'extensions.tested_wp',
 			'extension_versions.verification_status',
 		];
 
@@ -506,6 +509,9 @@ class ExtensionController {
 				type: item.type,
 				active_installs: humanFormat( item.active_installs ),
 				error_count: item.error_count,
+				support_threads: item.support_threads,
+				support_threads_resolved: item.support_threads_resolved,
+				tested_wp: item.tested_wp,
 				is_partner: {
 					extension_slug: item.extension_slug,
 					name: item.name,
@@ -522,7 +528,10 @@ class ExtensionController {
 			items: _.toArray( preparedItems ),
 			headings: {
 				type: 'Extension Type',
-				is_partner: 'Partner?'
+				is_partner: 'Partner?',
+				support_threads: "Support<br/>threads",
+				support_threads_resolved: "Support threads<br/>resolved",
+				tested_wp: '<span title="WordPress version">Tested Upto</span>'
 			},
 			collapsible: {
 				accordionClass: 'extension-versions',
@@ -546,6 +555,11 @@ class ExtensionController {
 							value = value.latest_version;
 						}
 
+						break;
+					case 'error_count':
+					case 'support_threads':
+					case 'support_threads_resolved':
+						value = value ? value : '-';
 						break;
 					case 'updated_at':
 					case 'created_at':

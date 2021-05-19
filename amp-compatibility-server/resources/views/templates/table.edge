@@ -9,7 +9,7 @@
 			<tr>
 				@each( ( value, key ) in items[0] )
 					@if( headings[key] )
-						<th scope="col" class="{{key}}">{{ headings[key] }}</th>
+						<th scope="col" class="{{key}}">{{{headings[key]}}}</th>
 					@else
 						<th scope="col" class="{{key}}">{{ upperFirst( snackCaseToString( key ) ) }}</th>
 					@endif

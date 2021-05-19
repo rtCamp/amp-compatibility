@@ -2,7 +2,7 @@ $font-size-base: 0.8125rem !default;
 $primary: #1a73e8 !default;
 $secondary: #4285F4 !default;
 $success: #0b8043 !default;
-$info: rgba(0,0,0,.54) !default;
+$info: rgba(0, 0, 0, .54) !default;
 $warning: #f2a600 !default;
 $danger: #d50000 !default;
 
@@ -78,6 +78,10 @@ abbr {
 
 .table {
 	font-size: $font-size-base;
+
+	th {
+		vertical-align: text-top;
+	}
 
 	td,
 	&.table-sm td,
@@ -181,7 +185,7 @@ abbr {
 
 @include media-breakpoint-up(md) {
 	.sidebar {
-		height: calc( 100% - 65px );
+		height: calc(100% - 65px);
 		position: fixed;
 	}
 }
