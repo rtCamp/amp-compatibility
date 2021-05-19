@@ -43,6 +43,10 @@
 
 @section('page')
 	<div>
+		<div>
+			<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
+		</div>
+
 		{{{ renderTable(tableArgs) }}}
 
 		{{{ renderPagination(pagination) }}}
