@@ -43,8 +43,8 @@ class DashboardController {
 			} );
 		}
 
-		const ampModeCounts = await Database.from( SiteModel.table ).select( 'amp_mode AS label' ).count( '* AS value' ).groupBy( 'amp_mode' ).where( 'is_synthetic_data', false );
-		const ampVersionCounts = await Database.from( SiteModel.table ).select( 'amp_version AS label' ).count( '* AS value' ).groupBy( 'amp_version' ).where( 'is_synthetic_data', false );
+		const ampModeCounts = await Database.from( SiteModel.table ).select( 'amp_mode AS label' ).count( '* AS value' ).groupBy( 'amp_mode' ); // .where( 'is_synthetic_data', false );
+		const ampVersionCounts = await Database.from( SiteModel.table ).select( 'amp_version AS label' ).count( '* AS value' ).groupBy( 'amp_version' ); //.where( 'is_synthetic_data', false );
 		const extensionVerificationCounts = await Database.from( ExtensionVersionsModel.table ).select( 'verification_status AS label' ).count( '* AS value' ).groupBy( 'verification_status' );
 		const pluginGroupCounts = await this._getExtensionCountByActiveInstalls( 'plugin' );
 		const themeGroupCounts = await this._getExtensionCountByActiveInstalls( 'theme' );
@@ -108,19 +108,21 @@ class DashboardController {
 	 * @return {Promise<*>}
 	 */
 	async _getExtensionCountByActiveInstalls( type = 'plugin' ) {
-		const query = `SELECT CASE
-			WHEN active_installs BETWEEN 0 AND 100 THEN "Below 100"
-			WHEN active_installs BETWEEN 101 AND 1000 THEN "101 - 1K"
-			WHEN active_installs BETWEEN 1001 AND 10000 THEN "1K - 10K"
-			WHEN active_installs BETWEEN 10001 AND 100000 THEN "10K - 100K"
-			WHEN active_installs BETWEEN 100001 AND 500000 THEN "100K - 500K"
-			WHEN active_installs BETWEEN 500001 AND 1000000 THEN "500K - 1M"
-			WHEN active_installs > 1000000 THEN "Above 1M"
-		END  AS label,
-	count(1) AS value
-FROM extensions
-WHERE extensions.type = '${ type }'
-GROUP BY label;`;
+		const query = `SELECT * FROM (
+SELECT 'Below 100' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 0 AND 100
+UNION
+SELECT '101 - 1K' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 101 AND 1000
+UNION
+SELECT '1K - 10K' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 1001 AND 10000
+UNION
+SELECT '10K - 100K' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 10001 AND 100000
+UNION
+SELECT '100K - 500K' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 100001 AND 500000
+UNION
+SELECT '500K - 1M' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs BETWEEN 500001 AND 1000000
+UNION
+SELECT 'Above 1M' AS label, count(*) AS value FROM extensions WHERE type='${type}' AND active_installs > 1000000
+) as active_install_group;`;
 
 		const [ result ] = await Database.raw( query );
 
@@ -137,18 +139,23 @@ GROUP BY label;`;
 	async _getExtensionErrorCountGroup() {
 
 		const query = `
-		SELECT CASE
-			WHEN error_count = 0 THEN "None"
-			WHEN error_count BETWEEN 1 AND 10 THEN "1 - 10"
-			WHEN error_count BETWEEN 11 AND 50 THEN "11 - 50"
-			WHEN error_count BETWEEN 51 AND 100 THEN "51 - 100"
-			WHEN error_count BETWEEN 101 AND 250 THEN "101 - 250"
-			WHEN error_count BETWEEN 251 AND 500 THEN "251 - 500"
-			WHEN error_count BETWEEN 500 AND 1000 THEN "500 - 1000"
-			WHEN error_count > 1000 THEN "1000 - Above"
-		END AS label, count(1) AS value
-		FROM ${ ExtensionVersionsModel.table }
-		GROUP BY label;`;
+		SELECT * FROM (
+SELECT 'None' AS label, count(*) AS value FROM extension_versions WHERE error_count = 0
+UNION
+SELECT '1 - 10' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 1 AND 10
+UNION
+SELECT '11 - 50' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 11 AND 50
+UNION
+SELECT '51 - 100' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 51 AND 100
+UNION
+SELECT '101 - 250' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 101 AND 250
+UNION
+SELECT '251 - 500' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 251 AND 500
+UNION
+SELECT '500 - 1000' AS label, count(*) AS value FROM extension_versions WHERE error_count BETWEEN 500 AND 1000
+UNION
+SELECT 'Above 1000' AS label, count(*) AS value FROM extension_versions WHERE error_count > 1000
+) as error_count_group;`;
 
 		const [ result ] = await Database.raw( query );
 
