@@ -118,7 +118,7 @@ class ExtensionController {
 		 * 3. Prepare table args for extension version table.
 		 */
 		let tableArgs = this._prepareExtensionVersionTableArgs( {
-			slug: {
+			latest_version: {
 				slug: extension.slug,
 			},
 			type: extension.type,

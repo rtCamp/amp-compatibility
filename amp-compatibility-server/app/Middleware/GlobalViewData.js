@@ -89,19 +89,31 @@ class GlobalViewData {
 			requestQueue: {
 				title: 'Request Queue',
 				icon: '',
-				url: '/admin/request-queue',
+				url: '/admin/request-queue/active',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/request-queue' ) ),
+				childs: this.getDashboardMenuChildren( currentRequest, {
+					title: 'Request Queue',
+					url: '/admin/request-queue',
+				} ),
 			},
 			syntheticQueue: {
 				title: 'Synthetic Queue',
-				url: '/admin/synthetic-queue',
+				url: '/admin/synthetic-queue/active',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/synthetic-queue' ) ),
+				childs: this.getDashboardMenuChildren( currentRequest, {
+					title: 'Synthetic Queue',
+					url: '/admin/synthetic-queue',
+				} ),
 			},
 			adhocSyntheticQueue: {
-				title: 'Adhoc Synthetic Queue',
+				title: 'Adhoc Queue',
 				icon: '',
-				url: '/admin/adhoc-synthetic-queue',
+				url: '/admin/adhoc-synthetic-queue/active',
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/adhoc-synthetic-queue' ) && -1 === currentRequest.indexOf( '/admin/adhoc-synthetic-queue/add' ) ),
+				childs: this.getDashboardMenuChildren( currentRequest, {
+					title: 'Adhoc Queue',
+					url: '/admin/adhoc-synthetic-queue',
+				} ),
 			},
 			extensions: {
 				title: 'Extensions',
@@ -116,6 +128,21 @@ class GlobalViewData {
 				isActive: ( -1 !== currentRequest.indexOf( '/admin/report/uuid' ) ),
 			},
 		};
+	}
+
+	getDashboardMenuChildren( currentRequest, parentMenu ) {
+		const childMenus = [ 'Active', 'Waiting', 'Succeeded', 'Failed', 'Delayed' ];
+
+		return childMenus.map( ( menuItem ) => {
+			const menuItemUrl = `${parentMenu.url}/${menuItem.toLowerCase()}`;
+			return {
+				title: menuItem,
+				icon: '',
+				parent: parentMenu.title,
+				url: menuItemUrl,
+				isActive: ( -1 !== currentRequest.indexOf( menuItemUrl ) ),
+			};
+		} );
 	}
 }
 

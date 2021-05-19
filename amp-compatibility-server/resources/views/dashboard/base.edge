@@ -46,35 +46,34 @@
 	<div class="row">
 		<nav id="sidebarMenu" class="bg-light border-end col-md-3 col-xl-2 collapse d-md-block py-md-2 sidebar">
 			<div class="position-sticky">
-				<ul class="nav flex-column">
+				<ul class="nav">
 					@each(menuItem in dashboardMenuItems)
 
-					<li class="nav-item py-md-1">
+					<li class="nav-item py-md-1 w-100">
 						@if( menuItem.childs )
-							<div class="d-flex">
+							<div class="d-flex justify-content-between rounded-3 overflow-hidden">
 								<a
-									class="nav-link text-black rounded-3 {{ menuItem.isActive ? 'active':'' }}"
+									class="nav-link text-black w-100 {{ menuItem.isActive ? 'active':'' }}"
 									href="{{menuItem.url}}"
 								>
 									{{menuItem.title}}
 								</a>
 								<a
-									class="nav-link"
+									class="nav-link accordion-button w-auto p-2 shadow-0 {{ menuItem.isActive ? 'active':'bg-transparent collapsed' }}"
 									data-bs-toggle="collapse"
 									href="#sub-menu-{{toHyphenated(menuItem.title)}}"
 									role="button"
 									aria-expanded="false"
 									aria-controls="sub-menu-{{toHyphenated(menuItem.title)}}"
-								>
-									<span class="material-icons">expand_more</span>
-								</a>
+								></a>
 							</div>
-							<ul id="sub-menu-{{toHyphenated(menuItem.title)}}" class="flex-column collapse">
+							<ul id="sub-menu-{{toHyphenated(menuItem.title)}}" class="nav collapse {{ menuItem.isActive ? 'show':'' }}">
 								@each( item in menuItem.childs )
-								<li class="nav-item">
-									<a class="nav-link text-black rounded-3 {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
+								<li class="nav-item w-100 ps-2 status-{{toHyphenated(item.title)}}">
+									<a class="nav-link text-black rounded-3 pe-2 bg-transparent {{ item.isActive ? 'active':'' }}" href="{{item.url}}">
 										<span data-feather="{{item.icon}}"></span>
 										{{item.title}}
+										<span class="badge float-end invisible">{{0}}</span>
 									</a>
 								</li>
 								@endeach
@@ -92,7 +91,11 @@
 		</nav>
 		<main class="col-md-9 ms-sm-auto col-xl-10 px-md-4">
 			<div class="d-flex flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-				<h1 class="h2">{{dashboardActivePage.title}}</h1>
+				@if( dashboardActivePage.parent )
+					<h1 class="h2 mb-0">{{dashboardActivePage.parent}}: {{dashboardActivePage.title}}</h1>
+				@else
+					<h1 class="h2 mb-0">{{dashboardActivePage.title}}</h1>
+				@endif
 				<div>
 					@!section('header_line')
 				</div>

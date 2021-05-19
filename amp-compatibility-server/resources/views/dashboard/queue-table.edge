@@ -19,18 +19,6 @@
 		@endif
 
 		<div id="messageContainer"></div>
-		<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
-			@each( ( name, key ) in tabs )
-			<li class="nav-item" role="presentation">
-				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
-				   class="nav-link text-capitalize status-{{toHyphenated(name)}} {{ (key === params.status) ? 'active' : '' }}"
-				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
-					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge">{{queueHealth[key] || "0"}}</span>
-				</a>
-			</li>
-			@endeach
-
-		</ul>
 
 		@if( ! size( jobs ) )
 			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
