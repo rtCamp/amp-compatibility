@@ -83,6 +83,10 @@ abbr {
 		vertical-align: text-top;
 	}
 
+	.col-actions {
+		min-width: 180px;
+	}
+
 	td,
 	&.table-sm td,
 	&.table-sm th {
