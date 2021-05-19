@@ -330,6 +330,9 @@ class ReportUuidController {
 
 		const pluginTableArgs = {
 			items: _.toArray( preparedPluginList ),
+			headings: {
+				is_suppressed: 'Suppressed ?',
+			},
 			valueCallback: ( key, value ) => {
 
 				switch ( key ) {
@@ -366,9 +369,9 @@ class ReportUuidController {
 					case 'error_count':
 
 						if ( value.has_synthetic_data ) {
-							value = `<span class="text-center">${ value.count }</span>`;
+							value = `<span>${ value.count }</span>`;
 						} else {
-							value = `<span class="text-center">${ value.count ? value.count : '-' }</span>`;
+							value = `<span>${ value.count ? value.count : '-' }</span>`;
 						}
 
 						break;
@@ -466,6 +469,9 @@ class ReportUuidController {
 		const urlTableArgs = {
 			tableID: 'validateUrls',
 			items: urls,
+			headings: {
+				url: 'URL',
+			},
 			collapsible: {
 				accordionClass: 'validated-url',
 				bodyCallback: ( validateUrl ) => {
@@ -494,9 +500,7 @@ class ReportUuidController {
 						value = `<time datetime="${ dateString }" title="${ dateString }">${ dateString }</time>`;
 						break;
 					case 'errors':
-						value = _.size( value ) || 0;
-					default:
-						value = `<div class="text-center">${ value }</div>`;
+						value = `<div class="text-center"><strong>${ _.size( value ) || 0 }</strong></div>`;
 						break;
 				}
 
@@ -575,9 +579,7 @@ class ReportUuidController {
 						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
 						break;
 					case 'sources':
-						value = value.length || 0;
-					default:
-						value = `<div class="text-center">${ value }</div>`;
+						value = `<div class="text-center"><strong>${ _.size( value ) || 0 }</strong></div>`;
 						break;
 				}
 
