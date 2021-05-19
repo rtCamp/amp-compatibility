@@ -7,8 +7,8 @@
 		@each( queue in queues )
 
 		<div class="col-md-6 col-lg-4">
-			<ul class="list-group">
-				<li class="list-group-item active" aria-current="true">{{ upperFirst( snackCaseToString( queue.name ) )}}</li>
+			<ul class="list-group info-box">
+				<li class="list-group-item bg-light" aria-current="true"><h5 class="mb-0">{{ upperFirst( snackCaseToString( queue.name ) )}}</h5></li>
 				@each( ( number, status ) in queue.health )
 				<li class="list-group-item status-{{toHyphenated(status)}}">{{ upperFirst( snackCaseToString( status ) ) }} <span class="badge float-end">{{number || 0}}</span>
 				</li>
@@ -21,13 +21,13 @@
 
 	<div class="row mt-5 mb-4">
 		<div class="col-md-12">
-			<h5>AMP Information</h5>
+			<h4>AMP Information</h4>
 			<hr/>
 		</div>
 		@each( setting in ampChartInfoBoxes )
 		<div class="col-md-4 mb-4">
 			<ul class="list-group info-box">
-				<li class="list-group-item bg-light" aria-current="true"><h6 class="mb-0">{{setting.title}}</h6>
+				<li class="list-group-item bg-light" aria-current="true"><h5 class="mb-0">{{setting.title}}</h5>
 				</li>
 				<li class="list-group-item d-flex">
 					<canvas id="{{setting.id}}" data-chart="true" data-chart-type="{{setting.chartType}}"
@@ -41,13 +41,13 @@
 
 	<div class="row mt-5 mb-5">
 		<div class="col-md-12">
-			<h5>Extension Information</h5>
+			<h4>Extension Information</h4>
 			<hr/>
 		</div>
 		@each( setting in extensionChartInfoBoxes )
 		<div class="col-md-6 mb-4">
 			<ul class="list-group info-box">
-				<li class="list-group-item bg-light" aria-current="true"><h6 class="mb-0">{{setting.title}}</h6>
+				<li class="list-group-item bg-light" aria-current="true"><h5 class="mb-0">{{setting.title}}</h5>
 				</li>
 				<li class="list-group-item d-flex">
 					<canvas id="{{setting.id}}" data-chart="true" data-chart-type="{{setting.chartType}}"
