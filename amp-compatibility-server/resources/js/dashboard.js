@@ -2,7 +2,7 @@
 'use strict';
 
 import $ from 'jquery';
-import 'bootstrap';
+import { Collapse } from 'bootstrap';
 
 window.$ = window.jQuery = $;
 
@@ -10,12 +10,62 @@ window.addEventListener( 'DOMContentLoaded', function () {
 	const dashboard = {
 		init: function () {
 
+			this.searchFilters = document.getElementById('search-filters');
+			this.searchField = document.querySelector('.search-toolbar [type="search"]');
+			this.searchToolbarWrapper = document.querySelector('.search-toolbar');
+
+			this.bindEvents();
 			this.copyToClipboard();
+
+			if ( this.searchField && this.searchField.value.trim().length ) {
+				this.searchToolbarWrapper.classList.add( 'has-value' );
+			}
 
 			$( '[data-chart]' ).each( ( index, element ) => {
 				this.initializeChart( element );
 			} );
 
+		},
+
+		bindEvents: function () {
+
+			if ( this.searchFilters ) {
+				this.collapsibleFilters = new Collapse(this.searchFilters, {
+					toggle: false,
+				});
+
+				document.addEventListener( 'click', ( event ) => this.handlePageClick(event) );
+			}
+
+			if ( this.searchField ) {
+				this.searchField.addEventListener( 'change', ( event ) => this.handleChange(event) );
+			}
+		},
+
+		/**
+		 * Keep the search field background if user has added value.
+		 *
+		 * @param {*} event
+		 */
+		handleChange: function( event ) {
+			if ( event.target.value.trim().length ) {
+				this.searchToolbarWrapper.classList.add( 'has-value' );
+			} else {
+				this.searchToolbarWrapper.classList.remove( 'has-value' );
+			}
+		},
+
+		/**
+		 * Collapse search filters drawer if clicker outside.
+		 *
+		 * @param {*} event
+		 */
+		handlePageClick: function( event ) {
+			const target = event.target.current;
+
+			if( !$( target ).parent('#search-filters').length ) {
+				this.collapsibleFilters.hide();
+			}
 		},
 
 		copyToClipboard: function () {

@@ -6,7 +6,7 @@
 		<form method="GET">
 			<div class="input-group">
 				<div class="input-group-text border-0"><span class="material-icons">search</span></div>
-				<input type="search" class="form-control" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
+				<input type="search" class="form-control px-0" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
 				<a class="input-group-text border-0" type="button" data-bs-toggle="collapse" href="#search-filters" role="button" aria-expanded="false" aria-controls="search-filters">
 					<span class="material-icons">
 						keyboard_arrow_down
@@ -32,7 +32,6 @@
 						</div>
 					</div>
 					<div class="card-footer">
-						<a href="/admin/extensions" class="btn btn-outline-secondary" id="searchButton">Show All</a>
 						<button class="btn btn-outline-primary" type="submit" id="searchButton">Search</button>
 					</div>
 				</div>

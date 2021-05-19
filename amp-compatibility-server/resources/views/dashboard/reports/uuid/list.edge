@@ -1,20 +1,24 @@
 @layout( 'dashboard/base' )
 
+@section('header_tools')
+<div class="col-6 header-tools">
+	<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
+		<form method="GET" action="/admin/report/uuid/">
+			<div class="input-group">
+				<div class="input-group-text border-0"><span class="material-icons">search</span></div>
+				<input type="search" class="form-control ps-0" name="s" value="{{searchString}}">
+			</div>
+		</form>
+	</div>
+</div>
+@endsection
+
 @section('page')
 
 	<div>
 		<div>
-			<form class="row" method="GET" action="/admin/report/uuid/">
-				<div id="messageContainer" class="col-md-9">
-				</div>
-				<div class="col-md-3">
-					<div class="input-group mb-3">
-						<input type="search" class="form-control" name="s" value="{{searchString}}">
-						<button id="searchButton" class="btn btn-outline-primary" type="submit" id="searchButton">Search</button>
-					</div>
-					<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
-				</div>
-			</form>
+			<div id="messageContainer" class="col-md-9"></div>
+			<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
 		</div>
 
 		{{{renderTable(tableArgs)}}}
