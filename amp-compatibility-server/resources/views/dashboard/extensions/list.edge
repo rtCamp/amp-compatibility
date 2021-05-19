@@ -1,41 +1,44 @@
 @layout( 'dashboard/base' )
 
 @section('header_tools')
-<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
-	<form class="row" method="GET">
-		<div class="col-md-8">
-			<div id="messageContainer"></div>
-		</div>
-		<div class="input-group">
-			<div class="input-group-text border-0"><span class="material-icons">search</span></div>
-			<input type="search" class="form-control" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
-			<div class="dropdown">
-			<a class="btn btn-outline-secondary dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"></a>
-			<ul class="dropdown-menu collapse list-group list-group-horizontal-sm justify-content-end mt-0 mb-3 end-0">
-				<li class="dropdown-item border-0 pt-0 pb-0">
-					<a class="" href="/admin/extensions">All</a>
-				</li>
-				<li class="dropdown-item border-0 pt-0 pb-0">
-					<label for="is_partner">
-						<input id="is_partner" name="is_partner" type="checkbox"
-								value="1" {{queryStrings.is_partner ? 'checked' : ''}} >
-						Partner Only
-					</label>
-				</li>
-				<li class="dropdown-item border-0 pt-0 pb-0">
-					<label for="has_error">
-						<input id="has_error" name="has_error" type="checkbox" value="1" {{queryStrings.has_error ? 'checked' : ''}}>
-						Extensions with error<br />
-						<small>(Latest version)</small>
-					</label>
-				</li>
-				<li class="dropdown-item">
-					<button class="btn btn-outline-secondary" type="submit" id="searchButton">Search</button>
-				</li>
-			</ul>
+<div class="col-6 header-tools">
+	<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
+		<form method="GET">
+			<div class="input-group">
+				<div class="input-group-text border-0"><span class="material-icons">search</span></div>
+				<input type="search" class="form-control" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
+				<a class="input-group-text border-0" type="button" data-bs-toggle="collapse" href="#search-filters" role="button" aria-expanded="false" aria-controls="search-filters">
+					<span class="material-icons">
+						keyboard_arrow_down
+					</span>
+				</a>
 			</div>
-		</div>
-	</form>
+			<div class="collapse" id="search-filters">
+				<div class="card">
+					<div class="card-body">
+						<div class="card-title">Filter by:</div>
+						<div class="card-text">
+							<div class="form-check">
+								<input class="form-check-input" id="is_partner" name="is_partner" type="checkbox" value="1" {{queryStrings.is_partner ? 'checked' : ''}} >
+								<label class="form-check-label" for="is_partner">Partner Only</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" id="has_error" name="has_error" type="checkbox" value="1" {{queryStrings.has_error ? 'checked' : ''}}>
+								<label class="form-check-label" for="has_error">
+									Extensions with error
+									<small>(Latest version)</small>
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<a href="/admin/extensions" class="btn btn-outline-secondary" id="searchButton">Show All</a>
+						<button class="btn btn-outline-primary" type="submit" id="searchButton">Search</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
 </div>
 @endsection
 

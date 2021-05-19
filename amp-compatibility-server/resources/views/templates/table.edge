@@ -5,7 +5,7 @@
 @else
 	<div>
 		<table id="{{tableID}}" class="table table-sm table-responsive {{classes}}">
-			<thead>
+			<thead class="table-light">
 			<tr>
 				@each( ( value, key ) in items[0] )
 					@if( headings[key] )
@@ -44,7 +44,7 @@
 
 			@if( collapsible )
 				<tr>
-					<td colspan="12" class="hiddenRow">
+					<td colspan="12" class="hiddenRow p-0">
 						<div id="collapse-{{tableID}}-{{index}}" class="accordion-collapse collapse"
 							 aria-labelledby="collapse-{{tableID}}-{{index}}">
 							<div class="accordion-body {{ collapsible.accordionClass  }}">
