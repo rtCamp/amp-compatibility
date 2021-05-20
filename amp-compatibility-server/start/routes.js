@@ -71,6 +71,11 @@ Route.group( () => {
 	Route.get( '/report/uuid/:uuid', 'ReportUuidController.show' );
 	Route.get( '/report/site/:site', 'ReportSiteController.show' );
 
+	/**
+	 * System report
+	 */
+	Route.get( '/system/', 'SystemReportController.index' );
+
 } ).prefix( 'admin' ).middleware( 'auth' ).middleware( 'throttle:30' );
 
 /**
