@@ -33,7 +33,6 @@ class ExtensionVersion extends Base {
 			type: 'slug',
 			slug: 'slug',
 			version: 'version',
-			is_verified: 'to_boolean',
 			verification_status: 'slug',
 		};
 	}
