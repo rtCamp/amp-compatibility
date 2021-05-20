@@ -36,14 +36,14 @@ Route.group( () => {
 	/**
 	 * Queue pages.
 	 */
-	Route.get( '/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)', 'QueueController.indexMySQL' );
+	Route.get( '/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)', 'QueueController.index' );
 	Route.get(
 		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
-		'QueueController.indexMySQL'
+		'QueueController.index'
 	);
 	Route.get(
 		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)/page/:paged',
-		'QueueController.indexMySQL'
+		'QueueController.index'
 	);
 	Route.post(
 		'/:queue(request-queue|synthetic-queue|adhoc-synthetic-queue)/:status(waiting|active|succeeded|failed|delayed|newestJob)',
