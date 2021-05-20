@@ -8,6 +8,42 @@
 	@endif
 @endsection
 
+@section('header_tools')
+	<div class="col-6 header-tools">
+		<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
+			<form method="GET">
+				<div class="input-group">
+					<div class="input-group-text border-0"><span class="material-icons">search</span></div>
+					<input type="search" class="form-control px-0" name="s" value="{{queryStrings.s ? queryStrings.s : ''}}">
+					<a class="input-group-text border-0" type="button" data-bs-toggle="collapse" href="#search-filters" role="button" aria-expanded="false" aria-controls="search-filters">
+					<span class="material-icons">
+						keyboard_arrow_down
+					</span>
+					</a>
+				</div>
+				<div class="collapse" id="search-filters">
+					<div class="card">
+						<div class="card-body">
+							<div class="card-title">Filter by:</div>
+							<div class="card-text">
+								@if( 'request-queue' == queue )
+								<div class="form-check">
+									<input class="form-check-input" id="is_synthetic" name="is_synthetic" type="checkbox" value="0" {{queryStrings.is_synthetic ? 'checked' : ''}} >
+									<label class="form-check-label" for="is_synthetic">Exclude Synthetic</label>
+								</div>
+								@endif
+							</div>
+						</div>
+						<div class="card-footer">
+							<button class="btn btn-outline-primary" type="submit" id="searchButton">Search</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+@endsection
+
 @section('page')
 
 	<div>
@@ -18,19 +54,13 @@
 		</div>
 		@endif
 
-		@if( ! itemCount )
-			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
-				<p class="lead fw-normal">There isn't any job.</p>
-			</div>
-		@else
-			<div>
-				<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
-			</div>
-			<div class="mt-4 mb-4">
-				{{{renderTable(tableArgs)}}}
-				{{{renderPagination(pagination)}}}
-			</div>
-		@endif
+		<div>
+			<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
+		</div>
+		<div class="mt-4 mb-4">
+			{{{renderTable(tableArgs)}}}
+			{{{renderPagination(pagination)}}}
+		</div>
 	</div>
 @endsection
 

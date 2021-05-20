@@ -172,19 +172,30 @@ class QueueController {
 	 *
 	 * @return {Promise<*>}
 	 */
-	async indexMySQL( { view, params } ) {
+	async indexMySQL( { view, request, params } ) {
 
 		params = _.defaults( params, {
 			queue: 'request-queue',
 			status: 'active',
 			paged: 1,
-			perPage: 50,
 		} );
 
 		const queueControllerList = {
 			'request-queue': RequestQueueController,
 			'synthetic-queue': SyntheticDataQueueController,
 			'adhoc-synthetic-queue': AdhocSyntheticDataQueueController,
+		};
+
+		const queryParams = {
+			paged: params.paged,
+			perPage: 20,
+			s: request.input( 's' ) || '',
+			whereClause: {
+				status: params.status,
+			},
+			orderby: {
+				'created_at': 'DESC',
+			}
 		};
 
 		const selectFieldList = {
@@ -212,27 +223,40 @@ class QueueController {
 			],
 		};
 
+		const searchFieldList = {
+			'request-queue': [
+				'uuid',
+				'site_url',
+			],
+			'synthetic-queue': [
+				'uuid',
+				'domain',
+			],
+			'adhoc-synthetic-queue': [
+				'uuid',
+				'domain',
+			],
+		};
+
 		const queueController = queueControllerList[ params.queue ];
-		const fields = selectFieldList[ params.queue ];
 		const databaseModel = queueController.databaseModel;
-
-		/**
-		 * Prepare counts for each status.
-		 */
-		const queueHealth = await queueController.queue.checkHealth();
-
-		const statusCountsResult = await Database.select( 'status' ).count( '* as value' ).from( databaseModel.table ).groupBy( 'status' );
-		const statusCounts = {};
-		statusCountsResult.map( ( item ) => {
-			statusCounts[ item.status ] = parseInt( item.value ) || 0;
-		} );
-		queueHealth.succeeded = statusCounts.succeeded;
 
 		/**
 		 * Fetch records from respective source. (either MySQL or Redis)
 		 */
-		let result = await Database.select( fields ).from( databaseModel.table ).where( 'status', params.status ).paginate( params.paged, params.perPage );
-		let items = result.data;
+
+		queryParams.selectFields = selectFieldList[ params.queue ];
+		queryParams.searchFields = searchFieldList[ params.queue ];
+		switch ( params.queue ) {
+			case 'request-queue':
+				if ( request.input( 'is_synthetic' ) ) {
+					queryParams.whereClause.is_synthetic = !! parseInt( request.input( 'is_synthetic' ) );
+				}
+				break;
+		}
+
+		const result = await databaseModel.getResult( queryParams );
+		const items = _.toArray( result.data );
 
 		/**
 		 * Prepare fields according
@@ -470,11 +494,12 @@ class QueueController {
 		const pagination = {
 			baseUrl: `/admin/${ params.queue }/${ params.status }`,
 			total: result.total,
-			perPage: params.perPage,
-			currentPage: params.paged,
+			perPage: queryParams.perPage,
+			currentPage: queryParams.paged,
 		};
 
 		return view.render( 'dashboard/queue-secondary', {
+			queryStrings: request.get(),
 			queue: params.queue,
 			tabs: {
 				active: 'Active',
@@ -482,8 +507,6 @@ class QueueController {
 				succeeded: 'Succeeded',
 				failed: 'Failed',
 			},
-			queueHealth: queueHealth,
-			itemCount: parseInt( queueHealth[ params.status ] ) || 0,
 			tableArgs,
 			pagination,
 		} );
