@@ -518,7 +518,9 @@ class QueueController {
 				}
 
 				if ( 'synthetic-queue' === queueName ) {
-					await queueObject.queue.removeJob( postData.jobID );
+					await queueObject.queue.removeJob( jobID );
+					await queueObject.databaseModel.query().where( 'uuid', jobID ).delete(); // Remove job from synthetic queue table.
+
 					await AdhocSyntheticDataQueueController.createJob( jobData );
 				} else {
 					await queueObject.queue.removeJob( postData.jobID );
