@@ -27,7 +27,7 @@
 			<label for="theme" class="col-sm-2 col-md-1 col-form-label">Theme</label>
 			<div class="col-sm-10 col-md-8 col-xl-6">
 				<div class="input-group mb-2">
-					<input id="theme" name="theme[name]" type="text" class="form-control theme-autocomplete"
+					<input id="theme" name="theme[name]" type="text" class="form-control theme-autocomplete rounded"
 						   placeholder="e.g. treville">
 					<div class="dropdown mx-1">
 						<button name="version" class="form-control theme-version btn btn-outline-primary dropdown-toggle"
@@ -45,7 +45,7 @@
 			<label for="plugins" class="col-sm-2 col-md-1 col-form-label">Plugins</label>
 			<div class="col-sm-10 col-md-8 col-xl-6" id="plugin-list">
 				<div id="pluginClone" class="input-group mb-2 d-none plugin-item">
-					<input id="plugin-name" type="text" name="plugins[0][name]" class="form-control plugin-autocomplete"
+					<input id="plugin-name" type="text" name="plugins[0][name]" class="form-control plugin-autocomplete rounded"
 						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
 					<div class="dropdown mx-1">
@@ -57,10 +57,10 @@
 						<ul class="dropdown-menu plugin-dropdown">
 						</ul>
 					</div>
-					<button type="button" class="btn btn-outline-danger btn-remove-plugin">&minus;</button>
+					<button type="button" class="btn btn-outline-danger btn-remove-plugin rounded">&minus;</button>
 				</div>
 				<div class="input-group mb-2 plugin-item">
-					<input type="text" name="plugins[1][name]" class="form-control plugin-autocomplete"
+					<input type="text" name="plugins[1][name]" class="form-control plugin-autocomplete rounded"
 						   autocomplete="off"
 						   placeholder="e.g. woocommerce">
 					<div class="dropdown mx-1">

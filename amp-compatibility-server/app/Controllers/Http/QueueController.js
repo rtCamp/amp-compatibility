@@ -198,12 +198,14 @@ class QueueController {
 			],
 			'synthetic-queue': [
 				'uuid',
+				'domain',
 				'data',
 				'logs',
 				'result',
 			],
 			'adhoc-synthetic-queue': [
 				'uuid',
+				'domain',
 				'data',
 				'logs',
 				'result',
@@ -229,6 +231,7 @@ class QueueController {
 		/**
 		 * Fetch records from respective source. (either MySQL or Redis)
 		 */
+		let result = {};
 		let items = [];
 
 		switch ( params.status ) {
@@ -236,7 +239,7 @@ class QueueController {
 			case 'failed':
 			case 'waiting':
 			case 'succeeded':
-				const result = await Database.select( fields ).from( databaseModel.table ).where( 'status', params.status ).paginate( params.paged, params.perPage );
+				result = await Database.select( fields ).from( databaseModel.table ).where( 'status', params.status ).paginate( params.paged, params.perPage );
 				items = result.data;
 				break;
 		}
@@ -258,6 +261,7 @@ class QueueController {
 					error_sources_count: data.errorSourceCount ? data.errorSourceCount : 0,
 					urls_count: data.urls ? _.size( data.urls ) : 0,
 					is_synthetic: !! item.is_synthetic,
+					data: Utility.jsonPrettyPrint( data ),
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
@@ -272,9 +276,10 @@ class QueueController {
 
 				const preparedItem = {
 					uuid: item.uuid,
-					domain: `${ item.data.domain }.local`,
+					domain: `${ item.domain }.local`,
 					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
+					data: Utility.jsonPrettyPrint( data ),
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
@@ -294,6 +299,7 @@ class QueueController {
 					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
 					amp_source: data.ampSource,
+					data: Utility.jsonPrettyPrint( data ),
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
@@ -315,6 +321,9 @@ class QueueController {
 		const tableArgs = {
 			tableID: 'queueTable',
 			items: preparedItems,
+			headings: {
+				uuid: 'UUID',
+			},
 			valueCallback: ( key, value ) => {
 				let htmlMarkup = '';
 
@@ -326,7 +335,7 @@ class QueueController {
 						value = `<a href="${ value }" target="_blank">${ value }</a>`;
 						break;
 					case 'plugins':
-						htmlMarkup = '<ul class="list-group list-group-flush mt-0 mb-0">';
+						htmlMarkup = '<ul class="list-group synthetic-item-plugins list-group-flush mt-0 mb-0">';
 						value = value || [];
 
 						value.map( ( item ) => {
@@ -347,7 +356,7 @@ class QueueController {
 						break;
 					case 'logs':
 						value = value || {};
-						htmlMarkup = '<ul class="list-group list-group-flush mt-0 mb-0">';
+						htmlMarkup = '<ul class="list-group synthetic-item-logs list-group-flush mt-0 mb-0">';
 
 						for ( const index in value ) {
 							const data = value[ index ];
@@ -389,7 +398,7 @@ class QueueController {
 		 */
 		const pagination = {
 			baseUrl: `/admin/${ params.queue }/${ params.status }`,
-			total: queueHealth[ params.status ],
+			total: result.total,
 			perPage: params.perPage,
 			currentPage: params.paged,
 		};

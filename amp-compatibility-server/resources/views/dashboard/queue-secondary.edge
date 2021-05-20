@@ -12,34 +12,24 @@
 
 	<div>
 
+		@if( pageDescription )
 		<div class="p-1">
 			<p>{{{pageDescription}}}</p>
 		</div>
-		<ul class="nav nav-tabs nav-fill mb-4" id="myTab" role="tablist">
-
-			@each( ( name, key ) in tabs )
-			<li class="nav-item" role="presentation">
-				<a id="{{key}}-tab" href="/admin/{{params.queue}}/{{key}}" role="tab" aria-controls="{{key}}"
-				   class="nav-link {{ (key === params.status) ? 'active' : '' }}"
-				   aria-selected="{{ key === params.status ? 'true' : 'false' }}">
-					{{name}}&nbsp;&nbsp;&nbsp;<span class="badge bg-primary">{{queueHealth[key] || "0"}}</span>
-				</a>
-			</li>
-			@endeach
-
-		</ul>
+		@endif
 
 		@if( ! itemCount )
 			<div class="col-md-5 p-lg-5 mx-auto my-5 text-center mt-4">
 				<p class="lead fw-normal">There isn't any job.</p>
 			</div>
 		@else
-			<div class="mt-4 mb-4">
-			{{{renderTable(tableArgs)}}}
-
-			{{{renderPagination(pagination)}}}
+			<div>
+				<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
 			</div>
-
+			<div class="mt-4 mb-4">
+				{{{renderTable(tableArgs)}}}
+				{{{renderPagination(pagination)}}}
+			</div>
 		@endif
 	</div>
 @endsection
