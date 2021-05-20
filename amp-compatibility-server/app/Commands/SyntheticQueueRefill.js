@@ -30,7 +30,6 @@ class SyntheticQueueRefill extends Command {
 		 { --only-plugins : To generate synthetic data only for plugins.. }
 		 { --plugin-active-install=@value : Active installs criteria for plugins to run synthetic data. The plugin must have more or equal active install to test. "0" means all the plugins. (Default = 0) }
 		 { --theme-active-install=@value : Active installs criteria for themes to run synthetic data. The themes must have more or equal active install to test. "0" means all the plugins. (Default = 0) }
-		 { --limit=@value : The number of themes/plugins need to add to the queue and process.. }
 		 { --force: To generate synthetic data for extensions even if data is already exists. }`;
 	}
 
@@ -64,7 +63,6 @@ class SyntheticQueueRefill extends Command {
 		this.options = {
 			onlyThemes: ( true === options.onlyThemes ),
 			onlyPlugins: ( true === options.onlyPlugins ),
-			limit: ( ! isNaN( options.limit ) && 0 < parseInt( options.limit ) ) ? parseInt( options.limit ) : false,
 			pluginActiveInstall: ( ! isNaN( options.pluginActiveInstall ) && 0 < parseInt( options.pluginActiveInstall ) ) ? parseInt( options.pluginActiveInstall ) : 0,
 			themeActiveInstall: ( ! isNaN( options.themeActiveInstall ) && 0 < parseInt( options.themeActiveInstall ) ) ? parseInt( options.themeActiveInstall ) : 0,
 			force: ( true === options.force ),
