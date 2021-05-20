@@ -9,6 +9,8 @@ const RequestQueueController = use( 'App/Controllers/Queue/RequestController' );
 const SyntheticDataQueueController = use( 'App/Controllers/Queue/SyntheticDataController' );
 const AdhocSyntheticDataQueueController = use( 'App/Controllers/Queue/AdhocSyntheticDataController' );
 
+const Database = use( 'Database' );
+
 const { validateAll } = use( 'Validator' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -24,141 +26,344 @@ class QueueController {
 	 *
 	 * @return {Promise<*>}
 	 */
-	async index( { view, params } ) {
+	async index( { view, request, params } ) {
 
 		params = _.defaults( params, {
 			queue: 'request-queue',
 			status: 'active',
 			paged: 1,
-			perPage: 50,
 		} );
 
-		params.queue = params.queue.toString().toLowerCase().trim();
-		params.status = params.status.toString().toLowerCase().trim();
-
-		let queue = false;
-		let pageDescription = '';
-		const jobs = [];
-		let page = {
-			start: ( params.paged * params.perPage ) - params.perPage,
-			end: ( params.paged * params.perPage ),
+		const queueControllerList = {
+			'request-queue': RequestQueueController,
+			'synthetic-queue': SyntheticDataQueueController,
+			'adhoc-synthetic-queue': AdhocSyntheticDataQueueController,
 		};
 
-		if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
-			page = { size: 100 };
-		}
+		const queryParams = {
+			paged: params.paged,
+			perPage: 20,
+			s: request.input( 's' ) || '',
+			whereClause: {
+				status: params.status,
+			},
+			orderby: {
+				'created_at': 'DESC',
+			}
+		};
 
+		const selectFieldList = {
+			'request-queue': [
+				'uuid',
+				'site_url',
+				'is_synthetic',
+				'data',
+				'logs',
+				'result',
+			],
+			'synthetic-queue': [
+				'uuid',
+				'domain',
+				'data',
+				'logs',
+				'result',
+			],
+			'adhoc-synthetic-queue': [
+				'uuid',
+				'domain',
+				'data',
+				'logs',
+				'result',
+			],
+		};
+
+		const searchFieldList = {
+			'request-queue': [
+				'uuid',
+				'site_url',
+			],
+			'synthetic-queue': [
+				'uuid',
+				'domain',
+			],
+			'adhoc-synthetic-queue': [
+				'uuid',
+				'domain',
+			],
+		};
+
+		const queueController = queueControllerList[ params.queue ];
+		const databaseModel = queueController.databaseModel;
+
+		/**
+		 * Fetch records from respective source. (either MySQL or Redis)
+		 */
+
+		queryParams.selectFields = selectFieldList[ params.queue ];
+		queryParams.searchFields = searchFieldList[ params.queue ];
 		switch ( params.queue ) {
-			case 'synthetic-queue':
-				queue = SyntheticDataQueueController.queue;
-
-				const dow = 6;
-				const currentDate = new Date();
-
-				currentDate.setHours( 4 );
-				currentDate.setMinutes( 0 );
-				currentDate.setSeconds( 0 );
-				currentDate.setDate( currentDate.getDate() + ( dow + ( 7 - currentDate.getDay() ) ) % 7 );
-
-				pageDescription = `The next synthetic data run is scheduled on "<b>${ currentDate.toUTCString() }</b>"`;
-				break;
-			case 'adhoc-synthetic-queue':
-				queue = AdhocSyntheticDataQueueController.queue;
-				break;
 			case 'request-queue':
-			default:
-				queue = RequestQueueController.queue;
+				if ( request.input( 'is_synthetic' ) ) {
+					queryParams.whereClause.is_synthetic = !! parseInt( request.input( 'is_synthetic' ) );
+				}
 				break;
 		}
 
-		const queueHealth = await queue.checkHealth();
-		const queueJobs = await queue.getJobs( params.status, page ) || [];
+		const result = await databaseModel.getResult( queryParams );
+		const items = _.toArray( result.data );
 
-		for ( const index in queueJobs ) {
-			const queueJob = queueJobs[ index ];
-			let job = {};
+		/**
+		 * Prepare fields according
+		 * @type {*[]}
+		 */
+		const prepareItemCallbacks = {
+			'request-queue': ( item ) => {
 
-			let site_domain = '';
-			job.id = queueJob.id;
+				const siteDomain = item.site_url;
+				let data = item.data.toString();
+				data = Utility.maybeParseJSON( data ) || {};
 
-			if ( [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue ) ) {
+				const preparedItem = {
+					uuid: item.uuid,
+					site_title: data.site_info.site_title,
+					error_count: data.errorCount ? data.errorCount : 0,
+					error_sources_count: data.errorSourceCount ? data.errorSourceCount : 0,
+					urls_count: data.urls ? _.size( data.urls ) : 0,
+					is_synthetic: !! item.is_synthetic,
+					data: Utility.jsonPrettyPrint( data ),
+				};
 
-				job.domain = `${ queueJob.data.domain }.local`;
-				job.plugins = Utility.parseSyntheticExtensionParam( queueJob.data.plugins );
-				job.theme = Utility.parseSyntheticExtensionParam( queueJob.data.theme );
+				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
+				}
 
-				site_domain = job.domain;
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
+				}
 
-			} else if ( 'request-queue' === params.queue ) {
+				return preparedItem;
+			},
+			'synthetic-queue': ( item ) => {
+				let data = item.data.toString();
+				data = Utility.maybeParseJSON( data ) || {};
+				const siteDomain = `${ item.domain }.local`;
 
-				job.site_url = queueJob.data.site_url;
-				job.site_title = queueJob.data.site_info.site_title;
-				job.error_count = queueJob.data.errors ? _.size( queueJob.data.errors ) : 0;
-				job.error_sources_count = queueJob.data.error_sources ? _.size( queueJob.data.error_sources ) : 0;
-				job.urls_count = queueJob.data.urls ? _.size( queueJob.data.urls ) : 0;
+				const preparedItem = {
+					uuid: item.uuid,
+					domain: siteDomain,
+					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
+					theme: Utility.parseSyntheticExtensionParam( data.theme ),
+					data: Utility.jsonPrettyPrint( data ),
+				};
 
-				site_domain = job.site_url;
-			}
+				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
+					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
+				}
 
-			if ( 'adhoc-synthetic-queue' === params.queue ) {
-				job.AMP_source = queueJob.data.ampSource;
-			}
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
+				}
 
-			if ( 'active' === params.status ) {
-				job.progress = queueJob.progress.toString();
-			}
+				return preparedItem;
+			},
+			'adhoc-synthetic-queue': ( item ) => {
+				let data = item.data.toString();
+				data = Utility.maybeParseJSON( data ) || {};
+				const siteDomain = `${ data.domain }.local`;
 
-			if ( [ 'failed', 'succeeded' ].includes( params.status ) &&
-				 [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue )
-			) {
-				job.logs = queueJob.options._logs || [];
-			}
+				const preparedItem = {
+					uuid: item.uuid,
+					domain: siteDomain,
+					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
+					theme: Utility.parseSyntheticExtensionParam( data.theme ),
+					amp_source: data.ampSource,
+					data: Utility.jsonPrettyPrint( data ),
+				};
 
-			switch ( params.status ) {
-				case 'succeeded':
-					job.actions = {
-						retry: queueJob.id,
-						report: `/admin/report/site/${ site_domain }`,
-					};
-					break;
-				case 'failed':
-					job.actions = {
-						retry: queueJob.id,
-					};
-					break;
-				case 'waiting':
-					job.actions = {
-						remove: queueJob.id,
-					};
-					break;
-			}
+				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
+					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
+				}
 
-			jobs.push( job );
-		}
+				preparedItem.requested_by = data.email;
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
+				}
 
+				return preparedItem;
+			},
+		};
+
+		const preparedItems = items.map( prepareItemCallbacks[ params.queue ] );
+
+		/**
+		 * Prepare table args.
+		 */
+		const tableArgs = {
+			tableID: 'queueTable',
+			items: preparedItems,
+			headings: {
+				uuid: 'UUID',
+			},
+			valueCallback: ( key, value ) => {
+				let htmlMarkup = '';
+
+				switch ( key ) {
+					case 'uuid':
+						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 13 ) }</abbr>`;
+						break;
+					case 'domain':
+						value = `<a href="//${ value }" target="_blank">${ value }</a>`;
+						break;
+					case 'plugins':
+						htmlMarkup = '<ul class="list-group synthetic-item-plugins list-group-flush mt-0 mb-0">';
+						value = value || [];
+
+						value.map( ( item ) => {
+							htmlMarkup += `<li class="list-group-item bg-transparent">${ item.name }&nbsp;${ item.version ? item.version : '' }</li>`
+						} );
+
+						htmlMarkup += '</ul>';
+
+						value = htmlMarkup;
+						break;
+					case 'theme':
+						value = ( ! _.isEmpty( value[ 0 ] ) ) ? `${ value[ 0 ].name }&nbsp;${ value[ 0 ].version ? value[ 0 ].version : '' }` : '';
+						break;
+					case 'amp_source':
+						if ( ! [ 'wporg', 'github' ].includes( value ) ) {
+							value = `<a href="${ value }" target="_blank" title="${ value }">Other</a>`;
+						}
+						break;
+					case 'logs':
+						value = value || {};
+						htmlMarkup = '<ul class="list-group synthetic-item-logs list-group-flush mt-0 mb-0">';
+
+						for ( const index in value ) {
+							const data = value[ index ];
+
+							htmlMarkup += `<li class="list-group-item bg-transparent">` +
+							              `<strong>Try ${ parseInt( index ) + 1 }</strong>:&nbsp;${ data.message }`;
+
+							if ( data.logFile ) {
+								htmlMarkup += `&nbsp;&nbsp;<a target="_blank" href="https://storage.cloud.google.com/${ data.logFile }">Log</a>`;
+							}
+
+							htmlMarkup += `</li>`;
+						}
+
+						htmlMarkup += '</ul>';
+						value = htmlMarkup;
+						break;
+					case 'data':
+					case 'result':
+						const regex = /'/gm;
+						value = value.replace( regex, '"' );
+						value = `<button class="btn btn-outline-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
+						break;
+					case 'requested_by':
+						value = `<a href="mailto:${ value }">${ value }</a>`;
+						break;
+					case 'is_synthetic':
+						value = `<span>${ value ? 'Yes' : 'No' }</span>`;
+						break;
+					case 'actions':
+						htmlMarkup = '';
+						const icons = {
+							remove: '<span class="material-icons align-middle">delete_outline</span>',
+							retry: '<span class="material-icons align-middle">autorenew</span>',
+							report: '<span class="material-icons align-middle">open_in_new</span>',
+						};
+
+						for ( const action in value ) {
+
+							if ( 'report' === action ) {
+								htmlMarkup += `<a href="${ value[ action ] }" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" target="_blank">${ icons[ action ] }</a>`;
+							} else {
+								htmlMarkup += `<button type="button" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" data-action="${ action }" data-jobid="${ value[ action ] }">${ icons[ action ] }</button>`;
+							}
+						}
+
+						value = htmlMarkup;
+						break;
+
+				}
+
+				return value;
+			},
+		};
+
+		/**
+		 * Pagination.
+		 */
 		const pagination = {
 			baseUrl: `/admin/${ params.queue }/${ params.status }`,
-			total: queueHealth[ params.status ],
-			perPage: params.perPage,
-			currentPage: params.paged,
+			total: result.total,
+			perPage: queryParams.perPage,
+			currentPage: queryParams.paged,
 		};
 
-		const data = {
-			pageDescription: pageDescription,
+		return view.render( 'dashboard/queue-list', {
+			queryStrings: request.get(),
 			queue: params.queue,
 			tabs: {
 				active: 'Active',
 				waiting: 'Waiting',
 				succeeded: 'Succeeded',
 				failed: 'Failed',
-				delayed: 'Delayed',
 			},
-			queueHealth: queueHealth,
-			pagination: pagination,
-			jobs: jobs,
-		};
-
-		return view.render( 'dashboard/queue-table', data );
+			tableArgs,
+			pagination,
+		} );
 	}
 
 	/**
@@ -258,22 +463,16 @@ class QueueController {
 	async update( { request, params } ) {
 
 		const postData = request.post();
-		const queueName = params.queue || 'request-queue';
-		let queueObject = false;
-		let message = '';
 
-		switch ( queueName ) {
-			case 'synthetic-queue':
-				queueObject = SyntheticDataQueueController;
-				break;
-			case 'adhoc-synthetic-queue':
-				queueObject = AdhocSyntheticDataQueueController;
-				break;
-			case 'request-queue':
-			default:
-				queueObject = RequestQueueController;
-				break;
-		}
+		const queueControllerList = {
+			'request-queue': RequestQueueController,
+			'synthetic-queue': SyntheticDataQueueController,
+			'adhoc-synthetic-queue': AdhocSyntheticDataQueueController,
+		};
+
+		const queueName = params.queue || 'request-queue';
+		const queueObject = queueControllerList[ queueName ];
+		let message = '';
 
 		const rules = {
 			action: 'required|in:retry,remove',
@@ -294,10 +493,29 @@ class QueueController {
 			};
 		}
 
+		const jobID = postData.jobID;
+
 		switch ( postData.action ) {
 			case 'retry':
-				const job = await queueObject.queue.getJob( postData.jobID );
-				const jobData = _.clone( job.data );
+
+				const job = await queueObject.queue.getJob( jobID );
+				let jobData = null;
+
+				if ( job ) {
+					jobData = _.clone( job.data );
+				} else {
+					if ( 'request-queue' !== queueName ) {
+						jobData = await queueObject.databaseModel.query().select( 'data' ).where( 'uuid', jobID ).first();
+						jobData = Utility.maybeParseJSON( jobData.data ) || {};
+					}
+				}
+
+				if ( _.isEmpty( jobData ) ) {
+					return {
+						status: 'fail',
+						message: 'Could not find job data.',
+					};
+				}
 
 				if ( 'synthetic-queue' === queueName ) {
 					await queueObject.queue.removeJob( postData.jobID );
@@ -311,6 +529,7 @@ class QueueController {
 				break;
 			case 'remove':
 				await queueObject.queue.removeJob( postData.jobID );
+				await queueObject.databaseModel.query().where( 'uuid', jobID ).delete();
 				message = `Job ${ postData.jobID } has been removed from queue`;
 				break;
 		}

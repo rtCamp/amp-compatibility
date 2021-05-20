@@ -378,21 +378,22 @@ class ExtensionController {
 
 			currentPage = currentPage + 1;
 
-			urlErrorRelationshipsIteration = await Database.table( UrlErrorRelationshipModel.table )
-			                                               .select(
-				                                               [
-					                                               `${ UrlErrorRelationshipModel.table }.hash`,
-					                                               `${ UrlErrorRelationshipModel.table }.error_slug`,
-					                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
-				                                               ],
-			                                               )
-			                                               .innerJoin(
-				                                               ErrorSourceModel.table,
-				                                               `${ ErrorSourceModel.table }.error_source_slug`,
-				                                               `${ UrlErrorRelationshipModel.table }.error_source_slug`,
-			                                               )
-			                                               .where( 'extension_version_slug', extensionVersionSlug )
-			                                               .paginate( currentPage, perPage );
+			urlErrorRelationshipsIteration = await Database
+				.table( UrlErrorRelationshipModel.table )
+				.select(
+					[
+						`${ UrlErrorRelationshipModel.table }.hash`,
+						`${ UrlErrorRelationshipModel.table }.error_slug`,
+						`${ UrlErrorRelationshipModel.table }.error_source_slug`,
+					],
+				)
+				.innerJoin(
+					ErrorSourceModel.table,
+					`${ ErrorSourceModel.table }.error_source_slug`,
+					`${ UrlErrorRelationshipModel.table }.error_source_slug`,
+				)
+				.where( 'extension_version_slug', extensionVersionSlug )
+				.paginate( currentPage, perPage );
 
 			urlErrorRelationshipsIteration = urlErrorRelationshipsIteration.data;
 

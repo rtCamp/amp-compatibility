@@ -156,6 +156,7 @@ class Base extends Model {
 
 		if ( ! instance ) {
 			instance = ( new this() );
+			instance.merge( this.defaults );
 		}
 
 		instance.merge( item );
@@ -181,6 +182,8 @@ class Base extends Model {
 		if ( instance ) {
 			return false;
 		}
+
+		item = _.defaults( item, this.defaults );
 
 		await this.create( item, trx );
 

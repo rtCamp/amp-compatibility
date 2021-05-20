@@ -2,12 +2,13 @@
 
 const { Command } = require( '@adonisjs/ace' );
 
-const { getPluginsList, getThemesList } = require( 'wporg-api-client' );
+const { getPluginsList, getThemesList, getPluginInfo } = require( 'wporg-api-client' );
 
 // Models
 const AuthorModel = use( 'App/Models/Author' );
 const AuthorRelationshipModel = use( 'App/Models/AuthorRelationship' );
 const ExtensionModel = use( 'App/Models/Extension' );
+const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
 // Helpers
 const Utility = use( 'App/Helpers/Utility' );
@@ -350,7 +351,29 @@ class WporgScraper extends Command {
 		 */
 		const extension = await this.normalizePlugin( pluginData );
 
-		await ExtensionModel.save( extension );
+		const isSaved = await ExtensionModel.save( extension );
+
+		if ( ! isSaved ) {
+			return;
+		}
+
+		/**
+		 * Save extension versions.
+		 */
+		const extensionInfo = await this._getPluginInfo( extension.slug );
+		let extensionVersions = extensionInfo.versions || {};
+		extensionVersions = _.keys( extensionVersions );
+
+		for( const index in extensionVersions ) {
+			const item = {
+				extension_slug: extension.extension_slug,
+				slug: extension.slug,
+				type: extension.type,
+				version: extensionVersions[ index ],
+			};
+
+			await ExtensionVersionModel.createIfNotExists( item );
+		}
 
 		// Author data.
 		let author = {
@@ -477,7 +500,28 @@ class WporgScraper extends Command {
 		// Extension data.
 		const extension = await this.normalizeTheme( themeData );
 
-		await ExtensionModel.save( extension );
+		const isSaved = await ExtensionModel.save( extension );
+
+		if ( ! isSaved ) {
+			return;
+		}
+
+		/**
+		 * Save extension versions.
+		 */
+		let extensionVersions = themeData.versions || {};
+		extensionVersions = _.keys( extensionVersions );
+
+		for( const index in extensionVersions ) {
+			const item = {
+				extension_slug: extension.extension_slug,
+				slug: extension.slug,
+				type: extension.type,
+				version: extensionVersions[ index ],
+			};
+
+			await ExtensionVersionModel.createIfNotExists( item );
+		}
 
 		// Author data.
 		let author = await this.normalizeAuthor( themeData.author );
@@ -577,6 +621,34 @@ class WporgScraper extends Command {
 				return responseData.data;
 			} catch ( exception ) {
 				Logger.warning( `Failed to fetch plugin data on "${ attempts }" attempt.` );
+				error = exception;
+			}
+
+		}
+
+		throw error;
+	}
+
+	/**
+	 * To get plugins information.
+	 *
+	 * @private
+	 *
+	 * @param {string} slug Plugins slug.
+	 *
+	 * @return {Promise<*>} Plugin information data.
+	 */
+	async _getPluginInfo( slug ) {
+
+		let error = false;
+
+		for ( let attempts = 0; attempts < this.maxAttempts; attempts++ ) {
+
+			try {
+				const responseData = await getPluginInfo( slug );
+				return responseData.data;
+			} catch ( exception ) {
+				Logger.warning( `Failed to fetch plugin "${ slug }" information on "${ attempts }" attempt.` );
 				error = exception;
 			}
 
