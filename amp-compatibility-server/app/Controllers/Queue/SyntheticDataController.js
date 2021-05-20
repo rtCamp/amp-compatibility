@@ -72,6 +72,7 @@ class SyntheticDataController extends Base {
 			uuid: jobID,
 			domain: domain,
 			data: JSON.stringify( data ),
+			status: 'waiting',
 		} );
 
 	}

@@ -73,6 +73,7 @@ const commands = [
 	'App/Commands/WorkerStart',
 	'App/Commands/UserCreate',
 	'App/Commands/UserRemove',
+	'App/Commands/SyntheticQueueRefill',
 	'App/Commands/SyntheticDataStart',
 	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionVersionVerify',
