@@ -111,7 +111,7 @@ class QueueController {
 			}
 
 			if ( [ 'failed', 'succeeded' ].includes( params.status ) &&
-				 [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue )
+			     [ 'synthetic-queue', 'adhoc-synthetic-queue' ].includes( params.queue )
 			) {
 				job.logs = queueJob.options._logs || [];
 			}
@@ -231,18 +231,8 @@ class QueueController {
 		/**
 		 * Fetch records from respective source. (either MySQL or Redis)
 		 */
-		let result = {};
-		let items = [];
-
-		switch ( params.status ) {
-			case 'active':
-			case 'failed':
-			case 'waiting':
-			case 'succeeded':
-				result = await Database.select( fields ).from( databaseModel.table ).where( 'status', params.status ).paginate( params.paged, params.perPage );
-				items = result.data;
-				break;
-		}
+		let result = await Database.select( fields ).from( databaseModel.table ).where( 'status', params.status ).paginate( params.paged, params.perPage );
+		let items = result.data;
 
 		/**
 		 * Prepare fields according
@@ -251,6 +241,7 @@ class QueueController {
 		const prepareItemCallbacks = {
 			'request-queue': ( item ) => {
 
+				const siteDomain = item.site_url;
 				let data = item.data.toString();
 				data = Utility.maybeParseJSON( data ) || {};
 
@@ -265,7 +256,27 @@ class QueueController {
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
-					preparedItem.result = item.result.toString();
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
+				}
+
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
 				}
 
 				return preparedItem;
@@ -273,10 +284,11 @@ class QueueController {
 			'synthetic-queue': ( item ) => {
 				let data = item.data.toString();
 				data = Utility.maybeParseJSON( data ) || {};
+				const siteDomain = `${ item.domain }.local`;
 
 				const preparedItem = {
 					uuid: item.uuid,
-					domain: `${ item.domain }.local`,
+					domain: siteDomain,
 					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
 					data: Utility.jsonPrettyPrint( data ),
@@ -284,7 +296,27 @@ class QueueController {
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
 					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
-					preparedItem.result = item.result.toString();
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
+				}
+
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
 				}
 
 				return preparedItem;
@@ -292,10 +324,11 @@ class QueueController {
 			'adhoc-synthetic-queue': ( item ) => {
 				let data = item.data.toString();
 				data = Utility.maybeParseJSON( data ) || {};
+				const siteDomain = `${ data.domain }.local`;
 
 				const preparedItem = {
 					uuid: item.uuid,
-					domain: `${ data.domain }.local`,
+					domain: siteDomain,
 					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
 					amp_source: data.ampSource,
@@ -304,10 +337,29 @@ class QueueController {
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
 					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
-					preparedItem.result = item.result.toString();
+					preparedItem.result = item.result || '';
+					preparedItem.result = preparedItem.result.toString();
 				}
 
 				preparedItem.requested_by = data.email;
+				switch ( params.status ) {
+					case 'succeeded':
+						preparedItem.actions = {
+							retry: item.uuid,
+							report: `/admin/report/site/${ siteDomain }`,
+						};
+						break;
+					case 'failed':
+						preparedItem.actions = {
+							retry: item.uuid,
+						};
+						break;
+					case 'waiting':
+						preparedItem.actions = {
+							remove: item.uuid,
+						};
+						break;
+				}
 
 				return preparedItem;
 			},
@@ -332,7 +384,7 @@ class QueueController {
 						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 13 ) }</abbr>`;
 						break;
 					case 'domain':
-						value = `<a href="${ value }" target="_blank">${ value }</a>`;
+						value = `<a href="//${ value }" target="_blank">${ value }</a>`;
 						break;
 					case 'plugins':
 						htmlMarkup = '<ul class="list-group synthetic-item-plugins list-group-flush mt-0 mb-0">';
@@ -371,7 +423,7 @@ class QueueController {
 							htmlMarkup += `</li>`;
 						}
 
-						htmlMarkup += '<ul>';
+						htmlMarkup += '</ul>';
 						value = htmlMarkup;
 						break;
 					case 'data':
@@ -385,6 +437,25 @@ class QueueController {
 						break;
 					case 'is_synthetic':
 						value = `<span>${ value ? 'Yes' : 'No' }</span>`;
+						break;
+					case 'actions':
+						htmlMarkup = '';
+						const icons = {
+							remove: '<span class="material-icons align-middle">delete_outline</span>',
+							retry: '<span class="material-icons align-middle">autorenew</span>',
+							report: '<span class="material-icons align-middle">open_in_new</span>',
+						};
+
+						for ( const action in value ) {
+
+							if ( 'report' === action ) {
+								htmlMarkup += `<a href="${ value[ action ] }" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" target="_blank">${ icons[ action ] }</a>`;
+							} else {
+								htmlMarkup += `<button type="button" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" data-action="${ action }" data-jobid="${ value[ action ] }">${ icons[ action ] }</button>`;
+							}
+						}
+
+						value = htmlMarkup;
 						break;
 
 				}
@@ -515,22 +586,16 @@ class QueueController {
 	async update( { request, params } ) {
 
 		const postData = request.post();
-		const queueName = params.queue || 'request-queue';
-		let queueObject = false;
-		let message = '';
 
-		switch ( queueName ) {
-			case 'synthetic-queue':
-				queueObject = SyntheticDataQueueController;
-				break;
-			case 'adhoc-synthetic-queue':
-				queueObject = AdhocSyntheticDataQueueController;
-				break;
-			case 'request-queue':
-			default:
-				queueObject = RequestQueueController;
-				break;
-		}
+		const queueControllerList = {
+			'request-queue': RequestQueueController,
+			'synthetic-queue': SyntheticDataQueueController,
+			'adhoc-synthetic-queue': AdhocSyntheticDataQueueController,
+		};
+
+		const queueName = params.queue || 'request-queue';
+		const queueObject = queueControllerList[ queueName ];
+		let message = '';
 
 		const rules = {
 			action: 'required|in:retry,remove',
@@ -551,10 +616,29 @@ class QueueController {
 			};
 		}
 
+		const jobID = postData.jobID;
+
 		switch ( postData.action ) {
 			case 'retry':
-				const job = await queueObject.queue.getJob( postData.jobID );
-				const jobData = _.clone( job.data );
+
+				const job = await queueObject.queue.getJob( jobID );
+				let jobData = null;
+
+				if ( job ) {
+					jobData = _.clone( job.data );
+				} else {
+					if ( 'request-queue' !== queueName ) {
+						jobData = await queueObject.databaseModel.query().select( 'data' ).where( 'uuid', jobID ).first();
+						jobData = Utility.maybeParseJSON( jobData.data ) || {};
+					}
+				}
+
+				if ( _.isEmpty( jobData ) ) {
+					return {
+						status: 'fail',
+						message: 'Could not find job data.',
+					};
+				}
 
 				if ( 'synthetic-queue' === queueName ) {
 					await queueObject.queue.removeJob( postData.jobID );
@@ -568,6 +652,7 @@ class QueueController {
 				break;
 			case 'remove':
 				await queueObject.queue.removeJob( postData.jobID );
+				await queueObject.databaseModel.query().where( 'uuid', jobID ).delete();
 				message = `Job ${ postData.jobID } has been removed from queue`;
 				break;
 		}

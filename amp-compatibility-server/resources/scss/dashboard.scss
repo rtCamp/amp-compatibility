@@ -325,9 +325,26 @@ abbr {
 	background-color: rgba($color: $primary, $alpha: 0.1);
 }
 
-.synthetic-item-logs > li,
-.synthetic-item-plugins > li {
-	padding-left: 0;
-	list-style: disc inside;
-	display: list-item;
+.synthetic-item-logs,
+.synthetic-item-plugins {
+
+	> li {
+		padding-left: 0;
+		padding-right: 0;
+		list-style: disc inside;
+		display: list-item;
+
+		&:first-child {
+			padding-top: 0;
+		}
+
+		&:last-child {
+			padding-bottom: 0;
+		}
+	}
+}
+
+
+.btn-actions {
+	margin-right: 5px;
 }

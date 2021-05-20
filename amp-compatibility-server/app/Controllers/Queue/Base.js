@@ -129,6 +129,7 @@ class Base {
 		await this.databaseModel.save( {
 			uuid: jobID,
 			data: JSON.stringify( data ),
+			status: 'waiting',
 		} );
 
 	}
