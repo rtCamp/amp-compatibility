@@ -63,6 +63,11 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 
 		job.options._logs = job.options._logs || {};
 
+		await this.databaseModel.save( {
+			uuid: job.id,
+			status: 'active',
+		} );
+
 		const currentTry = ( parseInt( this.retries ) - parseInt( job.options.retries ) );
 		const logFileSuffix = ( currentTry ) ? '-retry-' + currentTry : '';
 		const logFilePath = `${ Utility.logPath() }/adhoc-synthetic-data/${ this.site }${ logFileSuffix }.log`;
@@ -70,7 +75,6 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 		const siteInstance = new WordPressSite();
 		let storageLogFile = '';
 		let result = '';
-		let response = {};
 
 		let jobData = _.clone( job.data );
 		jobData = _.defaults( jobData, {
@@ -125,7 +129,7 @@ class AdhocSyntheticDataController extends SyntheticDataController {
 			logFile: storageLogFile,
 		};
 
-		return { status: 'ok', data: { result: result, response: response } };
+		return result;
 	}
 }
 

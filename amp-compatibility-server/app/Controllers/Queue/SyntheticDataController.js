@@ -145,6 +145,11 @@ class SyntheticDataController extends Base {
 
 		job.options._logs = job.options._logs || {};
 
+		await this.databaseModel.save( {
+			uuid: job.id,
+			status: 'active',
+		} );
+
 		const date = Utility.getCurrentDate().replace( / |:/g, '-' );
 		const currentTry = ( parseInt( this.retries ) - parseInt( job.options.retries ) );
 		const logFileSuffix = ( currentTry ) ? '-retry-' + currentTry : '';
@@ -208,7 +213,13 @@ class SyntheticDataController extends Base {
 		try {
 			response = await ExtensionVersionModel.save( item );
 		} catch ( exception ) {
-			console.error( exception );
+			job.options._logs[ currentTry ] = {
+				status: 'fail',
+				message: 'Fail to update MySQL database.',
+				logFile: storageLogFile,
+			};
+
+			throw exception;
 		}
 
 		job.reportProgress( 100 );

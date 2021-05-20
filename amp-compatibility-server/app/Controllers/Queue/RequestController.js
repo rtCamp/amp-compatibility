@@ -216,6 +216,11 @@ class RequestController extends Base {
 
 		try {
 
+			await this.databaseModel.save( {
+				uuid: job.id,
+				status: 'active',
+			} );
+
 			response.isSynthetic = this.isSyntheticJob;
 
 			Logger.info( ' Site: %s | Job ID: %s started.', this.jobName, job.id );

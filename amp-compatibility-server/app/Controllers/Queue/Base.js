@@ -153,7 +153,7 @@ class Base {
 
 		await this.databaseModel.save( {
 			uuid: jobID,
-			status: 'success',
+			status: 'succeeded',
 			result: JSON.stringify( result ),
 			logs: JSON.stringify( logs ),
 		} );
@@ -178,7 +178,7 @@ class Base {
 
 		await this.databaseModel.save( {
 			uuid: jobID,
-			status: 'fail',
+			status: 'failed',
 			logs: JSON.stringify( logs ),
 		} );
 
