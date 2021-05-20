@@ -47,7 +47,7 @@ class SiteRequest extends Base {
 	 */
 	static get defaults() {
 		return {
-			status: 'pending',
+			status: 'waiting',
 		};
 	}
 

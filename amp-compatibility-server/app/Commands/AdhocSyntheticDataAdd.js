@@ -55,6 +55,7 @@ class AdhocSyntheticDataAdd extends Command {
 			plugins: options.plugins || '',
 			theme: options.theme || '',
 			email: options.email || '',
+			ampSource: 'wporg',
 		};
 
 		this.options.plugins = this.options.plugins.toString().toLowerCase().trim();

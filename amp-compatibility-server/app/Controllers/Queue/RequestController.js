@@ -96,6 +96,7 @@ class RequestController extends Base {
 			data: JSON.stringify( summarizedData ),
 			error_log: errorLog,
 			is_synthetic: isSynthetic,
+			status: 'waiting',
 		};
 
 		response = await this.databaseModel.save( item );
