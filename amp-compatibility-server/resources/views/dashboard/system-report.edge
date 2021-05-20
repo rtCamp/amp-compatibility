@@ -1,0 +1,27 @@
+@layout( 'dashboard/base' )
+@section('page')
+	<div class="row mt-5 mb-4">
+		<div class="col-md-12">
+			<h4>Database Information</h4>
+			<hr/>
+		</div>
+		<div class="col-md-12">
+			{{{renderTable(databaseInfoTableArgs)}}}
+		</div>
+	</div>
+
+
+	<div class="row mt-5 mb-5">
+		<div class="col-md-12">
+			<h4>Queue Information</h4>
+			<hr/>
+		</div>
+		@each( tableArgs in queueInformation )
+			<div class="col-md-4 mt-4">
+				<h5 class="mb-3">{{ upperFirst( snackCaseToString( tableArgs.name ) )}}</h5>
+				{{{renderTable(tableArgs)}}}
+			</div>
+		@endeach
+	</div>
+
+@endsection
