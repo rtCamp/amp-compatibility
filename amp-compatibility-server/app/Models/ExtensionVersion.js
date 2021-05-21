@@ -63,6 +63,15 @@ class ExtensionVersion extends Base {
 	}
 
 	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
+
+	/**
 	 * Default values for each field.
 	 *
 	 * @returns {{}} default values.

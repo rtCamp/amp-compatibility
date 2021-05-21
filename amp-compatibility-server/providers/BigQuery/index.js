@@ -148,7 +148,7 @@ class BigQuery {
 			const [ table ] = await this.dataset.createTable( tableName, options );
 		} catch ( e ) {
 			hadError = true;
-			response = e.errors;
+			response = e;
 		}
 
 		return hadError ? response : true;
@@ -171,10 +171,10 @@ class BigQuery {
 		let hadError = false;
 
 		try {
-			await this.dataset.dataset( datasetName ).delete( { force: true } );
+			await this.dataset.delete( { force: true } );
 		} catch ( e ) {
 			hadError = true;
-			response = e.errors;
+			response = e;
 		}
 
 		return hadError ? response : true;

@@ -41,6 +41,15 @@ class AmpValidatedUrl extends Base {
 			css_budget_percentage: 0,
 		};
 	}
+
+	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
 }
 
 module.exports = AmpValidatedUrl;
