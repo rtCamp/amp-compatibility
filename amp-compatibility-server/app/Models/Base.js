@@ -571,10 +571,10 @@ class Base extends Model {
 			TEXT: 'STRING',
 			MEDIUMTEXT: 'STRING',
 			LONGTEXT: 'STRING',
-			DATE: 'DATE',
-			TIME: 'TIME',
-			DATETIME: 'DATETIME',
-			TIMESTAMP: 'TIMESTAMP',
+			DATE: 'STRING', // 'DATE',
+			TIME: 'STRING', // 'TIME',
+			DATETIME: 'STRING', // 'DATETIME',
+			TIMESTAMP: 'STRING', // 'TIMESTAMP',
 		};
 
 		for ( const index in dbSchema ) {
@@ -653,11 +653,6 @@ class Base extends Model {
 			 */
 			try {
 				response[ index ] = await this.getBigQueryTable.insert( itemsChunk, { raw: true } );
-
-				// Store data in cache.
-				for ( let i in itemsChunk ) {
-					await this.setCache( itemsChunk[ i ].json );
-				}
 
 			} catch ( exception ) {
 

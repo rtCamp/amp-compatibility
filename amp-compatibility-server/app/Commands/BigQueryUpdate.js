@@ -55,13 +55,19 @@ class BigQueryUpdate extends Command {
 		const dropResponse = await BigQuery.dropDataset( bigQueryDatasetName );
 		if ( true !== dropResponse ) {
 			this.warn( `Fail to delete bigquery dataset.` );
+		} else {
+			this.success( `${ this.icon( 'success' ) } Dataset droped.` );
 		}
 
 		const createResponse = await BigQuery.createDataset( bigQueryDatasetName );
 		if ( true !== createResponse ) {
 			this.error( `Fail to create bigquery dataset.` );
 			exit( 1 );
+		} else {
+			this.success( `${ this.icon( 'success' ) } Dataset created.` );
 		}
+
+		await Utility.sleep( 5 );
 
 		const databaseModels = [
 			SiteModel,
@@ -86,7 +92,7 @@ class BigQueryUpdate extends Command {
 
 			const model = databaseModels[index];
 
-			this.info( `\n\nTable : ${ model.table }` );
+			this.info( `\nTable : ${ model.table }` );
 			/**
 			 * 2. Create table for each necessary tables.
 			 */
@@ -97,7 +103,7 @@ class BigQueryUpdate extends Command {
 
 			await BigQuery.createTable( model.table, bigQueryTableSchema );
 
-			this.success( `${this.icon('success')} "${ model.table }" created` )
+			this.completed( `${this.icon('success')} Created `, model.table );
 
 			/**
 			 * 3. Insert record in BigQuery record.
@@ -121,8 +127,10 @@ class BigQueryUpdate extends Command {
 					break;
 				}
 
-				this.info( `Inserting page ${ currentPage } / ${ totalPage }` );
-				await model.bigQueryInsertRowsAsStream( items );
+				this.info( `\nInserting page ${ currentPage } / ${ totalPage }` );
+				const response = await model.bigQueryInsertRowsAsStream( items );
+
+				this.completed( 'Response ', Utility.jsonPrettyPrint( response ) );
 
 				await Utility.sleep( 2 );
 
