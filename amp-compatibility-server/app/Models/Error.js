@@ -86,6 +86,16 @@ class Error extends Base {
 	static getBigqueryQueryArgs() {
 		return {};
 	}
+
+	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 100;
+	}
+
 }
 
 module.exports = Error;

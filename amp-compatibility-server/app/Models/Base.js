@@ -124,6 +124,15 @@ class Base extends Model {
 	}
 
 	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 1000;
+	}
+
+	/**
 	 * To get record if exists.
 	 *
 	 * @static
@@ -571,10 +580,10 @@ class Base extends Model {
 			TEXT: 'STRING',
 			MEDIUMTEXT: 'STRING',
 			LONGTEXT: 'STRING',
-			DATE: 'STRING', // 'DATE',
-			TIME: 'STRING', // 'TIME',
-			DATETIME: 'STRING', // 'DATETIME',
-			TIMESTAMP: 'STRING', // 'TIMESTAMP',
+			DATE: 'DATE',
+			TIME: 'TIME',
+			DATETIME: 'DATETIME',
+			TIMESTAMP: 'DATETIME',
 		};
 
 		for ( const index in dbSchema ) {
@@ -623,7 +632,6 @@ class Base extends Model {
 	 */
 	static async bigQueryInsertRowsAsStream( items ) {
 
-		const maxRowToSave = 500;
 		const insertItems = [];
 
 		for ( let index in items ) {
@@ -642,7 +650,7 @@ class Base extends Model {
 		 */
 		let response = {};
 
-		const insertItemsChunks = _.chunk( insertItems, maxRowToSave );
+		const insertItemsChunks = _.chunk( insertItems, this.bqMaxRowToSave );
 
 		for ( let index in insertItemsChunks ) {
 			const itemsChunk = insertItemsChunks[ index ];

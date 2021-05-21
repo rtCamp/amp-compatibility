@@ -47,6 +47,17 @@ class Site extends Base {
 		return {};
 	}
 
+
+	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 500;
+	}
+
+
 }
 
 module.exports = Site;

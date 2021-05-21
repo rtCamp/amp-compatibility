@@ -84,21 +84,15 @@ class BigQueryUpdate extends Command {
 			SiteToExtensionModel,
 		];
 
-		/**
-		 * @note : DO NOT increase this.
-		 * increasing this number may cause problem of data not being imported in BigQuery.
-		 *
-		 * @type {number}
-		 */
-		const perPage = 500;
+		const perPage = 10000;
 
 		/**
 		 * 2. Create table.
 		 * 3. Insert record in BigQuery record.
 		 */
-		for( const index in databaseModels ) {
+		for ( const index in databaseModels ) {
 
-			const model = databaseModels[index];
+			const model = databaseModels[ index ];
 
 			this.info( `\nTable : ${ model.table }` );
 
@@ -112,7 +106,7 @@ class BigQueryUpdate extends Command {
 
 			await BigQuery.createTable( model.table, bigQueryTableSchema );
 
-			this.completed( `${this.icon('success')} Created `, model.table );
+			this.completed( `${ this.icon( 'success' ) } Created `, model.table );
 
 			/**
 			 * 3. Insert record in BigQuery record.
@@ -126,10 +120,9 @@ class BigQueryUpdate extends Command {
 				currentPage = currentPage + 1;
 				queryArgs.paged = currentPage;
 
-
 				const result = await model.getResult( queryArgs );
 
-				const items = _.toArray( result.data );
+				const items = _.toArray( result.data ).map( ( item ) => this.prepareItemForBQ( item ) );
 				const totalPage = result.lastPage;
 
 				if ( currentPage > totalPage || _.isEmpty( items ) ) {
@@ -141,10 +134,9 @@ class BigQueryUpdate extends Command {
 
 				this.completed( 'Response ', Utility.jsonPrettyPrint( response ) );
 
-				await Utility.sleep( 0.5 );
+				await Utility.sleep( 2 );
 
 			} while ( true );
-
 
 			await Utility.sleep( 10 );
 
@@ -154,7 +146,51 @@ class BigQueryUpdate extends Command {
 		 * 4. Create views and cached table in BigQuery.
 		 */
 
+	}
 
+	/**
+	 * Prepare row for Bigquery.
+	 *
+	 * @param {Object} item
+	 *
+	 * @return {{}}
+	 */
+	prepareItemForBQ( item ) {
+
+		const preparedItem = {};
+
+		for ( const field in item ) {
+			let value = item[ field ];
+
+			switch ( field ) {
+				case 'created_at':
+				case 'updated_at':
+					const dateObject = new Date( value );
+					const date = ( '0' + dateObject.getDate() ).slice( -2 );
+					const month = ( '0' + ( dateObject.getMonth() + 1 ) ).slice( -2 );
+					const year = dateObject.getFullYear();
+					const hours = dateObject.getHours();
+					const minutes = dateObject.getMinutes();
+					const seconds = dateObject.getSeconds();
+
+					value = `${ year }-${ month }-${ date } ${ hours }:${ minutes }:${ seconds }`;
+
+					break;
+				case 'text':
+				case 'raw_data':
+				case 'data':
+				case 'error_log':
+				case 'result':
+				case 'message':
+					value = value ? value.toString() : '';
+					break;
+
+			}
+
+			preparedItem[ field ] = value;
+		}
+
+		return preparedItem;
 	}
 }
 
