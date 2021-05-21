@@ -20,7 +20,7 @@ module.exports = {
 		redis: {
 			host: Env.get( 'QUEUE_REDIS_HOST', '127.0.0.1' ),
 		},
-		removeOnSuccess: false, // @TODO : Need to remove on success or fail.
+		removeOnSuccess: true,
 	},
 
 };
