@@ -623,7 +623,7 @@ class Base extends Model {
 	 */
 	static async bigQueryInsertRowsAsStream( items ) {
 
-		const maxRowToSave = 10000;
+		const maxRowToSave = 500;
 		const insertItems = [];
 
 		for ( let index in items ) {

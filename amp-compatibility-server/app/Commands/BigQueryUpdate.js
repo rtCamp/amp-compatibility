@@ -59,6 +59,8 @@ class BigQueryUpdate extends Command {
 			this.success( `${ this.icon( 'success' ) } Dataset droped.` );
 		}
 
+		await Utility.sleep( 60 );
+
 		const createResponse = await BigQuery.createDataset( bigQueryDatasetName );
 		if ( true !== createResponse ) {
 			this.error( `Fail to create bigquery dataset.` );
@@ -67,7 +69,7 @@ class BigQueryUpdate extends Command {
 			this.success( `${ this.icon( 'success' ) } Dataset created.` );
 		}
 
-		await Utility.sleep( 5 );
+		await Utility.sleep( 60 );
 
 		const databaseModels = [
 			SiteModel,
@@ -82,10 +84,16 @@ class BigQueryUpdate extends Command {
 			SiteToExtensionModel,
 		];
 
-		const perPage = 10000;
+		/**
+		 * @note : DO NOT increase this.
+		 * increasing this number may cause problem of data not being imported in BigQuery.
+		 *
+		 * @type {number}
+		 */
+		const perPage = 500;
 
 		/**
-		 * 2. Create table for each necessary tables.
+		 * 2. Create table.
 		 * 3. Insert record in BigQuery record.
 		 */
 		for( const index in databaseModels ) {
@@ -93,8 +101,9 @@ class BigQueryUpdate extends Command {
 			const model = databaseModels[index];
 
 			this.info( `\nTable : ${ model.table }` );
+
 			/**
-			 * 2. Create table for each necessary tables.
+			 * 2. Create table.
 			 */
 			const bigQueryTableFields = await model.getBigQuerySchema();
 			const bigQueryTableSchema = {
