@@ -141,7 +141,7 @@ class BigQueryUpdate extends Command {
 
 				this.completed( 'Response ', Utility.jsonPrettyPrint( response ) );
 
-				await Utility.sleep( 2 );
+				await Utility.sleep( 0.5 );
 
 			} while ( true );
 
