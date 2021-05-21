@@ -170,10 +170,10 @@ class QueueController {
 					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
 					data: Utility.jsonPrettyPrint( data ),
+					logs: Utility.maybeParseJSON( item.logs ) || [],
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
-					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
 					preparedItem.result = item.result || '';
 					preparedItem.result = preparedItem.result.toString();
 				}
@@ -211,10 +211,10 @@ class QueueController {
 					theme: Utility.parseSyntheticExtensionParam( data.theme ),
 					amp_source: data.ampSource,
 					data: Utility.jsonPrettyPrint( data ),
+					logs: Utility.maybeParseJSON( item.logs ) || [],
 				};
 
 				if ( [ 'failed', 'succeeded' ].includes( params.status ) ) {
-					preparedItem.logs = Utility.maybeParseJSON( item.logs ) || [];
 					preparedItem.result = item.result || '';
 					preparedItem.result = preparedItem.result.toString();
 				}

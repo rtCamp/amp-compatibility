@@ -106,8 +106,8 @@ class Base {
 		this._onJobFailed = this._onJobFailed.bind( this );
 
 		// Terminate the worker if all jobs are completed
-		this.queue.on( 'job succeeded', this._onJobSucceeded );
-		this.queue.on( 'job failed', this._onJobFailed );
+		this.queue.on( 'succeeded', this._onJobSucceeded );
+		this.queue.on( 'failed', this._onJobFailed );
 	}
 
 	/**
@@ -142,20 +142,18 @@ class Base {
 	 *
 	 * @return {Promise<void>}
 	 */
-	static async _onJobSucceeded( jobID, result ) {
+	static async _onJobSucceeded( job, result ) {
 
-		if ( ! this.databaseModel ) {
+		if ( ! this.databaseModel || _.isEmpty( job ) ) {
 			return;
 		}
 
 		result = result || '';
-
-		const job = await this.queue.getJob( jobID );
 		job.options = job.options || {};
 		const logs = job.options._logs || {};
 
 		await this.databaseModel.save( {
-			uuid: jobID,
+			uuid: job.id,
 			status: 'succeeded',
 			result: JSON.stringify( result ),
 			logs: JSON.stringify( logs ),
@@ -166,22 +164,21 @@ class Base {
 	/**
 	 * Callback function on failure of the job.
 	 *
-	 * @param {String} jobID Job ID.
+	 * @param {Object} job Job ID.
 	 *
 	 * @return {Promise<void>}
 	 */
-	static async _onJobFailed( jobID ) {
+	static async _onJobFailed( job ) {
 
-		if ( ! this.databaseModel ) {
+		if ( ! this.databaseModel || _.isEmpty( job ) ) {
 			return;
 		}
 
-		const job = await this.queue.getJob( jobID );
 		job.options = job.options || {};
 		const logs = job.options._logs || {};
 
 		await this.databaseModel.save( {
-			uuid: jobID,
+			uuid: job.id,
 			status: 'failed',
 			logs: JSON.stringify( logs ),
 		} );
