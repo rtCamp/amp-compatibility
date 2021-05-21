@@ -148,6 +148,8 @@ class Base {
 			return;
 		}
 
+		result = result || '';
+
 		const job = await this.queue.getJob( jobID );
 		job.options = job.options || {};
 		const logs = job.options._logs || {};
