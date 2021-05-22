@@ -16,7 +16,7 @@ class RetryJob extends Command {
 	 */
 	static get signature() {
 		return `retry:job
-		{ --name=@value : Workers name. e.g. request, synthetic-data }`
+		 { --name=@value : Workers name. e.g. request, synthetic-data }`;
 	}
 
 	/**
@@ -30,7 +30,7 @@ class RetryJob extends Command {
 
 	async handle( args, options ) {
 
-		const allowedWorker = [ 'request', 'synthetic-data', 'adhoc-synthetic-data' ];
+		const allowedWorker = [ 'request-queue', 'synthetic-queue', 'adhoc-synthetic-queue' ];
 
 		let queueName = options.name || '';
 		queueName = queueName.toLowerCase().trim();
@@ -71,21 +71,35 @@ class RetryJob extends Command {
 					continue;
 				}
 
-				const jobID = job.jobID;
-				let jobData = {};
+				const jobID = job.id;
+				let jobData = _.clone( job.data );
 
-				if ( 'request-queue' !== queueName ) {
-					jobData = await queueController.databaseModel.query().select( 'data' ).where( 'uuid', jobID ).first();
-					jobData = Utility.maybeParseJSON( jobData.data ) || {};
-				} else {
-					jobData = _.clone( job.data );
+				// if ( 'request-queue' === queueName ) {
+				// 	jobData = await queueController.databaseModel.query().select( 'data' ).where( 'uuid', jobID ).first();
+				// 	jobData = Utility.maybeParseJSON( jobData.data ) || {};
+				// } else {
+				// 	jobData = _.clone( job.data );
+				// }
+
+				switch ( queueName ) {
+					case 'adhoc-synthetic-queue':
+
+						await queueController.queue.removeJob( jobID );
+						await queueController.databaseModel.query().where( 'uuid', jobID ).delete(); // Remove job from synthetic queue table.
+						await SyntheticDataQueueController.createJob( jobData );
+
+						break;
+					default:
+						await queueController.queue.removeJob( jobID );
+						await queueController.createJob( jobData );
+						break;
 				}
 
-				await queueController.queue.removeJob( jobID );
-				await queueController.createJob( jobData );
 			}
 
 		} while ( true );
+
+		process.exit( 1 );
 
 	}
 }
