@@ -29,6 +29,18 @@ module.exports = {
 			combine_logs: true,
 		},
 		{
+			name: 'synthetic-queue-worker',
+			cwd: cwd,
+			script: 'node ace worker:start --name=synthetic-data --concurrency=1',
+			instances: 1,
+			log_date_format: "YYYY-MM-DD HH:mm Z",
+			autorestart: true,
+			watch: false,
+			out_file: "./logs/synthetic-out.log",
+			error_file: "./logs/synthetic-error.log",
+			combine_logs: true,
+		},
+		{
 			name: 'adhoc-queue-worker',
 			cwd: cwd,
 			script: 'node ace worker:start --name=adhoc-synthetic-data --concurrency=1',
