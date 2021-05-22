@@ -590,7 +590,7 @@ class Base extends Model {
 
 			const field = dbSchema[ index ];
 
-			const type = field.Type.replace( /\(.*\)/gm, '' ).toUpperCase();
+			const type = field.Type.replace( 'unsigned', '' ).replace( /\(.*\)/gm, '' ).trim().toUpperCase();
 
 			const bqField = {
 				name: field.Field,
