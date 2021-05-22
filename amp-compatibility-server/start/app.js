@@ -78,6 +78,7 @@ const commands = [
 	'App/Commands/AdhocSyntheticDataAdd',
 	'App/Commands/ExtensionVersionVerify',
 	'App/Commands/UpdateComputeFieldsExtensionVersion',
+	'App/Commands/BigQueryUpdate',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };

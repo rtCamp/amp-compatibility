@@ -18,13 +18,15 @@ CRONS=(
 	"*/2 * * * * cd $CD_PATH && bash scripts/pull-cd.sh  > logs/cron/pull-cd.log 2>&1"
 	# Every 2 hours
 	"0 */6 * * * cd $CD_PATH && node ace update_compute_fields:extension_version > logs/cron/update_compute_fields_extension_version.log 2>&1"
-	# Run every day at 12AM
+	# Run every day at 12 AM
 	"0 0 * * * cd $CD_PATH && bash scripts/sites/base-site.sh"
 	"0 0 * * * cd $CD_PATH && node ace wporg:scraper --browse=updated > logs/cron/scrapper.log 2>&1"
-	# Run at 4AM every Saturday
+	# Run at 4 AM every Saturday
 	"0 4 * * 6 cd $CD_PATH && node ace synthetic_queue:refill --plugin-active-install=10000 --theme-active-install=1000 > logs/cron/synthetic-data-refill-cron.log 2>&1"
-	# Run at 6AM every Saturday
+	# Run at 6 AM every Saturday
 	"0 6 * * 6 cd $CD_PATH && node ace synthetic-data:start --number-of-instance=9 --concurrency=25 > logs/cron/synthetic-data-start-cron.log 2>&1"
+	# Run every sunday at 12 AM
+	"0 0 * * 0 cd $CD_PATH && node ace big_query:update > logs/cron/sync-mysql-to-bigquery.log 2>&1"
 )
 
 # Do not edit below this line.

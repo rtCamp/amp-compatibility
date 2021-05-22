@@ -75,6 +75,15 @@ class AuthorRelationship extends Base {
 	static get validator() {
 		return AuthorRelationshipValidator;
 	}
+
+	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
 }
 
 module.exports = AuthorRelationship;

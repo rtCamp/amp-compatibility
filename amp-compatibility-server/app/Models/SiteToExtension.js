@@ -58,6 +58,15 @@ class SiteToExtension extends Base {
 	}
 
 	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
+
+	/**
 	 * Primary key of the table.
 	 *
 	 * @returns {string} primary key name.

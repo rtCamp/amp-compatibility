@@ -4,6 +4,8 @@
 const Model = use( 'Model' );
 const Database = use( 'Database' );
 
+const BigQuery = use( 'App/BigQuery' );
+
 // Utilities
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -108,6 +110,37 @@ class Base extends Model {
 		return false;
 	}
 
+	/**
+	 * Query argument for data that need to send in BigQuery.
+	 * If false then data for that table won't be push to BigQuery.
+	 * If empty object then whole table will send to Bigquery.
+	 *
+	 * Check query args in this.getResult()
+	 *
+	 * @return {{}}
+	 */
+	static get getBigqueryQueryArgs() {
+		return false;
+	}
+
+	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 1000;
+	}
+
+	/**
+	 * To get record if exists.
+	 *
+	 * @static
+	 *
+	 * @param {object} item Record data.
+	 *
+	 * @return {Promise<boolean>} Whether or not the model was persisted
+	 */
 	static async getIfExists( item ) {
 
 		const primaryKey = this.primaryKey;
@@ -505,6 +538,143 @@ class Base extends Model {
 		return dbValue;
 	}
 
+	/**
+	 * To get database schema.
+	 *
+	 * @return {Promise<*>}
+	 */
+	static async getDBSchema() {
+
+		const query = `DESCRIBE ${ this.table };`;
+
+		const [ schema ] = await Database.raw( query );
+
+		return schema;
+	}
+
+	/**
+	 * To get bigquery schema based on database schema.
+	 *
+	 * @return {Promise<[]>}
+	 */
+	static async getBigQuerySchema() {
+
+		const dbSchema = await this.getDBSchema();
+		const bigQuerySchema = [];
+
+		const datatypeMapping = {
+			TINYINT: 'INT64',
+			SMALLINT: 'INT64',
+			MEDIUMINT: 'INT64',
+			INT: 'INT64',
+			BIGINT: 'INT64',
+			DECIMAL: 'NUMERIC',
+			FLOAT: 'FLOAT64',
+			DOUBLE: 'FLOAT64',
+			BIT: 'BOOL',
+			CHAR: 'STRING',
+			VARCHAR: 'STRING',
+			BINARY: 'BYTES',
+			VARBINARY: 'BYTES',
+			TINYTEXT: 'STRING',
+			TEXT: 'STRING',
+			MEDIUMTEXT: 'STRING',
+			LONGTEXT: 'STRING',
+			DATE: 'DATE',
+			TIME: 'TIME',
+			DATETIME: 'DATETIME',
+			TIMESTAMP: 'DATETIME',
+		};
+
+		for ( const index in dbSchema ) {
+
+			const field = dbSchema[ index ];
+
+			const type = field.Type.replace( 'unsigned', '' ).replace( /\(.*\)/gm, '' ).trim().toUpperCase();
+
+			const bqField = {
+				name: field.Field,
+				type: datatypeMapping[ type ] || 'STRING',
+				mode: ( 'YES' !== field.Null ) ? 'REQUIRED' : 'NULLABLE',
+			};
+
+			bigQuerySchema.push( bqField );
+
+		}
+
+		return bigQuerySchema;
+	}
+
+	/**
+	 * BigQuery Functions.
+	 */
+
+
+	/**
+	 * Get BigQuery table object.
+	 *
+	 * @note DO NOT override this.
+	 *
+	 * @returns {Table} BigQuery table object.
+	 */
+	static get getBigQueryTable() {
+		return BigQuery.dataset.table( this.table );
+	}
+
+	/**
+	 * We can not move this function our side of this scope.
+	 * Otherwise there is chance that it will use by other classes.
+	 *
+	 * @param {Array} items List of items.
+	 * @returns {Promise<Array>}
+	 *
+	 * @private
+	 */
+	static async bigQueryInsertRowsAsStream( items ) {
+
+		const insertItems = [];
+
+		for ( let index in items ) {
+
+			const item = items[ index ];
+			const data = {
+				insertId: item[ this.primaryKey ],
+				json: item,
+			};
+
+			insertItems.push( data );
+		}
+
+		/**
+		 * Reference for options https://googleapis.dev/nodejs/bigquery/latest/Table.html#insert
+		 */
+		let response = {};
+
+		const insertItemsChunks = _.chunk( insertItems, this.bqMaxRowToSave );
+
+		for ( let index in insertItemsChunks ) {
+			const itemsChunk = insertItemsChunks[ index ];
+
+			/**
+			 * Keep the try catch in for loop.
+			 * So if any chunk fails to insert data then other chunk won't get affected.
+			 */
+			try {
+				response[ index ] = await this.getBigQueryTable.insert( itemsChunk, { raw: true } );
+
+			} catch ( exception ) {
+
+				response[ index ] = {
+					code: exception.code,
+					errors: exception.errors,
+					response: exception.response,
+				};
+			}
+
+		}
+
+		return response;
+	}
 }
 
 module.exports = Base;

@@ -38,6 +38,26 @@ class Site extends Base {
 		};
 	}
 
+	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
+
+
+	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 500;
+	}
+
+
 }
 
 module.exports = Site;

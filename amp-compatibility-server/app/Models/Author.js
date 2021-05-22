@@ -55,6 +55,15 @@ class Author extends Base {
 		return AuthorValidator;
 	}
 
+	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
+
 }
 
 module.exports = Author;

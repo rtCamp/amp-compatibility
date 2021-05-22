@@ -69,6 +69,15 @@ class UrlErrorRelationship extends Base {
 	}
 
 	/**
+	 * Query argument for data that need to send in BigQuery.
+	 *
+	 * @return {{}}
+	 */
+	static getBigqueryQueryArgs() {
+		return {};
+	}
+
+	/**
 	 * Validator class name, To verify the data.
 	 *
 	 * @returns {boolean|Object} Validator class.
