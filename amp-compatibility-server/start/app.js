@@ -79,6 +79,7 @@ const commands = [
 	'App/Commands/ExtensionVersionVerify',
 	'App/Commands/UpdateComputeFieldsExtensionVersion',
 	'App/Commands/BigQueryUpdate',
+	'App/Commands/RetryJob',
 ];
 
 module.exports = { providers, aceProviders, aliases, commands };
