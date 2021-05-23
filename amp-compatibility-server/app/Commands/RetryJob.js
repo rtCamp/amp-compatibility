@@ -77,7 +77,21 @@ class RetryJob extends Command {
 
 		do {
 
-			const jobs = await queueController.queue.getJobs( status, page );
+			let jobs = [];
+
+			if ( 'succeeded' === status ) {
+
+				const result = await queueController.databaseModel.getResult( {
+					perPage : perPage,
+					whereClause: {
+						status: status,
+					},
+				} );
+
+				jobs = result.data;
+			} else {
+				jobs = await queueController.queue.getJobs( status, page );
+			}
 
 			if ( _.isEmpty( jobs ) ) {
 				break;
@@ -90,8 +104,14 @@ class RetryJob extends Command {
 					continue;
 				}
 
-				const jobID = job.id;
+				let jobID = job.id;
 				let jobData = _.clone( job.data );
+
+				if ( 'succeeded' === status ) {
+					jobID = job.uuid;
+					jobData = jobData.toString();
+				}
+
 
 				switch ( queueName ) {
 					case 'adhoc-synthetic-queue':
