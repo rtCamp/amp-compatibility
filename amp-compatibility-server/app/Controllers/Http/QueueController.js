@@ -186,6 +186,7 @@ class QueueController {
 						};
 						break;
 					case 'failed':
+					case 'active':
 						preparedItem.actions = {
 							retry: item.uuid,
 						};
