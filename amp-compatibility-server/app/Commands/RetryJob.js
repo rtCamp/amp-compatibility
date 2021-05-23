@@ -16,7 +16,8 @@ class RetryJob extends Command {
 	 */
 	static get signature() {
 		return `retry:job
-		 { --name=@value : Workers name. e.g. request, synthetic-data }`;
+		 { --name=@value : Workers name. e.g. request, synthetic-data }
+		 { --status=@value : Which status's jobs need to re add. e.g. active, succeeded, failed (Default failed) }`;
 	}
 
 	/**
@@ -31,9 +32,13 @@ class RetryJob extends Command {
 	async handle( args, options ) {
 
 		const allowedWorker = [ 'request-queue', 'synthetic-queue', 'adhoc-synthetic-queue' ];
+		const allowedStatus = [ 'active', 'succeeded', 'failed' ];
 
 		let queueName = options.name || '';
+		let status = options.status || 'failed';
+
 		queueName = queueName.toLowerCase().trim();
+		status = status.toLowerCase().trim();
 
 		if ( _.isEmpty( queueName ) ) {
 			this.error( 'Please provider worker name.' );
@@ -41,6 +46,11 @@ class RetryJob extends Command {
 		}
 
 		if ( ! allowedWorker.includes( queueName ) ) {
+			this.error( 'Please provider valid worker name.' );
+			return;
+		}
+
+		if ( ! allowedStatus.includes( status ) ) {
 			this.error( 'Please provider valid worker name.' );
 			return;
 		}
@@ -56,9 +66,18 @@ class RetryJob extends Command {
 		const queueController = queueControllerList[ queueName ];
 		const perPage = 1000;
 
+		let page = {
+			start: 0,
+			end: perPage,
+		};
+
+		if ( [ 'failed', 'succeeded' ].includes( status ) ) {
+			page = { size: perPage };
+		}
+
 		do {
 
-			const jobs = await queueController.queue.getJobs( 'failed', { size: perPage } );
+			const jobs = await queueController.queue.getJobs( status, page );
 
 			if ( _.isEmpty( jobs ) ) {
 				break;
@@ -73,13 +92,6 @@ class RetryJob extends Command {
 
 				const jobID = job.id;
 				let jobData = _.clone( job.data );
-
-				// if ( 'request-queue' === queueName ) {
-				// 	jobData = await queueController.databaseModel.query().select( 'data' ).where( 'uuid', jobID ).first();
-				// 	jobData = Utility.maybeParseJSON( jobData.data ) || {};
-				// } else {
-				// 	jobData = _.clone( job.data );
-				// }
 
 				switch ( queueName ) {
 					case 'adhoc-synthetic-queue':
