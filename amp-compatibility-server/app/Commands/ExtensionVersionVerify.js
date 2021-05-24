@@ -23,7 +23,7 @@ class ExtensionVersionVerify extends Command {
 	 * @return {string} command description.
 	 */
 	static get description() {
-		return 'Update extension version status based on previous status';
+		return 'To update extension version status based on previous status.';
 	}
 
 	/**
