@@ -229,13 +229,19 @@ class RequestController extends Base {
 			response.extensions = await this.saveExtensions( data );
 			job.reportProgress( 15 );
 
+			await Utility.sleep( 1 );
+
 			// Save errors.
 			response.errors = await this.saveErrors( data );
 			job.reportProgress( 30 );
 
+			await Utility.sleep( 2 );
+
 			// Save error sources.
 			response.errorsSources = await this.saveErrorSources( data );
 			job.reportProgress( 45 );
+
+			await Utility.sleep( 2 );
 
 			// Save site info.
 			response.site = await this.saveSite( data );
@@ -245,9 +251,13 @@ class RequestController extends Base {
 			response.siteToExtensions = await this.saveSiteToExtensions( data );
 			job.reportProgress( 70 );
 
+			await Utility.sleep( 1 );
+
 			// Save amp validate URLs and URL error mapping.
 			response.validatedURLs = await this.saveValidatedUrls( data );
 			job.reportProgress( 100 );
+
+			await Utility.sleep( 5 );
 
 		} catch ( exception ) {
 
@@ -533,6 +543,8 @@ class RequestController extends Base {
 		const siteURL = requestData.site_url;
 		const urls = requestData.urls || [];
 		const response = {};
+		const restCounter = 2000;
+		let saveCounter = 0;
 
 		/**
 		 * Urls
@@ -559,6 +571,7 @@ class RequestController extends Base {
 			 * Save AMP validate URL record.
 			 */
 			pageResponse.page = await AmpValidatedUrlModel.save( preparedItem );
+			saveCounter++;
 
 			/**
 			 * Delete all previous url error relation related to page.
@@ -586,6 +599,11 @@ class RequestController extends Base {
 
 					pageResponse.relationships[ pageURL ] = await UrlErrorRelationshipModel.save( relationshipItem );
 
+					saveCounter++;
+
+					if ( 0 === saveCounter % restCounter ) {
+						await Utility.sleep( 2 );
+					}
 				}
 			}
 

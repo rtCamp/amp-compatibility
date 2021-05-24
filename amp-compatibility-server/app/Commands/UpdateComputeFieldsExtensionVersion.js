@@ -40,7 +40,7 @@ class UpdateComputeFieldsExtensionVersion extends Command {
 		let totalPage = 1;
 		const params = {
 			paged: 1,
-			perPage: 100,
+			perPage: 50,
 		};
 
 		do {

@@ -16,11 +16,10 @@ CRONTAB_CONFIG=(
 CRONS=(
 	# Run every 2 minutes.
 	"*/2 * * * * cd $CD_PATH && bash scripts/pull-cd.sh  > logs/cron/pull-cd.log 2>&1"
-	# Every 2 hours
-	"0 */6 * * * cd $CD_PATH && node ace update_compute_fields:extension_version > logs/cron/update_compute_fields_extension_version.log 2>&1"
 	# Run every day at 12 AM
 	"0 0 * * * cd $CD_PATH && bash scripts/sites/base-site.sh"
 	"0 0 * * * cd $CD_PATH && node ace wporg:scraper --browse=updated > logs/cron/scrapper.log 2>&1"
+	"0 0 * * * cd $CD_PATH && node ace update_compute_fields:extension_version > logs/cron/update_compute_fields_extension_version.log 2>&1"
 	# Run at 4 AM every Saturday
 	"0 4 * * 6 cd $CD_PATH && node ace synthetic_queue:refill --plugin-active-install=10000 --theme-active-install=1000 > logs/cron/synthetic-data-refill-cron.log 2>&1"
 	# Run at 6 AM every Saturday
