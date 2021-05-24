@@ -37,9 +37,14 @@ class DashboardController {
 		];
 
 		for ( const index in queueControllers ) {
+
+			const health = await queueControllers[ index ].queue.checkHealth();
+			const databaseModel = queueControllers[ index ].databaseModel;
+			health.succeeded = await Database.from( databaseModel.table ).where( 'status', 'succeeded' ).getCount();
+
 			queueData.push( {
 				name: queueControllers[ index ].queueName.replace('data_', ''),
-				health: await queueControllers[ index ].queue.checkHealth(),
+				health: health,
 			} );
 		}
 
