@@ -16,7 +16,7 @@ class RetryJob extends Command {
 	 */
 	static get signature() {
 		return `retry:job
-		 { --name=@value : Workers name. e.g. request, synthetic-data }
+		 { --name=@value : Queue name. e.g. request, synthetic-data, adhoc-synthetic-queue }
 		 { --status=@value : Which status's jobs need to re add. e.g. active, succeeded, failed (Default failed) }`;
 	}
 
@@ -26,7 +26,7 @@ class RetryJob extends Command {
 	 * @return {string} command description.
 	 */
 	static get description() {
-		return 'To add all jobs in queue';
+		return 'To add all job of given status back into a queue.';
 	}
 
 	async handle( args, options ) {

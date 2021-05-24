@@ -43,20 +43,12 @@ AMP compatibility project to make WordPress ecosystem AMP compatible.
 
     The compatibility dashboard is where an admin user can see current status of all the queues and information related to the jobs. Also, the admin user can add adhoc synthetic data generation request for a test run on a specific combination of a theme and plugins.
 
-    ![AMP Compatibility Dashboard](https://user-images.githubusercontent.com/8168027/108818408-5807e000-75df-11eb-885a-be1bbd5a7b8d.png)
-
-
-4.  **[Reporting dashboard]**
-
-    The [Reporting dashboard] report visualizes the data gathered by the [AMP compatibility server] in Google Data Studio.
-
-    ![AMP Compatibility Reporting Dashboard](https://user-images.githubusercontent.com/8168027/108817704-4ffb7080-75de-11eb-8ab2-07b01071970a.png)
+    ![AMP Compatibility Dashboard](https://user-images.githubusercontent.com/8168027/119304345-c0209d80-bc84-11eb-840f-e31fa8dd0e9f.png)
 
 
 ## Infrastructure
 
-![GCP Infrastructure](https://user-images.githubusercontent.com/8168027/108815329-47a13680-75da-11eb-8e29-8e4432413e1f.jpg)
-
+![GCP Infrastructure](https://user-images.githubusercontent.com/8168027/119313406-227f9b00-bc91-11eb-8a46-5636e20c8a0a.png)
 
 ## Local environment setup
 
