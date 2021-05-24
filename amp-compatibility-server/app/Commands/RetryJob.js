@@ -93,21 +93,12 @@ class RetryJob extends Command {
 				const jobID = job.id;
 				let jobData = _.clone( job.data );
 
-				switch ( queueName ) {
-					case 'adhoc-synthetic-queue':
-
-						await queueController.queue.removeJob( jobID );
-						await queueController.databaseModel.query().where( 'uuid', jobID ).delete(); // Remove job from synthetic queue table.
-						await SyntheticDataQueueController.createJob( jobData );
-
-						break;
-					default:
-						await queueController.queue.removeJob( jobID );
-						await queueController.createJob( jobData );
-						break;
-				}
+				await queueController.queue.removeJob( jobID );
+				await queueController.createJob( jobData );
 
 			}
+
+			await Utility.sleep( 5 );
 
 		} while ( true );
 
