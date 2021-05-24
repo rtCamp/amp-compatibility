@@ -160,15 +160,27 @@ class ExtensionVersion extends Base {
 	 */
 	async updateErrorCount() {
 
+		this.error_count = await this.constructor.getErrorCount( this.extension_version_slug );
+
+		return ( await this.save() );
+	}
+
+	/**
+	 * To get error count by extension version slug.
+	 *
+	 * @param {String} extensionVersionSlug
+	 *
+	 * @return {Promise<number|*|*|number>}
+	 */
+	static async getErrorCount( extensionVersionSlug ) {
+
 		const query = `SELECT count( DISTINCT error_slug ) as error_count \n` +
 		              `FROM url_error_relationships LEFT JOIN error_sources ON url_error_relationships.error_source_slug = error_sources.error_source_slug \n` +
-		              `WHERE error_sources.extension_version_slug = '${ this.extension_version_slug }';`;
+		              `WHERE error_sources.extension_version_slug = '${ extensionVersionSlug }';`;
 
 		const [ result ] = await Database.raw( query );
 
-		this.error_count = result[ 0 ].error_count || 0;
-
-		return ( await this.save() );
+		return parseInt( result[ 0 ].error_count ) || 0;
 	}
 }
 
