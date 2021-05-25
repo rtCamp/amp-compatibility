@@ -78,6 +78,15 @@ class UrlErrorRelationship extends Base {
 	}
 
 	/**
+	 * Maximum row can send to BQ.
+	 *
+	 * @return {number}
+	 */
+	static get bqMaxRowToSave() {
+		return 5000;
+	}
+
+	/**
 	 * Validator class name, To verify the data.
 	 *
 	 * @returns {boolean|Object} Validator class.

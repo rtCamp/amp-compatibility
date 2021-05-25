@@ -83,15 +83,15 @@ class BigQueryUpdate extends Command {
 			AmpValidatedUrlModel,
 			ErrorModel,
 			ErrorSourceModel,
-			UrlErrorRelationshipModel,
 			AuthorModel,
 			ExtensionModel,
 			ExtensionVersionModel,
 			AuthorRelationshipModel,
 			SiteToExtensionModel,
+			UrlErrorRelationshipModel,
 		];
 
-		const perPage = 10000;
+		const perPage = 25000;
 
 		/**
 		 * 2. Create table.
