@@ -368,7 +368,13 @@ class Base extends Model {
 		 * Pagination.
 		 */
 		if ( parseInt( params.perPage ) && 0 < parseInt( params.perPage ) ) {
-			query = query.paginate( params.paged, params.perPage );
+
+			if ( true !== params.withoutCount ) {
+				query = query.paginate( params.paged, params.perPage );
+			} else {
+				query = query.forPage( params.paged, params.perPage );
+			}
+
 		}
 
 		return query;

@@ -121,16 +121,24 @@ class BigQueryUpdate extends Command {
 			const queryArgs = model.getBigqueryQueryArgs();
 			queryArgs.perPage = perPage;
 			let currentPage = 0;
+			let totalPage = 0;
 
 			do {
 
+				let items = [];
 				currentPage = currentPage + 1;
 				queryArgs.paged = currentPage;
 
-				const result = await model.getResult( queryArgs );
+				if ( 0 === totalPage ) {
+					const result = await model.getResult( queryArgs );
+					items = result.data;
+					totalPage = result.lastPage;
+				} else {
+					queryArgs.withoutCount = true;
+					items = await model.getResult( queryArgs );
+				}
 
-				const items = _.toArray( result.data ).map( ( item ) => this.prepareItemForBQ( item ) );
-				const totalPage = result.lastPage;
+				items = _.toArray( items ).map( ( item ) => this.prepareItemForBQ( item ) );
 
 				if ( currentPage > totalPage || _.isEmpty( items ) ) {
 					break;
