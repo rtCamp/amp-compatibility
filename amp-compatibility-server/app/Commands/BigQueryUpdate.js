@@ -246,6 +246,11 @@ SELECT 7 AS index, '500 - 1000' AS label, count(*) AS value FROM ${ extensionVer
 UNION ALL
 SELECT 8 AS index, 'Above 1000' AS label, count(*) AS value FROM ${ extensionVersionTable } WHERE error_count > 1000
 ) as extension_error_group ORDER BY index ASC`,
+			'extensions_with_error_count': `SELECT extensions.*, extension_versions.error_count
+FROM ${ extensionTable } AS extensions
+	INNER JOIN ${ extensionVersionTable } AS extension_versions
+	ON extensions.extension_slug = extension_versions.extension_slug AND extensions.latest_version = extension_versions.version
+ORDER BY extensions.active_installs DESC, extensions.slug ASC`,
 		};
 
 		for ( const index in types ) {
