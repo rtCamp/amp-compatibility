@@ -43,6 +43,7 @@ function setup_base_data() {
 	done
 
 	cd_site
+	rm -rf "$sites_root/repos/treville"
 	mv "wp-content/themes/treville" "$sites_root/repos"
 
 	update_amp_plugin
