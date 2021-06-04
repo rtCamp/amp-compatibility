@@ -26,6 +26,10 @@ class Templates {
 			return '';
 		}
 
+		if ( 0 > options.currentPage || options.currentPage > options.totalPage ) {
+			options.currentPage = false;
+		}
+
 		options.nextPage = ( options.currentPage < options.totalPage ) ? options.currentPage + 1 : false;
 		options.previousPage = ( 1 < options.currentPage ) ? options.currentPage - 1 : false;
 
