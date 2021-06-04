@@ -46,9 +46,13 @@ class ReportSiteController {
 
 		const reportUuidController = new ReportUuidController();
 
+		// Get active theme.
+		const themes = await this._getExtensions( site, 'theme' );
+		const themeTableArgs = await reportUuidController.prepareExtensionTableArgs( themes, 'theme' );
+
 		// Get active plugins.
-		const plugins = await this._getPlugins( site );
-		const pluginTableArgs = await reportUuidController.preparePluginTableArgs( plugins );
+		const plugins = await this._getExtensions( site );
+		const pluginTableArgs = await reportUuidController.prepareExtensionTableArgs( plugins, 'plugin' );
 
 		// Get Validate URLs.
 		const preparedValidateUrls = await this._getValidateURLs( site );
@@ -60,6 +64,7 @@ class ReportSiteController {
 		return view.render( 'dashboard/reports/site/show', {
 			infoBoxList,
 			urlTableArgs,
+			themeTableArgs,
 			pluginTableArgs,
 		} );
 	}
@@ -191,7 +196,7 @@ class ReportSiteController {
 	 *
 	 * @private
 	 */
-	async _getPlugins( site ) {
+	async _getExtensions( site, type = 'plugin' ) {
 
 		const extensionTable = '`' + `${ ExtensionModel.table }` + '`';
 		const siteToExtensionTable = '`' + `${ SiteToExtensionModel.table }` + '`';
@@ -203,7 +208,7 @@ class ReportSiteController {
 			from: `FROM ${ siteToExtensionTable } AS site_to_extensions ` +
 				  `INNER JOIN ${ extensionVersionTable } AS extension_versions ON extension_versions.extension_version_slug = site_to_extensions.extension_version_slug ` +
 				  `INNER JOIN ${ extensionTable } AS extensions ON extensions.extension_slug = extension_versions.extension_slug `,
-			where: `WHERE site_to_extensions.site_url='${ site }' AND extensions.type='plugin'`,
+			where: `WHERE site_to_extensions.site_url='${ site }' AND extensions.type='${type}'`,
 			orderby: 'ORDER BY extensions.active_installs DESC, extension_versions.slug ASC',
 		};
 
