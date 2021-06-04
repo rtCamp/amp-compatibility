@@ -67,7 +67,7 @@ function setup_site() {
 	elif [ "wporg" != "$amp_source" ] && [ "github" != "$amp_source" ]; then
 		wp plugin install "$amp_source" --activate
 	else
-		ln -sn "$sites_root/repos/amp" "$(get_site_path)/wp-content/plugins/amp"
+		wp plugin install amp --activate
 	fi
 
 	plugin_dirs=(amp-wp-dummy-data-generator wordpress-importer block-unit-test coblocks)
