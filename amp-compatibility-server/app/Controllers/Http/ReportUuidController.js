@@ -63,7 +63,8 @@ class ReportUuidController {
 
 					switch ( key ) {
 						case 'uuid':
-							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
+							value = value.trim()
+							value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 13 ) }</a>`;
 							break;
 						case 'site_url':
 							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
@@ -491,7 +492,7 @@ class ReportUuidController {
 						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 						break;
 					case 'site_request_uuid':
-						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 10 ) }</a>`;
+						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 13 ) }</a>`;
 						break;
 					case 'updated_at':
 					case 'created_at':
@@ -564,7 +565,7 @@ class ReportUuidController {
 
 				switch ( key ) {
 					case 'error_slug':
-						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 10 ) }</abbr>`;
+						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 13 ) }</abbr>`;
 						break;
 					case 'node_attributes':
 						if ( value ) {
@@ -636,7 +637,7 @@ class ReportUuidController {
 
 				switch ( key ) {
 					case 'error_source_slug':
-						value = `<abbr class="copy-to-clipboard" data-copy-text="${ value }">${ value.slice( value.length - 10 ) }</abbr>`;
+						value = `<abbr class="copy-to-clipboard" data-copy-text="${ value }">${ value.slice( value.length - 13 ) }</abbr>`;
 						break;
 					case 'file':
 					case 'line':
