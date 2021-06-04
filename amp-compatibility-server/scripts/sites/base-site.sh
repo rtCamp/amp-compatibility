@@ -38,6 +38,7 @@ function setup_base_data() {
 	cd_plugins
 	plugin_dirs=(amp wordpress-importer block-unit-test coblocks)
 	for plugin_dir in "${plugin_dirs[@]}"; do
+		rm -rf "$sites_root/repos/$plugin_dir"
 		mv "$plugin_dir" "$sites_root/repos"
 	done
 
