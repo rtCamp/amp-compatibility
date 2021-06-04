@@ -49,7 +49,7 @@ class QueueController {
 			},
 			orderby: {
 				'created_at': 'DESC',
-			}
+			},
 		};
 
 		const selectFieldList = {
@@ -167,8 +167,10 @@ class QueueController {
 				const preparedItem = {
 					uuid: item.uuid,
 					domain: siteDomain,
-					plugins: Utility.parseSyntheticExtensionParam( data.plugins ),
-					theme: Utility.parseSyntheticExtensionParam( data.theme ),
+					extensions: {
+						plugin: Utility.parseSyntheticExtensionParam( data.plugins ),
+						theme: Utility.parseSyntheticExtensionParam( data.theme ),
+					},
 					data: Utility.jsonPrettyPrint( data ),
 					logs: Utility.maybeParseJSON( item.logs ) || [],
 				};
@@ -265,12 +267,25 @@ class QueueController {
 					case 'domain':
 						value = `<a href="//${ value }" target="_blank">${ value }</a>`;
 						break;
+					case 'extensions':
+
+						htmlMarkup = '';
+						for ( const type in value ) {
+							const extension = value[ type ][0];
+							if( ! _.isEmpty( extension ) ) {
+								htmlMarkup += ( ! _.isEmpty( extension ) ) ? `<strong class="text-capitalize">${ type }</strong>:&nbsp;${ extension.name }&nbsp;${ extension.version ? '(' + extension.version + ')' : '' }` : '';
+							}
+						}
+
+						value = htmlMarkup;
+						break;
+
 					case 'plugins':
 						htmlMarkup = '<ul class="list-group synthetic-item-plugins list-group-flush mt-0 mb-0">';
 						value = value || [];
 
 						value.map( ( item ) => {
-							htmlMarkup += `<li class="list-group-item bg-transparent">${ item.name }&nbsp;${ item.version ? item.version : '' }</li>`
+							htmlMarkup += `<li class="list-group-item bg-transparent">${ item.name }&nbsp;${ item.version ? '(' + item.version + ')' : '' }</li>`
 						} );
 
 						htmlMarkup += '</ul>';
@@ -278,7 +293,7 @@ class QueueController {
 						value = htmlMarkup;
 						break;
 					case 'theme':
-						value = ( ! _.isEmpty( value[ 0 ] ) ) ? `${ value[ 0 ].name }&nbsp;${ value[ 0 ].version ? value[ 0 ].version : '' }` : '';
+						value = ( ! _.isEmpty( value[ 0 ] ) ) ? `${ value[ 0 ].name }&nbsp;${ value[ 0 ].version ? '(' + value[ 0 ].version + ')' : '' }` : '';
 						break;
 					case 'amp_source':
 						if ( ! [ 'wporg', 'github' ].includes( value ) ) {
@@ -328,9 +343,9 @@ class QueueController {
 						for ( const action in value ) {
 
 							if ( 'report' === action ) {
-								htmlMarkup += `<a href="${ value[ action ] }" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" target="_blank">${ icons[ action ] }</a>`;
+								htmlMarkup += `<a href="${ value[ action ] }" title="${ action }" class="btn mr-1 btn-xs btn-link btn-actions" target="_blank">${ icons[ action ] }</a>`;
 							} else {
-								htmlMarkup += `<button type="button" title="${action}" class="btn mr-1 btn-xs btn-link btn-actions" data-action="${ action }" data-jobid="${ value[ action ] }">${ icons[ action ] }</button>`;
+								htmlMarkup += `<button type="button" title="${ action }" class="btn mr-1 btn-xs btn-link btn-actions" data-action="${ action }" data-jobid="${ value[ action ] }">${ icons[ action ] }</button>`;
 							}
 						}
 

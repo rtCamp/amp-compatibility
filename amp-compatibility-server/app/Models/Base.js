@@ -297,6 +297,10 @@ class Base extends Model {
 			searchFields: [],
 		} );
 
+		if ( 0 >= params.paged ) {
+			params.paged = 1;
+		}
+
 		if ( ! query ) {
 			query = Database.from( this.table );
 		}

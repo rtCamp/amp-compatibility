@@ -63,7 +63,8 @@ class ReportUuidController {
 
 					switch ( key ) {
 						case 'uuid':
-							value = `<a href="/admin/report/uuid/${ value }">${ value.trim() }</a>`;
+							value = value.trim()
+							value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 13 ) }</a>`;
 							break;
 						case 'site_url':
 							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
@@ -235,12 +236,14 @@ class ReportUuidController {
 			},
 		};
 
-		const pluginTableArgs = await this.preparePluginTableArgs( requestData.plugins );
+		const themeTableArgs = await this.prepareExtensionTableArgs( [ requestData.wp_active_theme ], 'theme' );
+		const pluginTableArgs = await this.prepareExtensionTableArgs( requestData.plugins, 'plugin' );
 		const urlTableArgs = await this.prepareValidateURLArgs( requestData.urls );
 
 		return view.render( 'dashboard/reports/uuid/show', {
 			uuid,
 			infoBoxList,
+			themeTableArgs,
 			pluginTableArgs,
 			urlTableArgs,
 			errorLog,
@@ -248,33 +251,34 @@ class ReportUuidController {
 	}
 
 	/**
-	 * To prepare args for plugin table.
+	 * To prepare args for extension table.
 	 *
-	 * @param {Object} plugins List of plugins.
+	 * @param {Object} extensions List of extension.
+	 * @param {string} type Type of extension. ( plugin or theme ).
 	 *
 	 * @return {Promise<{valueCallback: function(*, *=): string, items: []}>}
 	 */
-	async preparePluginTableArgs( plugins ) {
+	async prepareExtensionTableArgs( extensions, type = 'plugin' ) {
 
-		if ( _.isEmpty( plugins ) || ! ( _.isArray( plugins ) || _.isObject( plugins ) ) ) {
+		if ( _.isEmpty( extensions ) || ! ( _.isArray( extensions ) || _.isObject( extensions ) ) ) {
 			return {};
 		}
 
-		const preparedPluginList = {};
+		const preparedExtensionList = {};
 		let extensionSlugList = [];
 		const extensionSlugVersionList = [];
 
-		for ( const index in plugins ) {
+		for ( const index in extensions ) {
 
-			const plugin = plugins[ index ];
+			const plugin = extensions[ index ];
 
 			const extensionSlug = ExtensionModel.getPrimaryValue( {
-				type: 'plugin',
+				type: type,
 				slug: plugin.slug,
 			} );
 
 			const extensionVersionSlug = ExtensionVersionModel.getPrimaryValue( {
-				type: 'plugin',
+				type: type,
 				slug: plugin.slug,
 				version: plugin.version,
 				is_suppressed: plugin.is_suppressed,
@@ -283,7 +287,7 @@ class ReportUuidController {
 			extensionSlugList.push( extensionSlug );
 			extensionSlugVersionList.push( extensionVersionSlug );
 
-			preparedPluginList[ extensionVersionSlug ] = plugin;
+			preparedExtensionList[ extensionVersionSlug ] = plugin;
 
 		}
 
@@ -295,12 +299,12 @@ class ReportUuidController {
 
 		const extensionVersionData = await ExtensionVersionModel.getRowsWithErrorCount( extensionSlugVersionList );
 
-		for ( const index in preparedPluginList ) {
-			const plugin = preparedPluginList[ index ];
+		for ( const index in preparedExtensionList ) {
+			const plugin = preparedExtensionList[ index ];
 			const extensionVersionSlug = index;
 			const extensionSlug = ExtensionModel.getPrimaryValue( {
-				type: 'plugin',
-				slug: preparedPluginList[ index ].slug,
+				type: type,
+				slug: preparedExtensionList[ index ].slug,
 			} );
 
 			/**
@@ -309,7 +313,7 @@ class ReportUuidController {
 			extensionVersionData[ extensionVersionSlug ] = _.defaults( extensionVersionData[ extensionVersionSlug ], plugin );
 			extensionData[ extensionSlug ] = _.defaults( extensionData[ extensionSlug ], plugin );
 
-			preparedPluginList[ index ] = {
+			preparedExtensionList[ index ] = {
 				name: extensionData[ extensionSlug ].name,
 				slug: {
 					slug: extensionData[ extensionSlug ].slug,
@@ -323,14 +327,14 @@ class ReportUuidController {
 					count: extensionVersionData[ index ].error_count || 0,
 					has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
 				},
-				is_suppressed: preparedPluginList[ index ].is_suppressed,
+				is_suppressed: preparedExtensionList[ index ].is_suppressed,
 				has_synthetic_data: extensionVersionData[ index ].has_synthetic_data || false,
 				verification_status: extensionVersionData[ index ].verification_status || 'unknown',
 			};
 		}
 
-		const pluginTableArgs = {
-			items: _.toArray( preparedPluginList ),
+		const extensionsTableArgs = {
+			items: _.toArray( preparedExtensionList ),
 			headings: {
 				is_suppressed: 'Suppressed ?',
 			},
@@ -340,7 +344,7 @@ class ReportUuidController {
 
 					case 'slug':
 						if ( value.is_wporg ) {
-							value = `<a href="https://wordpress.org/plugins/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
+							value = `<a href="https://wordpress.org/${type}s/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
 						} else {
 							value = value.slug;
 						}
@@ -409,7 +413,7 @@ class ReportUuidController {
 			},
 		};
 
-		return pluginTableArgs;
+		return extensionsTableArgs;
 	}
 
 	/**
@@ -488,7 +492,7 @@ class ReportUuidController {
 						value = `<a href="${ value }" target="_blank" title="${ value }">${ value }</a>`;
 						break;
 					case 'site_request_uuid':
-						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 10 ) }</a>`;
+						value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 13 ) }</a>`;
 						break;
 					case 'updated_at':
 					case 'created_at':
@@ -561,7 +565,7 @@ class ReportUuidController {
 
 				switch ( key ) {
 					case 'error_slug':
-						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 10 ) }</abbr>`;
+						value = `<abbr class="copy-to-clipboard" data-copy-text='${ value }'>${ value.slice( value.length - 13 ) }</abbr>`;
 						break;
 					case 'node_attributes':
 						if ( value ) {
@@ -633,7 +637,7 @@ class ReportUuidController {
 
 				switch ( key ) {
 					case 'error_source_slug':
-						value = `<abbr class="copy-to-clipboard" data-copy-text="${ value }">${ value.slice( value.length - 10 ) }</abbr>`;
+						value = `<abbr class="copy-to-clipboard" data-copy-text="${ value }">${ value.slice( value.length - 13 ) }</abbr>`;
 						break;
 					case 'file':
 					case 'line':
