@@ -41,7 +41,7 @@ class Plugin {
 		Shortcodes::get_instance()->setup_hooks();
 		Navigations::get_instance()->setup_hooks();
 
-		add_filter( 'the_content', [ $this, 'update_post_content' ], 15 );
+		add_filter( 'the_content', [ $this, 'update_post_content' ] );
 	}
 
 	/**
