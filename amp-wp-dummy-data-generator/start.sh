@@ -31,7 +31,8 @@ setup_site() {
 	wp rewrite flush
 	wp cache flush
 
-	wp plugin install --activate wordpress-importer block-unit-test coblocks
+	wp plugin install --activate wordpress-importer
+	#block-unit-test coblocks
 
 	wp plugin activate amp-wp-dummy-data-generator
 }

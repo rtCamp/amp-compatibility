@@ -7,6 +7,10 @@
 
 namespace AMP_WP_Dummy_Data_Generator\Inc\Generator;
 
+use Exception;
+use WP_Block_Type;
+use WP_Block_Type_Registry;
+use WP_CLI;
 use function WP_CLI\Utils\make_progress_bar;
 
 /**
@@ -49,7 +53,7 @@ class Blocks extends Base {
 
 		$post_id         = $this->generate_post( $page_args );
 		$post_for_blocks = get_post( $post_id );
-		$block_types     = \WP_Block_Type_Registry::get_instance()->get_all_registered();
+		$block_types     = WP_Block_Type_Registry::get_instance()->get_all_registered();
 		$count           = count( $block_types );
 		$this->blocks    = [];
 
@@ -61,8 +65,8 @@ class Blocks extends Base {
 		foreach ( $block_types as $block_type ) {
 			try {
 				$this->generate_block( $block_type );
-			} catch ( \Exception $e ) {
-				\WP_CLI::error(
+			} catch ( Exception $e ) {
+				WP_CLI::error(
 					sprintf(
 						'Could not create block of block type "%1$s". Error: %2$s',
 						$block_type->name,
@@ -81,7 +85,7 @@ class Blocks extends Base {
 		$post_id = wp_update_post( wp_slash( $post_args ), true );
 
 		if ( is_wp_error( $post_id ) ) {
-			\WP_CLI::error(
+			WP_CLI::error(
 				sprintf(
 					'Could not update post "%1$s" with blocks. Error: %2$s',
 					self::PAGE_SLUG,
@@ -101,7 +105,7 @@ class Blocks extends Base {
 	 */
 	public function clear() {
 
-		$block_types = \WP_Block_Type_Registry::get_instance()->get_all_registered();
+		$block_types = WP_Block_Type_Registry::get_instance()->get_all_registered();
 
 		$count = count( $block_types );
 
@@ -122,13 +126,13 @@ class Blocks extends Base {
 	/**
 	 * Generates a block and adds it to the blocks class property.
 	 *
-	 * @param \WP_Block_Type $block_type Block type to generate block for.
+	 * @param WP_Block_Type $block_type Block type to generate block for.
 	 *
-	 * @throws \Exception Thrown when creating block failed.
+	 * @throws Exception Thrown when creating block failed.
 	 *
 	 * @return void
 	 */
-	private function generate_block( \WP_Block_Type $block_type ) {
+	private function generate_block( WP_Block_Type $block_type ) {
 
 		$block = [
 			'blockName'    => $block_type->name,
@@ -236,23 +240,28 @@ class Blocks extends Base {
 				if ( ! empty( $data['enum'] ) ) {
 					return array_shift( $data['enum'] );
 				}
+
+				if ( in_array( $slug, [ 'url', 'mediaLink' ], true ) ) {
+					return 'https://amp.dev/';
+				} elseif ( in_array( $slug, [ 'mediaType' ], true ) ) {
+					return 'image';
+				} elseif ( false !== strpos( strtolower( $slug ), 'color', true ) ) {
+					return '#DEDEDE';
+				}
+
 				if ( ! empty( $data['source'] ) && 'attribute' === $data['source'] ) {
-					if ( ! empty( $data['attribute'] ) && in_array(
-						$data['attribute'],
-						[
-							'src',
-							'href',
-						],
-						true
-					) ) {
+					if ( ! empty( $data['attribute'] ) &&
+					     in_array( $data['attribute'], [ 'src', 'href' ], true )
+					) {
+
+						if ( false !== strpos( $data['selector'], 'img' ) ) {
+							return 'https://www.w3schools.com/tags/img_girl.jpg';
+						}
 						if ( false !== strpos( $data['selector'], 'audio' ) ) {
 							return 'https://www.w3schools.com/tags/horse.mp3';
 						}
 						if ( false !== strpos( $data['selector'], 'video' ) ) {
 							return 'https://www.w3schools.com/tags/movie.mp4';
-						}
-						if ( false !== strpos( $data['selector'], 'img' ) ) {
-							return 'https://www.w3schools.com/tags/img_girl.jpg';
 						}
 
 						return 'https://amp.dev/';
@@ -261,7 +270,7 @@ class Blocks extends Base {
 					return '';
 				}
 
-				return 'Some Text.';
+				return 'Some Text';
 		}
 
 		return null;
@@ -351,7 +360,7 @@ class Blocks extends Base {
 				$attr = substr( $attr, 0, strlen( $attr - 1 ) );
 				if ( strpos( $attr, '=' ) ) { // Set value for attribute.
 					list( $attr, $value ) = explode( '=', $attr, 2 );
-					$acc[ $attr ]         = trim( $value, '"\'' );
+					$acc[ $attr ] = trim( $value, '"\'' );
 				} else { // Assume boolean attribute.
 					$acc[ $attr ] = true;
 				}
@@ -361,7 +370,7 @@ class Blocks extends Base {
 
 		if ( false !== strpos( $selector, '#' ) ) {
 			list( $selector, $id ) = explode( '#', $selector, 2 );
-			$attrs['id']           = $id;
+			$attrs['id'] = $id;
 		}
 
 		if ( false !== strpos( $selector, '.' ) ) {
@@ -432,4 +441,5 @@ class Blocks extends Base {
 
 		return $results;
 	}
+
 }

@@ -70,7 +70,7 @@ function setup_site() {
 		wp plugin install amp --activate
 	fi
 
-	plugin_dirs=(amp-wp-dummy-data-generator wordpress-importer block-unit-test coblocks)
+	plugin_dirs=(amp-wp-dummy-data-generator wordpress-importer)
 	for plugin_dir in "${plugin_dirs[@]}"; do
 		ln -sn "$sites_root/repos/$plugin_dir" "$(get_site_path)/wp-content/plugins/$plugin_dir"
 	done

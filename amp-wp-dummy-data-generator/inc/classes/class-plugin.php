@@ -40,6 +40,8 @@ class Plugin {
 		Widgets::get_instance()->setup_hooks();
 		Shortcodes::get_instance()->setup_hooks();
 		Navigations::get_instance()->setup_hooks();
+
+		add_filter( 'the_content', [ $this, 'update_post_content' ], 15 );
 	}
 
 	/**
@@ -51,4 +53,22 @@ class Plugin {
 
 		return '/%postname%/';
 	}
+
+
+	/**
+	 * Remove empty img tag. ( Which is render by "core/media-text" block )
+	 *
+	 * @param string $content Post content
+	 *
+	 * @return string Post content.
+	 */
+	public function update_post_content( $content = '' ) {
+
+		// Reference: https://regex101.com/r/lcHMVl/1/
+		$regex   = '/<img\/>/mUi';
+		$content = preg_replace( $regex, '', $content );
+
+		return $content;
+	}
+
 }

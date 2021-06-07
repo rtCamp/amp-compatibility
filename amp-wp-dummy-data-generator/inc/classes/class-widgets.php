@@ -397,7 +397,7 @@ class Widgets {
 					$param['default'] = $input->getAttribute( 'value' );
 
 					if ( empty( $param['default'] ) ) {
-						$param['default'] = 'Some Text.';
+						$param['default'] = 'Some Text for widget';
 					}
 			}
 
