@@ -124,7 +124,7 @@ function amp_send_data( $args = [], $assoc_args = [] ) {
 	if ( $is_synthetic ) {
 		$data['site_info']['is_synthetic_data'] = true;
 	}
-	print_r( $data );
+
 	/**
 	 * Print or send AMP data.
 	 */
