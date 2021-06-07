@@ -866,6 +866,10 @@ class AMP_Prepare_Data {
 			// Stylesheet info.
 			$stylesheet_info = static::get_stylesheet_info( $amp_error_post->ID );
 
+			if ( empty( $post_errors ) ) {
+				continue;
+			}
+
 			$amp_invalid_urls[] = [
 				'url'                   => $amp_error_post->post_title,
 				'object_type'           => $object_type,
