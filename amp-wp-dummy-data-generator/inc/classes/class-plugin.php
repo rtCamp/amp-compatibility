@@ -65,8 +65,8 @@ class Plugin {
 	 */
 	public function update_post_content( $content = '' ) {
 
-		// Reference: https://regex101.com/r/lcHMVl/1/
-		$regex   = '/<img\/>/mUi';
+		// Reference: https://regex101.com/r/pb19AF/1/
+		$regex   = '/<(?:amp-)?img\/>/mUi';
 		$content = preg_replace( $regex, '', $content );
 
 		// Reference: https://regex101.com/r/sal6Bb/1/
