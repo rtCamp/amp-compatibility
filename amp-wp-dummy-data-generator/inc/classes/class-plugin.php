@@ -56,7 +56,8 @@ class Plugin {
 
 
 	/**
-	 * Remove empty img tag. ( Which is render by "core/media-text" block )
+	 * - Remove empty img tag. ( Which is render by "core/media-text" block )
+	 * - Make all URLs "https://"
 	 *
 	 * @param string $content Post content
 	 *
@@ -67,6 +68,10 @@ class Plugin {
 		// Reference: https://regex101.com/r/lcHMVl/1/
 		$regex   = '/<img\/>/mUi';
 		$content = preg_replace( $regex, '', $content );
+
+		// Reference: https://regex101.com/r/sal6Bb/1/
+		$regex = '/http:\/\//mUi';
+		$content = preg_replace( $regex, 'https://', $content );
 
 		return $content;
 	}
