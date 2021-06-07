@@ -866,7 +866,10 @@ class AMP_Prepare_Data {
 			// Stylesheet info.
 			$stylesheet_info = static::get_stylesheet_info( $amp_error_post->ID );
 
-			if ( empty( $post_errors ) ) {
+			$css_budget_percentage = ( ! empty( $stylesheet_info['css_budget_percentage'] ) ) ? $stylesheet_info['css_budget_percentage'] : 0;
+			$css_budget_percentage = intval( $css_budget_percentage );
+
+			if ( empty( $post_errors ) && $css_budget_percentage < 100 ) {
 				continue;
 			}
 
@@ -877,7 +880,7 @@ class AMP_Prepare_Data {
 				'css_size_before'       => ( ! empty( $stylesheet_info['css_size_before'] ) ) ? $stylesheet_info['css_size_before'] : '',
 				'css_size_after'        => ( ! empty( $stylesheet_info['css_size_after'] ) ) ? $stylesheet_info['css_size_after'] : '',
 				'css_size_excluded'     => ( ! empty( $stylesheet_info['css_size_excluded'] ) ) ? $stylesheet_info['css_size_excluded'] : '',
-				'css_budget_percentage' => ( ! empty( $stylesheet_info['css_budget_percentage'] ) ) ? $stylesheet_info['css_budget_percentage'] : '',
+				'css_budget_percentage' => $css_budget_percentage,
 				'errors'                => $post_errors,
 			];
 		}
