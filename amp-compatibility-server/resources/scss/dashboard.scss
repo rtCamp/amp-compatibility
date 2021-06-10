@@ -348,3 +348,20 @@ abbr {
 .btn-actions {
 	margin-right: 5px;
 }
+
+.btn-table-sort {
+	vertical-align: middle;
+	margin: 0;
+
+	.material-icons {
+		font-size: 16px;
+	}
+
+	&.order-none {
+		color: $info;
+	}
+
+	&.order-asc {
+		transform: rotate(180deg);
+	}
+}

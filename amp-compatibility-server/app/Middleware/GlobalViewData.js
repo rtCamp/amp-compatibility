@@ -54,6 +54,10 @@ class GlobalViewData {
 			return string.toLowerCase().replace( / +/g, '-' );
 		} );
 
+		View.global( 'hasKey', ( object, key ) => {
+			return Object.keys( object ).includes( key );
+		} );
+
 		/**
 		 * Templates.
 		 */

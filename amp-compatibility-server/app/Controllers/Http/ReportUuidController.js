@@ -45,10 +45,21 @@ class ReportUuidController {
 				'uuid',
 				'site_url',
 			],
-			orderby: {
-				created_at: 'DESC',
-			},
+			orderby: {},
 		} );
+
+		const allowSortFields = [ 'status' ];
+		const sortRequest = request.input( 'sort' );
+
+		for ( const field in sortRequest ) {
+			if ( allowSortFields.includes( field ) &&
+			     [ 'asc', 'desc' ].includes( sortRequest[ field ].toLowerCase() )
+			) {
+				params.orderby[ field ] = sortRequest[ field ];
+			}
+		}
+
+		params.orderby.created_at = 'DESC';
 
 		const { data, total } = await SiteRequestModel.getResult( params );
 
@@ -59,11 +70,14 @@ class ReportUuidController {
 					uuid: 'UUID',
 					site_url: 'Site URL',
 				},
+				sortableFields: {
+					status: params.orderby.status || 'none',
+				},
 				valueCallback: ( key, value ) => {
 
 					switch ( key ) {
 						case 'uuid':
-							value = value.trim()
+							value = value.trim();
 							value = `<a href="/admin/report/uuid/${ value }">...${ value.slice( value.length - 13 ) }</a>`;
 							break;
 						case 'site_url':
@@ -155,7 +169,7 @@ class ReportUuidController {
 							value = `<a href="/admin/report/site/${ value }" target="_blank" title="${ value }">${ value }</a>`;
 							break;
 						case 'request_Date':
-							value = `<time datetime="${ value}">${ value }</time>`;
+							value = `<time datetime="${ value }">${ value }</time>`;
 							break;
 					}
 					return value;
@@ -344,7 +358,7 @@ class ReportUuidController {
 
 					case 'slug':
 						if ( value.is_wporg ) {
-							value = `<a href="https://wordpress.org/${type}s/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
+							value = `<a href="https://wordpress.org/${ type }s/${ value.slug }" target="_blank" title="${ value.slug }">${ value.slug }</a>`;
 						} else {
 							value = value.slug;
 						}
