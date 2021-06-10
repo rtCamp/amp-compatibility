@@ -61,6 +61,12 @@ class ReportUuidController {
 
 		params.orderby.created_at = 'DESC';
 
+		if ( request.input( 'exclude_synthetic' ) ) {
+			params.whereClause = {
+				is_synthetic: 0,
+			};
+		}
+
 		const { data, total } = await SiteRequestModel.getResult( params );
 
 		const viewData = {

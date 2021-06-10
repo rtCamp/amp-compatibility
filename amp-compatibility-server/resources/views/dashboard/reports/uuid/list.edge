@@ -3,10 +3,31 @@
 @section('header_tools')
 <div class="col-6 header-tools">
 	<div class="button-toolbar search-toolbar" role="toolbar" aria-label="Search toolbar with filters">
-		<form method="GET" action="/admin/report/">
+		<form method="GET" >
 			<div class="input-group">
 				<div class="input-group-text border-0"><span class="material-icons">search</span></div>
 				<input type="search" class="form-control ps-0" name="s" value="{{searchString}}">
+				<a class="input-group-text border-0" type="button" data-bs-toggle="collapse" href="#search-filters" role="button" aria-expanded="false" aria-controls="search-filters">
+					<span class="material-icons">
+						keyboard_arrow_down
+					</span>
+				</a>
+			</div>
+			<div class="collapse" id="search-filters">
+				<div class="card">
+					<div class="card-body">
+						<div class="card-title">Filter by:</div>
+						<div class="card-text">
+							<div class="form-check">
+								<input class="form-check-input" id="exclude_synthetic" name="exclude_synthetic" type="checkbox" value="1" {{queryStrings.exclude_synthetic ? 'checked' : ''}} >
+								<label class="form-check-label" for="exclude_synthetic">Exclude Synthetic Data</label>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<button class="btn btn-outline-primary" type="submit" id="searchButton">Search</button>
+					</div>
+				</div>
 			</div>
 		</form>
 	</div>
