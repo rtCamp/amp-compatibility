@@ -38,6 +38,7 @@ class ReportUuidController {
 				'uuid',
 				'site_url',
 				'status',
+				'data',
 				'created_at',
 			],
 			s: request.input( 's' ) || '',
@@ -88,6 +89,9 @@ class ReportUuidController {
 							break;
 						case 'site_url':
 							value = `<a href="/admin/report/site/${ value }">${ value.trim() }</a>`;
+							break;
+						case 'data':
+							value = `<button class="btn btn-primary btn-xs copy-to-clipboard" data-copy-text='${ value }'>Copy</button>`;
 							break;
 						case 'created_at':
 							const dateObject = new Date( value );
