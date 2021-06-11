@@ -66,6 +66,7 @@ Route.group( () => {
 	 * Report.
 	 */
 	Route.get( '/report/', 'ReportUuidController.index' );
+	Route.get( '/report/export/', 'ReportUuidController.export' );
 	Route.get( '/report/page/:paged', 'ReportUuidController.index' );
 
 	Route.get( '/report/uuid/:uuid', 'ReportUuidController.show' );

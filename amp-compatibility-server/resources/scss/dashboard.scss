@@ -6,7 +6,7 @@ $info: rgba(0, 0, 0, .54) !default;
 $warning: #f2a600 !default;
 $danger: #d50000 !default;
 
-// @import "~bootstrap/scss/bootstrap";
+//@import "~bootstrap/scss/bootstrap";
 @import '~mdb-ui-kit/src/scss/mdb.free';
 
 .list-group-item {
@@ -347,4 +347,21 @@ abbr {
 
 .btn-actions {
 	margin-right: 5px;
+}
+
+.btn-table-sort {
+	vertical-align: middle;
+	margin: 0;
+
+	.material-icons {
+		font-size: 16px;
+	}
+
+	&.order-none {
+		color: $info;
+	}
+
+	&.order-asc {
+		transform: rotate(180deg);
+	}
 }

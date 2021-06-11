@@ -8,12 +8,19 @@
 			<thead class="table-light">
 			<tr>
 				@each( ( value, key ) in items[0] )
+				<th scope="col" class="{{key}}">
 					@if( headings[key] )
-						<th scope="col" class="{{key}}">{{{headings[key]}}}</th>
+						{{{ headings[key] }}}
 					@else
-						<th scope="col" class="{{key}}">{{ upperFirst( snackCaseToString( key ) ) }}</th>
+						{{ upperFirst( snackCaseToString( key ) ) }}
 					@endif
 
+					@if( hasKey( sortableFields, key ) )
+						<button type="button" class="btn btn-table-sort btn-xs btn-link btn-actions order-{{ sortableFields[key].toLowerCase() }}" data-order-by="{{{key}}}" data-order="{{{sortableFields[key]}}}">
+							<span class="material-icons outlined ">filter_list</span>
+						</button>
+					@endif
+				</th>
 				@endeach
 				@if( collapsible )
 					<th class="text-center">-</th>
@@ -27,7 +34,7 @@
 				@if( valueCallback )
 					<td scope="col" class="{{key}}">{{{ valueCallback( key, value )  }}}</td>
 				@else
-					<td scope="col" class="{{key}}">{{{  value }}}</td>
+					<td scope="col" class="{{key}}">{{{ value }}}</td>
 				@endif
 				@endeach
 

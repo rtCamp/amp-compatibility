@@ -40,6 +40,39 @@ window.addEventListener( 'DOMContentLoaded', function () {
 			if ( this.searchField ) {
 				this.searchField.addEventListener( 'change', ( event ) => this.handleChange(event) );
 			}
+
+			/**
+			 * Handle sorting of the table.
+			 */
+			const sortButtons = document.querySelectorAll( '.btn-table-sort' );
+			sortButtons.forEach( ( sortButton ) => {
+				sortButton.addEventListener( 'click', this.onSortButtonClick );
+			} );
+		},
+
+		onSortButtonClick: function ( event ) {
+
+			const orderBy = this.dataset.orderBy;
+			let currentOrder = this.dataset.order || 'none';
+			currentOrder = currentOrder.toLowerCase();
+
+			const newOrderMapping = {
+				none: 'DESC',
+				desc: 'ASC',
+				asc: 'none',
+			};
+
+			const urlParams = new URLSearchParams( window.location.search );
+
+			if ( 'none' === newOrderMapping[ currentOrder ] ) {
+				urlParams.delete( `sort[${ orderBy }]` );
+			} else {
+				urlParams.set( `sort[${ orderBy }]`, newOrderMapping[ currentOrder ] );
+			}
+
+
+			window.location.search = urlParams.toString();
+
 		},
 
 		/**
