@@ -43,9 +43,11 @@
 	<div>
 		<div>
 			<!-- Button trigger modal -->
-			<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">Export
-			</button>
-			<p class="text-end">Total <b>{{pagination.total}}</b> result found.</p>
+			<p class="text-end">
+				Total <b>{{pagination.total}}</b> result found.
+				<button type="button" class="btn btn-link btn-xs" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+			</p>
+
 		</div>
 
 		{{{renderTable(tableArgs)}}}
