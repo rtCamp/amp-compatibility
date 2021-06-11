@@ -10,6 +10,7 @@ const ExtensionModel = use( 'App/Models/Extension' );
 const ErrorModel = use( 'App/Models/Error' );
 const ErrorSourceModel = use( 'App/Models/ErrorSource' );
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
+const SpreadSheet = use( 'SpreadSheet' );
 
 const { validateAll } = use( 'Validator' );
 const Templates = use( 'App/Controllers/Templates' );
@@ -119,10 +120,22 @@ class ReportUuidController {
 		return view.render( 'dashboard/reports/uuid/list', viewData );
 	}
 
-	async export( { request } ) {
+	/**
+	 * Endpoint to export site request data in CSV format.
+	 *
+	 * @param {object} ctx
+	 * @param {Request} request ctx.request
+	 * @param {Response} response ctx.response
+	 *
+	 * @return {Promise<Route|String|*>}
+	 */
+	async export( { request, response } ) {
 
 		const getData = request.get();
 
+		/**
+		 * Validation.
+		 */
 		const rules = {
 			start_date: 'required|date',
 			end_date: 'required|date',
@@ -145,9 +158,12 @@ class ReportUuidController {
 
 		getData.include_synthetic_data = ( '1' === getData.include_synthetic_data );
 
+		let perPage = parseInt( getData.perPage ) || 20000;
+		perPage = ( 0 < perPage && perPage <= 20000 ) ? perPage : 20000;
+
 		const queryArgs = {
 			paged: 1,
-			perPage: -1,
+			perPage: perPage,
 			selectFields: [
 				'uuid',
 				'site_url',
@@ -158,11 +174,11 @@ class ReportUuidController {
 			whereBetween: {
 				created_at: [
 					getData.start_date,
-					getData.end_date
-				]
+					getData.end_date,
+				],
 			},
 			orderby: {
-				created_at: 'DESC'
+				created_at: 'DESC',
 			},
 		};
 
@@ -174,14 +190,48 @@ class ReportUuidController {
 			};
 		}
 
-		const items = await SiteRequestModel.getResult( queryArgs );
-		delete items.data;
+		const dbResponse = await SiteRequestModel.getResult( queryArgs );
+		const items = _.toArray( dbResponse.data );
+		const preparedItems = [];
 
 		items.map( ( item ) => {
 			item.data = Utility.maybeParseJSON( item.data.toString() );
+
+			const preparedItem = {
+				uuid: item.uuid,
+				status: item.status,
+				...item.data.site_info,
+				theme: Utility.jsonPrettyPrint( item.data.wp_active_theme ),
+				plugins: Utility.jsonPrettyPrint( item.data.plugins ),
+				error_count: item.data.errorCount,
+				error_source_count: item.data.errorSourceCount,
+			};
+
+			preparedItem.amp_supported_post_types = Utility.jsonPrettyPrint( preparedItem.amp_supported_post_types );
+			preparedItem.amp_supported_templates = Utility.jsonPrettyPrint( preparedItem.amp_supported_templates );
+
+			preparedItems.push( preparedItem );
 		} );
 
-		return items;
+		const spreadSheet = new SpreadSheet( response, 'csv' );
+
+		const exportData = [
+			_.keys( preparedItems[ 0 ] ),
+			...( preparedItems.map( item => _.toArray( item ) ) ),
+		];
+
+		spreadSheet.addSheet( 'Site Requests', exportData );
+		spreadSheet.download( `site-request-export-${ Utility.getCurrentDateTime().replace( / |:/g, '-' ) }` );
+
+		return {
+			status: 'ok',
+			data: {
+				total: dbResponse.total || 0,
+				perPage: dbResponse.perPage || 0,
+				page: dbResponse.page || 0,
+				lastPage: dbResponse.lastPage || 0,
+			},
+		};
 	}
 
 	/**

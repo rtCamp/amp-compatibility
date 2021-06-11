@@ -24,6 +24,7 @@ const providers = [
 	'@adonisjs/validator/providers/ValidatorProvider',
 	'@adonisjs/ally/providers/AllyProvider',
 	'adonis-throttle/providers/ThrottleProvider',
+	'adonis-spreadsheet/providers/SpreadSheetProvider',
 	path.join( __dirname, '..', 'providers', 'BigQueryProvider' ),
 	path.join( __dirname, '..', 'providers', 'Sanitizer/Provider' ),
 	path.join( __dirname, '..', 'providers', 'Validator/Provider' ),

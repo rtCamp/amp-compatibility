@@ -54,7 +54,7 @@ class Utility {
 			return JSON.stringify( data, null, 4 );
 		}
 
-		return 'Empty Object';
+		return '';
 	}
 
 	/**
