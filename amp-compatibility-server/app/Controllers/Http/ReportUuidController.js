@@ -11,6 +11,7 @@ const ErrorModel = use( 'App/Models/Error' );
 const ErrorSourceModel = use( 'App/Models/ErrorSource' );
 const ExtensionVersionModel = use( 'App/Models/ExtensionVersion' );
 
+const { validateAll } = use( 'Validator' );
 const Templates = use( 'App/Controllers/Templates' );
 const Utility = use( 'App/Helpers/Utility' );
 const _ = require( 'underscore' );
@@ -116,6 +117,71 @@ class ReportUuidController {
 		};
 
 		return view.render( 'dashboard/reports/uuid/list', viewData );
+	}
+
+	async export( { request } ) {
+
+		const getData = request.get();
+
+		const rules = {
+			start_date: 'required|date',
+			end_date: 'required|date',
+			include_synthetic_data: 'boolean',
+		};
+
+		const messages = {
+			'start_date': 'Please provide valid start date.',
+			'end_date': 'Please provide valid end date.',
+		};
+
+		const validation = await validateAll( getData, rules, messages );
+
+		if ( validation.fails() ) {
+			return {
+				status: 'fail',
+				data: validation.messages(),
+			};
+		}
+
+		getData.include_synthetic_data = ( '1' === getData.include_synthetic_data );
+
+		const queryArgs = {
+			paged: 1,
+			perPage: -1,
+			selectFields: [
+				'uuid',
+				'site_url',
+				'status',
+				'data',
+				'created_at',
+			],
+			whereBetween: {
+				created_at: [
+					getData.start_date,
+					getData.end_date
+				]
+			},
+			orderby: {
+				created_at: 'DESC'
+			},
+		};
+
+		queryArgs.orderby.created_at = 'DESC';
+
+		if ( ! getData.include_synthetic_data ) {
+			queryArgs.whereClause = {
+				is_synthetic: 0,
+			};
+		}
+
+		const items = await SiteRequestModel.getResult( queryArgs );
+		delete items.data;
+
+		items.map( ( item ) => {
+			item.data = Utility.maybeParseJSON( item.data.toString() );
+		} );
+
+		return items;
 	}
 
 	/**

@@ -281,6 +281,7 @@ class Base extends Model {
 	 * To parse query arguments.
 	 *
 	 * @param {Object} args Page query params.
+	 * @param {Object} query Database model object.
 	 *
 	 * @return {{select: string, limit: string, orderby: string, from: string, where: string, groupby: string}}
 	 */
@@ -292,6 +293,7 @@ class Base extends Model {
 			perPage: 1000,
 			whereClause: {},
 			whereNot: {},
+			whereBetween: {},
 			orderby: {},
 			s: '',
 			searchFields: [],
@@ -341,6 +343,20 @@ class Base extends Model {
 					query = query.whereNotIn( field, value );
 				} else {
 					query = query.whereNot( field, value );
+				}
+			}
+		}
+
+		/**
+		 * Where Not Clause.
+		 */
+		if ( ! _.isEmpty( params.whereBetween ) && _.isObject( params.whereBetween ) ) {
+
+			for ( const field in params.whereBetween ) {
+				const value = params.whereBetween[ field ];
+
+				if ( _.isArray( value ) ) {
+					query = query.whereBetween( field, value );
 				}
 			}
 		}
